@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flux Kustomize Layout"
+  short_description: "FluxCD base and overlay repo scaffolds"
+  default_prompt: "Use $flux-kustomize-layout to scaffold a FluxCD Kustomize repo layout."

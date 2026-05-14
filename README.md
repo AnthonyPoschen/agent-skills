@@ -7,6 +7,8 @@ format. This repository is arranged so skills can be installed with the
 ```bash
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 ```
 
 ## Available Skills
@@ -14,6 +16,8 @@ npx skills add anthonyposchen/agent-skills --skill coding
 | Skill | Description |
 | --- | --- |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
+| `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
+| `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
 
 ## Install
 
@@ -27,6 +31,8 @@ Install a specific skill:
 
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 ```
 
 Install all skills:
@@ -48,6 +54,11 @@ skills/
   coding/
     SKILL.md
     examples/
+  dockerfile/
+    SKILL.md
+    references/
+  flux-kustomize-layout/
+    SKILL.md
 ```
 
 Each skill lives in `skills/<skill-name>/` and must include a `SKILL.md` file

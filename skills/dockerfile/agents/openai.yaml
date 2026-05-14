@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dockerfile"
+  short_description: "Secure multi-stage Dockerfile patterns"
+  default_prompt: "Use $dockerfile to create a secure multi-stage Dockerfile for this project."
