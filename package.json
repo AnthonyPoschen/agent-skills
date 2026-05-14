@@ -1,0 +1,10 @@
+{
+  "name": "@anthonyposchen/agent-skills",
+  "version": "0.1.0",
+  "description": "Reusable Agent Skills installable with npx skills.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "validate": "python3 scripts/validate-skills.py"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Coding"
+  short_description: "Guardrails for clean maintainable code"
+  default_prompt: "Use $coding to review this code change for correctness, maintainability, and project fit."
