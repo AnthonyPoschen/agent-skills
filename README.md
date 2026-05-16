@@ -77,11 +77,28 @@ Optional skill resources:
 2. Use lowercase kebab-case for the folder and `name` field.
 3. Keep triggering context in the frontmatter `description`.
 4. Keep `SKILL.md` concise; move long details into `references/`.
-5. Run validation:
+5. Link local agent skills:
+
+```bash
+npm run link-skills
+```
+
+6. Run validation:
 
 ```bash
 npm run validate
 ```
+
+## Local Development
+
+Install Git hooks that relink skills after `git pull` updates the working tree:
+
+```bash
+npm run install-git-hooks
+```
+
+This installs `post-merge` and `post-rewrite` hooks so both merge-based pulls
+and rebase-based pulls refresh local links.
 
 ## License
 

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -10,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = ROOT / "skills"
+LINK_DEST = Path(os.environ.get("AGENT_SKILLS_DIR", "~/.agents/skills")).expanduser()
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MD_LINK_RE = re.compile(r"\[[^\]]+\]\(([^):#]+\.md)(?:#[^)]+)?\)")
 
@@ -94,6 +96,29 @@ def validate_skill(skill_dir: Path, names: set[str], errors: list[str]) -> None:
     validate_markdown_links(skill_dir, skill_md, errors)
 
 
+def validate_skill_links(skill_dirs: list[Path], errors: list[str]) -> None:
+    if not LINK_DEST.exists():
+        fail(
+            errors,
+            f"{LINK_DEST}: missing linked skills directory; run npm run link-skills",
+        )
+        return
+
+    for skill_dir in skill_dirs:
+        target = LINK_DEST / skill_dir.name
+        if not target.exists() and not target.is_symlink():
+            fail(errors, f"{target}: missing skill link; run npm run link-skills")
+            continue
+
+        if not target.is_symlink():
+            if not (target / "SKILL.md").exists():
+                fail(errors, f"{target}: expected a skill link or installed skill")
+            continue
+
+        if target.resolve() != skill_dir.resolve():
+            fail(errors, f"{target}: symlink points to {target.resolve()}")
+
+
 def main() -> int:
     errors: list[str] = []
 
@@ -107,6 +132,7 @@ def main() -> int:
         names: set[str] = set()
         for skill_dir in skill_dirs:
             validate_skill(skill_dir, names, errors)
+        validate_skill_links(skill_dirs, errors)
 
     if errors:
         print("Skill validation failed:", file=sys.stderr)

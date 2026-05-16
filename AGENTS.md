@@ -23,6 +23,8 @@ installers and agents to scan.
 - Link directly from `SKILL.md` to supporting reference files so agents can load
   them only when relevant.
 - Add scripts only when they make repeated or fragile work more reliable.
+- When adding a new skill folder, run `npm run link-skills` so the local
+  `~/.agents/skills/<skill-name>` entry exists before validation.
 
 ## Validation
 
@@ -33,4 +35,5 @@ npm run validate
 ```
 
 The validator checks skill folder names, frontmatter boundaries, required
-fields, duplicate names, and references to missing local markdown files.
+fields, duplicate names, references to missing local markdown files, and local
+entries in `~/.agents/skills` for every `skills/<skill-name>/` directory.
