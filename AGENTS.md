@@ -37,3 +37,13 @@ npm run validate
 The validator checks skill folder names, frontmatter boundaries, required
 fields, duplicate names, references to missing local markdown files, and local
 entries in `~/.agents/skills` for every `skills/<skill-name>/` directory.
+
+## Releases
+
+- Always prepare release notes when cutting a release unless the user explicitly
+  says to skip release notes.
+- If changelog or release-note evidence exists (`CHANGELOG.md`,
+  `docs/releases/`, `docs/changelog/`, `releases/`, or `.github/releases/`),
+  update it before tagging.
+- In-repo changelog or release-note updates must be committed before tagging.
+- Tag the commit that includes required release-note updates.
