@@ -13,8 +13,9 @@ description: >
 ## Goal
 
 Create small, reviewable commits with accurate Conventional Commit subjects and
-an explicit AI assistance trailer. Prefer preserving user changes over making a
-tidy history at the cost of mixing unrelated work.
+an explicit AI assistance trailer. Always separate independent logical units of
+work into separate commits. Prefer preserving user changes over making a tidy
+history at the cost of mixing unrelated work.
 
 ## Safety Rules
 
@@ -28,6 +29,9 @@ tidy history at the cost of mixing unrelated work.
 - Inspect the worktree before staging: `git status --short`, then targeted
   diffs for changed files.
 - Stage only files that belong to the commit being made.
+- Treat already-staged changes as provisional, not authoritative. Inspect the
+  staged diff and unstage/re-stage by logical unit when staged content contains
+  multiple independent concerns.
 - If unrelated changes exist, leave them unstaged and mention them.
 - If a file contains changes from multiple concerns, use an interactive or
   patch-based staging flow when available. If not practical, ask before mixing
@@ -36,8 +40,13 @@ tidy history at the cost of mixing unrelated work.
 
 ## Commit Splitting
 
-Split into multiple commits when changes are independently useful or easier to
-review separately. Common split points:
+Break work down into logical commits by default. If the staged area or worktree
+contains multiple features, bug fixes, refactors, docs changes, dependency
+updates, generated output, formatting, or infrastructure changes, create
+multiple commits instead of one combined commit.
+
+Each commit should represent one coherent unit of work that can be understood,
+reviewed, reverted, and tested on its own. Common split points:
 
 - Feature code vs tests or fixtures only when the tests are broad or touch
   shared helpers. Otherwise keep feature and its focused tests together.
@@ -48,6 +57,14 @@ review separately. Common split points:
 
 Keep changes together when separating them would leave the repository broken,
 unreviewable, or without the tests that explain the behavior.
+
+When multiple logical units are already staged together:
+
+- Do not assume the user's staging is the desired commit boundary.
+- Inspect `git diff --cached` and identify logical groups before committing.
+- Rebuild the index so each commit contains only one group.
+- Ask before mixing groups only when patch-level separation is impractical or
+  when the correct boundary is genuinely ambiguous.
 
 ## Conventional Commits
 
@@ -125,11 +142,14 @@ footers.
 ## Workflow
 
 1. Inspect current status and diffs.
-2. Group changes into logical commits using the splitting rules above.
-3. For each commit, stage only that group.
-4. Write a Conventional Commit message with an `Assisted-by` trailer.
-5. Run targeted validation when practical before committing, especially for
+2. Inspect both unstaged and staged diffs; treat staged content as input to
+   regroup, not as final commit scope.
+3. Group changes into logical commits using the splitting rules above.
+4. For each commit, stage only that group.
+5. Write a Conventional Commit message with an `Assisted-by` trailer.
+6. Run targeted validation when practical before committing, especially for
    code changes.
-6. Commit with a multi-line message so the trailer is preserved exactly.
-7. Show the resulting commit hash and any remaining uncommitted changes.
-8. Do not push. Leave all commits local for user review.
+7. Commit with a multi-line message so the trailer is preserved exactly.
+8. Repeat staging, validation, and commit for each remaining logical group.
+9. Show the resulting commit hashes and any remaining uncommitted changes.
+10. Do not push. Leave all commits local for user review.
