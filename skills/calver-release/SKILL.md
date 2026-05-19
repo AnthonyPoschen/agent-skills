@@ -7,7 +7,8 @@ description: >
   Also use when the user asks for a Git version tag, release tag, version tag,
   tagging the current commit, or publishing a tagged release. Helps choose the
   next release tag, handle multiple releases on the same day, and keep release
-  tags and package versions SemVer-compatible.
+  tags and package versions SemVer-compatible. Coordinates with changelog or
+  release-note conventions before tagging.
 ---
 
 # CalVer Release
@@ -83,6 +84,18 @@ git status --short
 git log -1 --oneline
 ```
 
+- Check for existing changelog or release-note conventions before tagging:
+
+```sh
+find . -maxdepth 3 \( -iname 'CHANGELOG*' -o -path './docs/releases' -o -path './docs/changelog' -o -path './releases' -o -path './.github/releases' \)
+```
+
+- If changelog/release-note evidence exists, require the `changelog` workflow
+  before tagging unless the user explicitly says to skip changelog/release-note
+  updates for this release. In-repo changelog/release-note updates must be
+  committed before tagging.
+- If no changelog convention exists, do not invent one during release unless the
+  user asks. Draft release notes text only when requested.
 - Create an annotated tag:
 
 ```sh
@@ -110,10 +123,14 @@ When asked to perform a release:
 3. Run `date +%Y.%-m.%-d` unless a date was provided.
 4. Run `git tag --list "vYYYY.M.D*"`.
 5. Choose the next tag using the suffix rules.
-6. Run `git log -1 --oneline` and report the commit being tagged.
-7. Create the annotated tag on `HEAD`.
-8. Push the tag if the user asked to publish the release.
-9. Report the tag and commit hash.
+6. Check for changelog/release-note evidence.
+7. If evidence exists, ensure changelog/release notes are updated or explicitly
+   skipped by the user before tagging. If files were updated, ensure those
+   updates are committed.
+8. Run `git log -1 --oneline` and report the commit being tagged.
+9. Create the annotated tag on `HEAD`.
+10. Push the tag if the user asked to publish the release.
+11. Report the tag and commit hash.
 
 ## Package Version Notes
 
@@ -144,6 +161,7 @@ version:  2026.5.20+2
 
 ## Release Notes
 
+- Use the `changelog` skill when release notes or changelog updates are needed.
 - Use the tag as the release title unless the project has a stronger convention.
 - Group notable changes by user impact:
   - features
