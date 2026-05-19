@@ -2,11 +2,12 @@
 name: calver-release
 description: >
   Use when planning, naming, tagging, or documenting releases with Calendar
-  Versioning (CalVer), especially date-based Git tags such as vYYYY.MM.DD.
+  Versioning (CalVer), especially SemVer-compatible date-based Git tags such as
+  vYYYY.M.D.
   Also use when the user asks for a Git version tag, release tag, version tag,
   tagging the current commit, or publishing a tagged release. Helps choose the
-  next release tag, handle multiple releases on the same day, and avoid
-  accidental SemVer assumptions.
+  next release tag, handle multiple releases on the same day, and keep release
+  tags and package versions SemVer-compatible.
 ---
 
 # CalVer Release
@@ -16,21 +17,26 @@ versions, or asks to prepare, tag, publish, or create a release.
 
 ## Version Format
 
-- Use Git tags in this format: `vYYYY.MM.DD`.
-- Always zero-pad month and day: `v2026.05.20`, not `v2026.5.20`.
+- Use Git tags in this SemVer-compatible CalVer format: `vYYYY.M.D`.
+- Do not zero-pad month or day. SemVer numeric identifiers cannot contain
+  leading zeroes: use `v2026.5.20`, not `v2026.05.20`.
 - Use the local calendar date relevant to the release process unless the user or
   project specifies UTC.
 - Treat the base date tag as the first release of that day.
-- For additional releases on the same day, append a numeric suffix starting at
-  `.2`.
+- For additional releases on the same day, keep the tag SemVer-compatible. Do
+  not append a fourth numeric component.
 
 Examples:
 
 ```text
-v2026.05.20      # first release on 2026-05-20
-v2026.05.20.2    # second release on 2026-05-20
-v2026.05.20.3    # third release on 2026-05-20
+v2026.5.20       # first release on 2026-05-20
+v2026.5.20+2     # second same-day release when build metadata is acceptable
+v2026.5.20+3     # third same-day release when build metadata is acceptable
 ```
+
+Build metadata is SemVer-valid but does not affect SemVer precedence. If a
+project needs multiple same-day releases with strict SemVer ordering, stop and
+ask the user to choose a different scheme before tagging.
 
 ## Choosing The Next Tag
 
@@ -38,24 +44,24 @@ v2026.05.20.3    # third release on 2026-05-20
    date or the project requires UTC:
 
 ```sh
-date +%Y.%m.%d
+date +%Y.%-m.%-d
 ```
 
-2. Build the tag prefix: `vYYYY.MM.DD`.
+2. Build the tag prefix: `vYYYY.M.D`.
 3. Inspect existing tags with that prefix:
 
 ```sh
-git tag --list "vYYYY.MM.DD*"
+git tag --list "vYYYY.M.D*"
 ```
 
-4. Match only exact date tags and same-day numeric suffixes:
-   - `vYYYY.MM.DD`
-   - `vYYYY.MM.DD.N`
+4. Match only exact date tags and same-day SemVer build metadata suffixes:
+   - `vYYYY.M.D`
+   - `vYYYY.M.D+N`
 5. For the release date:
-   - if no matching tag exists, use `vYYYY.MM.DD`
-   - if `vYYYY.MM.DD` exists and no suffix exists, use `vYYYY.MM.DD.2`
-   - if suffixes exist, use the next integer suffix
-6. Do not use `.1`; the unsuffixed date tag is release one.
+   - if no matching tag exists, use `vYYYY.M.D`
+   - if `vYYYY.M.D` exists and no suffix exists, use `vYYYY.M.D+2`
+   - if build metadata suffixes exist, use the next integer suffix
+6. Do not use `+1`; the unsuffixed date tag is release one.
 7. If the user gives a specific date, use that date instead of today's date.
 
 ## Git Workflow
@@ -80,7 +86,7 @@ git log -1 --oneline
 - Create an annotated tag:
 
 ```sh
-git tag -a vYYYY.MM.DD -m "Release vYYYY.MM.DD"
+git tag -a vYYYY.M.D -m "Release vYYYY.M.D"
 ```
 
 - Never overwrite, move, or delete an existing tag unless the user explicitly
@@ -89,7 +95,7 @@ git tag -a vYYYY.MM.DD -m "Release vYYYY.MM.DD"
   release:
 
 ```sh
-git push origin vYYYY.MM.DD
+git push origin vYYYY.M.D
 ```
 
 - If the user only asks to choose or prepare a release tag, do not create or
@@ -101,8 +107,8 @@ When asked to perform a release:
 
 1. Run `git status --short`.
 2. Stop if any tracked or untracked changes are present.
-3. Run `date +%Y.%m.%d` unless a date was provided.
-4. Run `git tag --list "vYYYY.MM.DD*"`.
+3. Run `date +%Y.%-m.%-d` unless a date was provided.
+4. Run `git tag --list "vYYYY.M.D*"`.
 5. Choose the next tag using the suffix rules.
 6. Run `git log -1 --oneline` and report the commit being tagged.
 7. Create the annotated tag on `HEAD`.
@@ -111,38 +117,30 @@ When asked to perform a release:
 
 ## Package Version Notes
 
-- `vYYYY.MM.DD` is good for Git tags and GitHub releases.
-- If a package manager requires SemVer, do not put `YYYY-MM-DD` or
-  `YYYY.MM.DD` into the package version unless that tool explicitly supports it.
-- For SemVer-only package metadata, keep a compatible package version and use
-  the CalVer tag/release name separately.
-- For Zig packages, Git tags can use the zero-padded release tag
-  `vYYYY.MM.DD`, but `build.zig.zon` `version` must be SemVer-compatible. Use
-  dot-separated numeric components without leading zeroes:
+- `vYYYY.M.D` is good for Git tags and GitHub releases, and the version portion
+  is SemVer-compatible.
+- If package metadata also stores a version, use the same SemVer-compatible
+  CalVer value without the leading `v`.
+- For Zig packages, update `build.zig.zon` `version` with dot-separated numeric
+  components without leading zeroes:
 
 ```zig
 .version = "2026.5.20",
 ```
 
-- Do not mirror a same-day tag suffix as a fourth numeric component in
-  `build.zig.zon`; `2026.5.20.2` is not SemVer.
-- For a second same-day Zig package release, keep the Git tag suffix and choose
-  one of these package-version approaches deliberately:
-  - leave `build.zig.zon` at `2026.5.20` when the package version does not need
-    to distinguish same-day tag rebuilds
-  - use SemVer build metadata such as `2026.5.20+2` when the tooling accepts it
-    and version precedence is not important for that suffix
+- Do not use a fourth numeric component such as `2026.5.20.2`; it is not
+  SemVer.
+- For same-day package releases, use SemVer build metadata only if the package
+  tooling accepts it and the lack of precedence difference is acceptable:
 
 ```text
-tag:                 v2026.05.20.2
-version option 1:    2026.5.20
-version option 2:    2026.5.20+2
+tag:      v2026.5.20+2
+version:  2026.5.20+2
 ```
 
-- When updating package metadata, keep the Git tag and package version derived
-  from the same date/suffix where the package manager supports it. If package
-  metadata cannot represent the suffix safely, document the tag as the canonical
-  release identifier.
+- If package tooling rejects build metadata or requires strictly increasing
+  SemVer precedence for same-day releases, stop and ask the user to choose a
+  different version scheme before releasing.
 
 ## Release Notes
 
