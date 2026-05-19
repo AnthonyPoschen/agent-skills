@@ -1,4 +1,6 @@
 interface:
   display_name: "Coding"
-  short_description: "Guardrails for clean maintainable code"
-  default_prompt: "Use $coding to review this code change for correctness, maintainability, and project fit."
+  short_description: "Router and standards for software work"
+  default_prompt: >
+    Use $coding for this software task. Load the relevant task reference and
+    apply the shared standards where local project patterns do not decide.

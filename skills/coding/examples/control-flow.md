@@ -34,3 +34,14 @@ func process(user *User, req *Request) error {
     return runProcess(user, req)
 }
 ```
+
+## Prefer Explicit Negative Boolean Results
+
+```zig
+pub fn up(self: *const GamepadDevice, code: InputCode) bool {
+    return self.down(code) == false;
+}
+```
+
+Prefer the explicit comparison when returning or assigning a negated boolean
+method/property result. Unary negation can be easy to miss in dense code.
