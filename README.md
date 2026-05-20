@@ -8,6 +8,7 @@ format. This repository is arranged so skills can be installed with the
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 ```
 
@@ -17,6 +18,7 @@ npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 | --- | --- |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
 | `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
+| `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
 
 ## Install
@@ -32,6 +34,7 @@ Install a specific skill:
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 ```
 
@@ -55,6 +58,9 @@ skills/
     SKILL.md
     examples/
   dockerfile/
+    SKILL.md
+    references/
+  flux-ghcr-image-automation/
     SKILL.md
     references/
   flux-kustomize-layout/

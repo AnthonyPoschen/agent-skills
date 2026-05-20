@@ -1,0 +1,2 @@
+name: Flux GHCR Image Automation
+description: Build and debug GitHub Actions to GHCR to Flux image automation loops.
