@@ -28,6 +28,9 @@ then load the smallest relevant reference set for the task.
   design-only discussion, read `./references/design.md`.
 - For shared code-quality rules, read `./references/standards.md` whenever
   writing or changing code, and as needed during review/design.
+- For assertion strategy (invariant checks, debug-vs-production assert
+  decisions, and fail-fast contracts), read `./references/assertions.md` when
+  writing or reviewing code that validates internal assumptions.
 
 Load only the references needed for the user's current request. If the task has
 multiple phases, load the next reference when that phase starts.

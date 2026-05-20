@@ -16,6 +16,19 @@ already settle the decision.
   evaluation harder to miss. Follow stronger local language/project conventions
   if they consistently prefer unary negation.
 
+## Assertions
+
+- Use assertions for internal invariants and impossible states, not for
+  expected runtime failures such as user input errors or I/O problems.
+- Prefer fail-fast behavior for invariants where continuing could cause
+  corruption, unsafe output, or silent correctness drift.
+- Default to debug assertions for expensive checks or checks whose production
+  crash cost is higher than the risk of continued execution.
+- Promote debug assertions to production assertions when violation means the
+  process cannot safely continue and the check is cheap.
+- Keep assertion expressions side-effect free and messages actionable.
+- For detailed assertion policy, load `./assertions.md`.
+
 ## Functions
 
 - Keep functions focused on one primary responsibility.
