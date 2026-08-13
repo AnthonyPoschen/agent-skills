@@ -10,6 +10,7 @@ npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
+npx skills add anthonyposchen/agent-skills --skill implement-all-tickets
 npx skills add anthonyposchen/agent-skills --skill makefile
 ```
 
@@ -21,6 +22,7 @@ npx skills add anthonyposchen/agent-skills --skill makefile
 | `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
 | `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
+| `implement-all-tickets` | Dependency-aware parallel work-item orchestration with isolated workers, review feedback, and human-controlled merges. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
 
 ## Install
@@ -38,6 +40,7 @@ npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
+npx skills add anthonyposchen/agent-skills --skill implement-all-tickets
 npx skills add anthonyposchen/agent-skills --skill makefile
 ```
 
@@ -68,6 +71,9 @@ skills/
     references/
   flux-kustomize-layout/
     SKILL.md
+  implement-all-tickets/
+    SKILL.md
+    references/
   makefile/
     SKILL.md
 ```
