@@ -195,8 +195,15 @@ type event struct {
 
 type feedbackInput struct {
 	ID, Source, Body, Author, URL, Path, HeadOID string
+	Group                                        string
+	PositiveReactors                             []string
 	Line                                         int
-	Inline, RequestedChanges                     bool
+	Inline, Threaded, RequestedChanges           bool
+}
+
+type reactionInput struct {
+	Content string
+	User    struct{ Login string }
 }
 
 type reviewSnapshot struct {
@@ -1946,35 +1953,45 @@ func pollGitHubReview(s *State, branch string) (*reviewSnapshot, error) {
 			snapshot.Failures = append(snapshot.Failures, c.Name)
 		}
 	}
-	for _, c := range d.Comments {
-		if humanFeedback(c.Author.Login, c.Body) {
-			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-comment", c.ID), Source: "github-comment", Body: c.Body, Author: c.Author.Login, URL: c.URL, HeadOID: pr.HeadOID})
-		}
-	}
 	for _, r := range d.Reviews {
-		if humanFeedback(r.Author.Login, r.Body) && r.State == "CHANGES_REQUESTED" {
-			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-review", r.ID), Source: "github-review", Body: r.Body, Author: r.Author.Login, RequestedChanges: true, HeadOID: pr.HeadOID})
+		if eligibleFeedback(r.Author.Login, r.Body) && r.State == "CHANGES_REQUESTED" {
+			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-review", r.ID), Source: "github-review", Body: r.Body, Author: r.Author.Login, Group: "github-pr", RequestedChanges: true, HeadOID: pr.HeadOID})
 		}
 	}
-	threads, err := githubReviewThreads(s, pr)
+	comments, threads, err := githubReviewFeedback(s, pr)
 	if err != nil {
 		return nil, err
 	}
+	snapshot.Feedback = append(snapshot.Feedback, comments...)
 	snapshot.Feedback = append(snapshot.Feedback, threads...)
+	snapshot.Feedback = authorizeFeedback(snapshot.Feedback, s.Login)
 	return snapshot, nil
 }
 
-func githubReviewThreads(s *State, pr *Pull) ([]feedbackInput, error) {
+func githubReviewFeedback(s *State, pr *Pull) ([]feedbackInput, []feedbackInput, error) {
 	parts := strings.SplitN(s.Config.RepoSlug, "/", 2)
-	query := `query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100){pageInfo{hasNextPage} nodes{id isResolved isOutdated path line originalLine comments(first:100){pageInfo{hasNextPage} nodes{id body url author{login}}}}}}}}`
+	query := `query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){comments(first:100){pageInfo{hasNextPage} nodes{id body url author{login} reactions(first:100){pageInfo{hasNextPage} nodes{content user{login}}}}} reviewThreads(first:100){pageInfo{hasNextPage} nodes{id isResolved isOutdated path line originalLine comments(first:100){pageInfo{hasNextPage} nodes{id body url author{login} reactions(first:100){pageInfo{hasNextPage} nodes{content user{login}}}}}}}}}}`
 	out, err := run("", nil, "gh", "api", "graphql", "-f", "query="+query, "-F", "owner="+parts[0], "-F", "name="+parts[1], "-F", "number="+strconv.Itoa(pr.Number))
 	if err != nil {
-		return nil, fmt.Errorf("query GitHub review threads: %w", err)
+		return nil, nil, fmt.Errorf("query GitHub review feedback: %w", err)
+	}
+	type reactionConnection struct {
+		PageInfo struct{ HasNextPage bool } `json:"pageInfo"`
+		Nodes    []reactionInput            `json:"nodes"`
+	}
+	type commentNode struct {
+		ID, Body, URL string
+		Author        struct{ Login string }
+		Reactions     reactionConnection `json:"reactions"`
 	}
 	var response struct {
 		Data struct {
 			Repository struct {
 				PullRequest struct {
+					Comments struct {
+						PageInfo struct{ HasNextPage bool } `json:"pageInfo"`
+						Nodes    []commentNode              `json:"nodes"`
+					} `json:"comments"`
 					Threads struct {
 						PageInfo struct{ HasNextPage bool } `json:"pageInfo"`
 						Nodes    []struct {
@@ -1983,10 +2000,7 @@ func githubReviewThreads(s *State, pr *Pull) ([]feedbackInput, error) {
 							Line, OriginalLine     int
 							Comments               struct {
 								PageInfo struct{ HasNextPage bool } `json:"pageInfo"`
-								Nodes    []struct {
-									ID, Body, URL string
-									Author        struct{ Login string }
-								} `json:"nodes"`
+								Nodes    []commentNode              `json:"nodes"`
 							} `json:"comments"`
 						} `json:"nodes"`
 					} `json:"reviewThreads"`
@@ -1995,13 +2009,24 @@ func githubReviewThreads(s *State, pr *Pull) ([]feedbackInput, error) {
 		} `json:"data"`
 	}
 	if err := json.Unmarshal([]byte(out), &response); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+	comments := response.Data.Repository.PullRequest.Comments
 	threads := response.Data.Repository.PullRequest.Threads
-	if threads.PageInfo.HasNextPage {
-		return nil, errors.New("GitHub PR has more than 100 review threads; refusing incomplete feedback polling")
+	if comments.PageInfo.HasNextPage || threads.PageInfo.HasNextPage {
+		return nil, nil, errors.New("GitHub PR feedback exceeds the 100-item polling limit; refusing incomplete authorization")
 	}
-	var result []feedbackInput
+	var flat, inline []feedbackInput
+	for _, comment := range comments.Nodes {
+		if !eligibleFeedback(comment.Author.Login, comment.Body) {
+			continue
+		}
+		reactors, err := positiveReactors(comment.Reactions.PageInfo.HasNextPage, comment.Reactions.Nodes)
+		if err != nil {
+			return nil, nil, err
+		}
+		flat = append(flat, feedbackInput{ID: stableID("github-comment", comment.ID), Source: "github-comment", Body: comment.Body, Author: comment.Author.Login, URL: comment.URL, Group: "github-pr", PositiveReactors: reactors, HeadOID: pr.HeadOID})
+	}
 	for _, thread := range threads.Nodes {
 		if thread.IsResolved || thread.IsOutdated || thread.Comments.PageInfo.HasNextPage {
 			continue
@@ -2011,12 +2036,16 @@ func githubReviewThreads(s *State, pr *Pull) ([]feedbackInput, error) {
 			line = thread.OriginalLine
 		}
 		for _, comment := range thread.Comments.Nodes {
-			if humanFeedback(comment.Author.Login, comment.Body) {
-				result = append(result, feedbackInput{ID: stableID("github-thread", thread.ID, comment.ID), Source: "github-thread", Body: comment.Body, Author: comment.Author.Login, URL: comment.URL, Path: thread.Path, Line: line, Inline: true, HeadOID: pr.HeadOID})
+			if eligibleFeedback(comment.Author.Login, comment.Body) {
+				reactors, err := positiveReactors(comment.Reactions.PageInfo.HasNextPage, comment.Reactions.Nodes)
+				if err != nil {
+					return nil, nil, err
+				}
+				inline = append(inline, feedbackInput{ID: stableID("github-thread", thread.ID, comment.ID), Source: "github-thread", Body: comment.Body, Author: comment.Author.Login, URL: comment.URL, Path: thread.Path, Group: "github-thread:" + thread.ID, PositiveReactors: reactors, Line: line, Inline: true, Threaded: true, HeadOID: pr.HeadOID})
 			}
 		}
 	}
-	return result, nil
+	return flat, inline, nil
 }
 
 func findPull(s *State, branch string) (*Pull, error) {
@@ -2120,19 +2149,26 @@ func pollGitLabReview(s *State, branch string) (*reviewSnapshot, error) {
 	snapshot := &reviewSnapshot{Review: mr}
 	for _, discussion := range discussions {
 		for _, note := range discussion.Notes {
-			if note.System || note.Resolved || !humanFeedback(note.Author.Username, note.Body) {
+			if note.System || note.Resolved || !eligibleFeedback(note.Author.Username, note.Body) {
 				continue
 			}
-			input := feedbackInput{ID: stableID("gitlab-discussion", discussion.ID, strconv.Itoa(note.ID)), Source: "gitlab-discussion", Body: note.Body, Author: note.Author.Username, HeadOID: mr.HeadOID, Inline: !discussion.Individual || note.Position != nil}
+			input := feedbackInput{ID: stableID("gitlab-discussion", discussion.ID, strconv.Itoa(note.ID)), Source: "gitlab-discussion", Body: note.Body, Author: note.Author.Username, Group: "gitlab-discussion:" + discussion.ID, HeadOID: mr.HeadOID, Inline: !discussion.Individual || note.Position != nil, Threaded: !discussion.Individual}
 			if note.Position != nil {
 				input.Path, input.Line = note.Position.NewPath, note.Position.NewLine
 				if input.Path == "" {
 					input.Path, input.Line = note.Position.OldPath, note.Position.OldLine
 				}
 			}
+			if !sameLogin(note.Author.Username, s.Login) && !trustedAutomation(note.Author.Username) {
+				input.PositiveReactors, err = gitLabPositiveReactors(s, mr.Number, note.ID)
+				if err != nil {
+					return nil, err
+				}
+			}
 			snapshot.Feedback = append(snapshot.Feedback, input)
 		}
 	}
+	snapshot.Feedback = authorizeFeedback(snapshot.Feedback, s.Login)
 	pipelines, err := run("", nil, "glab", "api", base+"/pipelines?per_page=1")
 	if err != nil {
 		return nil, fmt.Errorf("query GitLab merge request pipelines: %w", err)
@@ -2152,6 +2188,182 @@ func pollGitLabReview(s *State, branch string) (*reviewSnapshot, error) {
 
 func mergedIntoTarget(s *State, i *Item) bool {
 	return i.PR != nil && i.PR.State == "MERGED" && isAncestor(s.Config.Repo, i.PR.MergeOID, s.Config.Remote+"/"+s.Config.Target)
+}
+
+func positiveReactors(hasNextPage bool, reactions []reactionInput) ([]string, error) {
+	if hasNextPage {
+		return nil, errors.New("GitHub feedback has more than 100 reactions; refusing incomplete authorization")
+	}
+	var result []string
+	for _, reaction := range reactions {
+		if positiveReaction(reaction.Content) && reaction.User.Login != "" && !containsFold(result, reaction.User.Login) {
+			result = append(result, reaction.User.Login)
+		}
+	}
+	return result, nil
+}
+
+func gitLabPositiveReactors(s *State, mergeRequest, note int) ([]string, error) {
+	base := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/merge_requests/" + strconv.Itoa(mergeRequest) + "/notes/" + strconv.Itoa(note) + "/award_emoji"
+	var result []string
+	for page := 1; page <= 10; page++ {
+		out, err := run("", nil, "glab", "api", base+"?per_page=100&page="+strconv.Itoa(page))
+		if err != nil {
+			return nil, fmt.Errorf("query GitLab feedback reactions: %w", err)
+		}
+		var awards []struct {
+			Name string
+			User struct {
+				Username string
+			}
+		}
+		if err := json.Unmarshal([]byte(out), &awards); err != nil {
+			return nil, err
+		}
+		for _, award := range awards {
+			if positiveReaction(award.Name) && award.User.Username != "" && !containsFold(result, award.User.Username) {
+				result = append(result, award.User.Username)
+			}
+		}
+		if len(awards) < 100 {
+			return result, nil
+		}
+	}
+	return nil, errors.New("GitLab feedback has more than 1000 reactions; refusing incomplete authorization")
+}
+
+func authorizeFeedback(inputs []feedbackInput, login string) []feedbackInput {
+	authorized := map[int]feedbackInput{}
+	usedEndorsements := map[int]bool{}
+	for index, input := range inputs {
+		if sameLogin(input.Author, login) || trustedAutomation(input.Author) {
+			continue
+		}
+		if containsFold(input.PositiveReactors, login) {
+			authorized[index] = input
+		}
+	}
+	for endorsementIndex, endorsement := range inputs {
+		if !sameLogin(endorsement.Author, login) || !positiveEndorsement(endorsement.Body) || endorsement.Group == "" {
+			continue
+		}
+		target := -1
+		for candidateIndex := endorsementIndex - 1; candidateIndex >= 0; candidateIndex-- {
+			candidate := inputs[candidateIndex]
+			if candidate.Group != endorsement.Group || sameLogin(candidate.Author, login) || trustedAutomation(candidate.Author) {
+				continue
+			}
+			if endorsementReferences(endorsement.Body, candidate) {
+				target = candidateIndex
+				break
+			}
+			if endorsement.Threaded {
+				target = candidateIndex
+				break
+			}
+		}
+		if target >= 0 {
+			input := inputs[target]
+			input.Body = fmt.Sprintf("Feedback from @%s:\n%s\n\nAuthorization from @%s:\n%s", input.Author, strings.TrimSpace(input.Body), login, strings.TrimSpace(endorsement.Body))
+			authorized[target] = input
+			usedEndorsements[endorsementIndex] = true
+		}
+	}
+	var result []feedbackInput
+	for index, input := range inputs {
+		if value, ok := authorized[index]; ok {
+			result = append(result, value)
+			continue
+		}
+		if usedEndorsements[index] {
+			continue
+		}
+		if sameLogin(input.Author, login) && contextDependentEndorsement(input.Body) {
+			continue
+		}
+		if sameLogin(input.Author, login) || trustedAutomation(input.Author) {
+			result = append(result, input)
+		}
+	}
+	return result
+}
+
+func positiveReaction(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "thumbs_up", "thumbsup", "+1", "hooray", "tada", "heart", "rocket":
+		return true
+	default:
+		return false
+	}
+}
+
+func positiveEndorsement(body string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(body))
+	if normalized == "yes" || normalized == "yes please" || normalized == "do it" {
+		return true
+	}
+	for _, marker := range []string{
+		"please implement", "please do this", "should be done", "address this",
+		"take this feedback", "agree with", "good suggestion", "make this change",
+		"apply this", "yes, implement", "yes implement",
+	} {
+		if strings.Contains(normalized, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func contextDependentEndorsement(body string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(body))
+	if normalized == "yes" || normalized == "yes please" || normalized == "do it" {
+		return true
+	}
+	for _, marker := range []string{" this", " it ", " it.", " it!", " it?", "feedback", "suggestion", "agree with", "should be done", "@"} {
+		if strings.Contains(" "+normalized, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func endorsementReferences(body string, input feedbackInput) bool {
+	normalized := strings.ToLower(body)
+	if input.URL != "" && strings.Contains(normalized, strings.ToLower(input.URL)) {
+		return true
+	}
+	return input.Author != "" && strings.Contains(normalized, "@"+strings.ToLower(input.Author))
+}
+
+func eligibleFeedback(login, body string) bool {
+	trimmed := strings.TrimSpace(body)
+	return login != "" && trimmed != "" && !strings.HasPrefix(strings.ToLower(trimmed), "ai-generated:")
+}
+
+func sameLogin(left, right string) bool {
+	return left != "" && right != "" && strings.EqualFold(left, right)
+}
+
+func trustedAutomation(login string) bool {
+	normalized := strings.ToLower(login)
+	if !strings.HasSuffix(normalized, "[bot]") && !strings.Contains(normalized, "bot") {
+		return false
+	}
+	for _, marker := range []string{"github-actions", "github-advanced-security", "checks", "codecov", "codeql", "coveralls", "dependabot", "security", "snyk", "sonar"} {
+		if strings.Contains(normalized, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsFold(values []string, want string) bool {
+	for _, value := range values {
+		if strings.EqualFold(value, want) {
+			return true
+		}
+	}
+	return false
 }
 
 func queueFeedback(s *State, i *Item, input feedbackInput) {
@@ -2690,11 +2902,6 @@ func containsRequest(values []Request, want string) bool {
 func stableID(values ...string) string {
 	h := sha256.Sum256([]byte(strings.Join(values, "\x00")))
 	return hex.EncodeToString(h[:12])
-}
-
-func humanFeedback(login, body string) bool {
-	trimmed := strings.TrimSpace(body)
-	return login != "" && trimmed != "" && !strings.HasSuffix(login, "[bot]") && !strings.HasPrefix(trimmed, "AI-generated:")
 }
 
 func opencodeWorkerPolicy(s *State) (string, error) {

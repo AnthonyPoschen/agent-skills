@@ -94,11 +94,13 @@ verbatim, exact new feedback or failure evidence, current PR/head context, and
 the same publication restrictions. Only one Codex worker may own the worktree
 at a time.
 
-Poll comments, unresolved inline threads, requested-change reviews, and checks
-for every waiting review without requiring another user prompt. Keep polling
-while a worker runs. Snapshot the feedback IDs given to that worker; newly
-arriving IDs belong to a later follow-up. Surface important supervisor events
-under an `Events` lead-in and keep unchanged polls silent.
+Poll comments, reactions, unresolved inline threads, requested-change reviews,
+and checks for every waiting review without requiring another user prompt.
+Apply the authorization policy in the core workflow before constructing a
+follow-up prompt. Keep polling while a worker runs. Snapshot the authorized
+feedback IDs given to that worker; newly authorized IDs belong to a later
+follow-up. Surface important supervisor events under an `Events` lead-in and
+keep unchanged polls silent.
 
 After `run_completed`, relay the final event and return a final answer. The
 supervisor must already have stopped workers, removed verified run-owned
