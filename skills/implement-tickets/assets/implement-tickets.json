@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "source": "github",
+  "target": "main",
+  "remote": "origin",
+  "ready_label": "ready-for-agent",
+  "concurrency": 3,
+  "verification": [
+    "make test"
+  ],
+  "implementation_invocation": "$implement"
+}

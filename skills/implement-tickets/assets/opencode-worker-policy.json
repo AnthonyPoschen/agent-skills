@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "share": "disabled",
+  "agent": {
+    "worker": {
+      "description": "Headless implementation worker restricted to one orchestration worktree.",
+      "mode": "primary",
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow", "*.env": "deny", "*.env.*": "deny", "*.env.example": "allow" },
+        "edit": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "skill": "allow",
+        "bash": {
+          "*": "deny",
+          "git status": "allow",
+          "git status *": "allow",
+          "git diff": "allow",
+          "git diff *": "allow",
+          "git log": "allow",
+          "git log *": "allow",
+          "git show": "allow",
+          "git show *": "allow",
+          "git rev-parse *": "allow"
+        },
+        "task": "deny",
+        "question": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "external_directory": "deny",
+        "doom_loop": "deny"
+      }
+    }
+  }
+}
