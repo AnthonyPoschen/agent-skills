@@ -99,7 +99,15 @@ independently reject an unrelated diff without undoing external writes.
 
 ## Completion Verification And Publication
 
-After a worker exits successfully:
+Worker completion is event-driven per item, not a batch barrier. After any one
+worker exits successfully, immediately begin the following pipeline for that
+item while other workers continue running. Never delay verification or draft
+review publication until sibling workers, the current concurrency wave, or the
+entire ready set finishes. If several workers finish together, process their
+pipelines independently in completion order; use safe parallel verification
+when resource limits allow.
+
+For each completed worker:
 
 1. Read its final handoff and machine-readable completion event.
 2. Confirm the worktree has no unresolved conflicts or unrelated changes.

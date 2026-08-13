@@ -95,6 +95,12 @@ user-selected background model. Do not assume a provider, model, or cost tier.
   pushes through an explicit refspec, and
   creates or updates the draft review. Keeping publication outside the worker
   makes retries idempotent and keeps tracker/network authority centralized.
+- Treat every worker completion as an independent publication event. As soon as
+  one worker exits successfully, start that item's verification, checkpoint,
+  push, and draft-review pipeline while sibling workers continue running. Do
+  not wait for a batch, wave, or concurrency group to finish before publishing
+  a completed item. This shortens the human-review critical path and lets a
+  merge unblock later work while longer workers are still active.
 - The implementing AI proposes a concise Conventional Commit subject from the
   actual diff in its final handoff. The supervisor validates and uses it with
   the required assistance trailer. Never use a fixed issue-number subject.

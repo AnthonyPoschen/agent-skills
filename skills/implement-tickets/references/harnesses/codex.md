@@ -56,6 +56,12 @@ Track issue, branch, worktree, PID plus start time, JSONL path, last-message
 path, launch time, latest event, and log age. Read new JSONL incrementally and
 surface progress at least once per minute while a worker runs.
 
+React to each worker's successful exit immediately. Verify and publish that
+worker's draft review without waiting for other active Codex sessions. Keep the
+sibling sessions running and continue monitoring them during the completed
+item's verification and publication. A bounded concurrency group controls
+worker load; it is not a publication batch.
+
 An autonomous background supervisor does not by itself deliver messages into a
 completed Codex chat turn. While the run is nonterminal, keep the manager turn
 open with bounded event waits and send important events through commentary as
