@@ -2,6 +2,9 @@
 
 ## Recent Releases
 
+- `v2026.8.14` - Restricted ticket follow-up work to authorized feedback and
+  made completed-worker publication independent. See
+  `docs/releases/v2026.8.14.md`.
 - `v2026.8.13` - Added durable multi-provider ticket orchestration with
   automatic review follow-ups and guarded run cleanup. See
   `docs/releases/v2026.8.13.md`.
