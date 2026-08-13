@@ -277,16 +277,85 @@ func TestGitLabFeedbackUsesNoteIDForAcknowledgement(t *testing.T) {
 	}
 }
 
-func TestHumanFeedbackAllowsSharedPublicationAccount(t *testing.T) {
-	if !humanFeedback("AnthonyPoschen", "Please add a test.") {
-		t.Fatal("human feedback from the authenticated publication account was ignored")
+func TestFeedbackAuthorizationUsesAuthenticatedAccount(t *testing.T) {
+	inputs := []feedbackInput{
+		{ID: "own", Author: "AnthonyPoschen", Body: "Please add a test."},
+		{ID: "ai", Author: "AnthonyPoschen", Body: "AI-generated: updated smoke/feedback.txt"},
+		{ID: "other", Author: "reviewer", Body: "Please rename this helper."},
+		{ID: "scanner", Author: "codecov[bot]", Body: "Please cover the error path."},
 	}
-	if humanFeedback("AnthonyPoschen", "AI-generated: updated smoke/feedback.txt") {
-		t.Fatal("supervisor-authored feedback marker was accepted")
+	var eligible []feedbackInput
+	for _, input := range inputs {
+		if eligibleFeedback(input.Author, input.Body) {
+			eligible = append(eligible, input)
+		}
 	}
-	if humanFeedback("checks[bot]", "Please update the snapshot") {
-		t.Fatal("bot feedback was accepted")
+	got := authorizeFeedback(eligible, "anTHonyposchen")
+	if fmt.Sprint(feedbackIDs(got)) != "[own scanner]" {
+		t.Fatalf("authorized feedback = %v, want own and scanner feedback", feedbackIDs(got))
 	}
+}
+
+func TestThirdPartyFeedbackRequiresExactReactionOrHumanEndorsement(t *testing.T) {
+	inputs := []feedbackInput{
+		{ID: "reaction", Author: "reviewer", Body: "Please add a test.", PositiveReactors: []string{"AnthonyPoschen"}},
+		{ID: "negative", Author: "reviewer", Body: "Please rename this.", PositiveReactors: []string{"someone-else"}},
+		{ID: "threaded", Author: "reviewer-2", Body: "Use the shared helper.", Group: "thread-1", Threaded: true},
+		{ID: "endorsement", Author: "AnthonyPoschen", Body: "Yes, please implement this.", Group: "thread-1", Threaded: true},
+	}
+	got := authorizeFeedback(inputs, "AnthonyPoschen")
+	if fmt.Sprint(feedbackIDs(got)) != "[reaction threaded]" {
+		t.Fatalf("authorized feedback = %v", feedbackIDs(got))
+	}
+	if !strings.Contains(got[1].Body, "Use the shared helper.") || !strings.Contains(got[1].Body, "Yes, please implement this.") {
+		t.Fatalf("comment endorsement did not combine both messages: %q", got[1].Body)
+	}
+}
+
+func TestUnthreadedEndorsementMustIdentifyFeedback(t *testing.T) {
+	feedback := feedbackInput{ID: "other", Author: "alice", Body: "Please add a guard.", URL: "https://example.test/comment/1", Group: "pr"}
+	generic := feedbackInput{ID: "generic", Author: "owner", Body: "Yes, please implement this.", Group: "pr"}
+	if got := authorizeFeedback([]feedbackInput{feedback, generic}, "owner"); len(got) != 0 {
+		t.Fatalf("generic unthreaded endorsement authorized unrelated feedback: %v", feedbackIDs(got))
+	}
+	explicit := feedbackInput{ID: "explicit", Author: "owner", Body: "Please implement @alice's feedback.", Group: "pr"}
+	if got := authorizeFeedback([]feedbackInput{feedback, explicit}, "owner"); len(got) != 1 || got[0].ID != "other" {
+		t.Fatalf("explicit unthreaded endorsement was not applied: %v", feedbackIDs(got))
+	}
+}
+
+func TestThreadedEndorsementTargetsNearestPrecedingFeedback(t *testing.T) {
+	inputs := []feedbackInput{
+		{ID: "first", Author: "alice", Body: "Rename the type.", Group: "thread", Threaded: true},
+		{ID: "second", Author: "bob", Body: "Add a regression test.", Group: "thread", Threaded: true},
+		{ID: "endorsement", Author: "owner", Body: "Yes, please implement this.", Group: "thread", Threaded: true},
+		{ID: "later", Author: "carol", Body: "Also change the API.", Group: "thread", Threaded: true},
+	}
+	got := authorizeFeedback(inputs, "owner")
+	if fmt.Sprint(feedbackIDs(got)) != "[second]" {
+		t.Fatalf("thread endorsement did not target nearest preceding feedback: %v", feedbackIDs(got))
+	}
+}
+
+func TestPositiveReactionSetExcludesAmbiguousEmoji(t *testing.T) {
+	for _, reaction := range []string{"THUMBS_UP", "hooray", "heart", "rocket", "tada"} {
+		if !positiveReaction(reaction) {
+			t.Errorf("positive reaction %q was rejected", reaction)
+		}
+	}
+	for _, reaction := range []string{"THUMBS_DOWN", "CONFUSED", "EYES", "LAUGH"} {
+		if positiveReaction(reaction) {
+			t.Errorf("ambiguous or negative reaction %q was accepted", reaction)
+		}
+	}
+}
+
+func feedbackIDs(inputs []feedbackInput) []string {
+	result := make([]string, 0, len(inputs))
+	for _, input := range inputs {
+		result = append(result, input.ID)
+	}
+	return result
 }
 
 func TestFeedbackArrivingDuringWorkerRemainsQueued(t *testing.T) {
