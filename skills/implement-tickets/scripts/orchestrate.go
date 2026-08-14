@@ -2106,15 +2106,11 @@ func pollGitHubReview(s *State, branch string) (*reviewSnapshot, error) {
 	if err != nil || pr == nil {
 		return nil, err
 	}
-	detail, err := run("", nil, "gh", "pr", "view", strconv.Itoa(pr.Number), "--repo", s.Config.RepoSlug, "--json", "comments,reviews,reviewDecision,statusCheckRollup")
+	detail, err := run("", nil, "gh", "pr", "view", strconv.Itoa(pr.Number), "--repo", s.Config.RepoSlug, "--json", "reviews,reviewDecision,statusCheckRollup")
 	if err != nil {
 		return nil, err
 	}
 	var d struct {
-		Comments []struct {
-			ID, Body, URL string
-			Author        struct{ Login string }
-		}
 		Reviews []struct {
 			ID, State, Body string
 			Author          struct{ Login string }
@@ -3151,54 +3147,6 @@ func stableID(values ...string) string {
 	return hex.EncodeToString(h[:12])
 }
 
-func opencodeWorkerPolicy(s *State) (string, error) {
-	bash := map[string]string{
-		"*":               "deny",
-		"git status":      "allow",
-		"git status *":    "allow",
-		"git diff":        "allow",
-		"git diff *":      "allow",
-		"git log":         "allow",
-		"git log *":       "allow",
-		"git show":        "allow",
-		"git show *":      "allow",
-		"git rev-parse *": "allow",
-	}
-	for _, command := range s.Config.VerifyCommands {
-		command = strings.TrimSpace(command)
-		if command != "" && !strings.ContainsAny(command, "\n\r") {
-			bash[command] = "allow"
-		}
-	}
-	permission := map[string]any{
-		"*":                  "deny",
-		"read":               map[string]string{"*": "allow", "*.env": "deny", "*.env.*": "deny", "*.env.example": "allow"},
-		"edit":               "allow",
-		"glob":               "allow",
-		"grep":               "allow",
-		"lsp":                "allow",
-		"skill":              "allow",
-		"bash":               bash,
-		"task":               "deny",
-		"question":           "deny",
-		"webfetch":           "deny",
-		"websearch":          "deny",
-		"external_directory": "deny",
-		"doom_loop":          "deny",
-	}
-	config := map[string]any{
-		"$schema":    "https://opencode.ai/config.json",
-		"autoupdate": false,
-		"share":      "disabled",
-		"agent": map[string]any{s.Config.WorkerAgent: map[string]any{
-			"description": "Headless implementation worker restricted to one orchestration worktree.",
-			"mode":        "primary",
-			"permission":  permission,
-		}},
-	}
-	b, err := json.Marshal(config)
-	return string(b), err
-}
 func scrubWorkerEnv(values []string) []string {
 	denied := []string{"GH_TOKEN=", "GITHUB_TOKEN=", "GITLAB_TOKEN=", "GLAB_TOKEN=", "SSH_AUTH_SOCK=", "GIT_ASKPASS=", "AWS_", "CLERK_", "STRIPE_"}
 	result := make([]string, 0, len(values))

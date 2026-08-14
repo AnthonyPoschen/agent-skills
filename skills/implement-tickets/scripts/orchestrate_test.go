@@ -142,7 +142,7 @@ func TestWorkerCommitSubjectRejectsGenericOrInvalidHandoff(t *testing.T) {
 }
 
 func TestOpenCodeDerivesCommitSubjectFromWorkItemTitle(t *testing.T) {
-	s := &State{Config: Config{Harness: "opencode"}}
+	s := &State{Config: Config{Harness: "opencode", RunDir: t.TempDir()}}
 	i := &Item{Title: "feat(sync): reconcile catalogue after complete discovery", Worker: &Worker{LastMessage: filepath.Join(t.TempDir(), "missing.txt")}}
 	if got, err := workerCommitSubject(s, i); err != nil || got != i.Title {
 		t.Fatalf("workerCommitSubject = %q, %v", got, err)
