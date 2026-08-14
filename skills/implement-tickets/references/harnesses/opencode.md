@@ -13,17 +13,18 @@ provider/model. Preserve existing provider availability. Do not add
 `enabled_providers` or `disabled_providers` unless the user explicitly requests
 provider restrictions.
 
-The supervisor injects a deny-by-default worker definition at runtime through
-`OPENCODE_CONFIG_CONTENT`. This inline configuration overrides ordinary global,
-project, and `.opencode` settings. It defines the worker as a primary agent so
-`opencode run --agent worker` cannot silently fall back to the permissive build
-agent. See the readable [worker policy template](../../assets/opencode-worker-policy.json).
+The repository owns the worker definition and permissions in `opencode.json` or
+`.opencode/opencode.json`. The supervisor does not inject
+`OPENCODE_CONFIG_CONTENT`, because an inline final-scope configuration would
+silently override the project's reviewed policy. See the readable starting
+template at [worker policy template](../../assets/opencode-worker-policy.json).
 
-The policy denies external directories, web tools, nested agents, questions,
-sharing, auto-update, unknown tools, and MCP tools. It permits worktree-local
-reads and edits, a narrow Git command set, and configured verification commands.
-The supervisor also removes tracker, SSH-agent, and common cloud/application
-credentials from the worker environment.
+Start from the template's deny-by-default policy, then grant only the project
+commands the worker needs. Keep `worker` in `primary` mode so headless
+`opencode run --agent worker` cannot fall back to a broader built-in agent. The
+supervisor removes tracker, SSH-agent, and common cloud/application credentials
+from the worker environment, but project configuration remains the authority
+for tool permissions.
 
 OpenCode permissions are tool controls, not an operating-system sandbox. An
 allowed build command executes with the host user's process and network
@@ -32,8 +33,8 @@ sandbox with a worktree-only mount, filtered provider egress, no host
 credentials, and a disposable home. Do not claim equivalence with Codex's
 native `workspace-write` sandbox.
 
-Projects may define the same worker in `opencode.json` for direct use and model
-selection. Keep the primary chat model unchanged:
+Projects define the worker in `opencode.json` for direct use, model selection,
+and permissions. Keep the primary chat model unchanged:
 
 ```json
 {

@@ -4,7 +4,7 @@
   "share": "disabled",
   "agent": {
     "worker": {
-      "description": "Headless implementation worker restricted to one orchestration worktree.",
+      "description": "Starting policy for a project-owned isolated implementation worker.",
       "mode": "primary",
       "permission": {
         "*": "deny",
@@ -24,7 +24,13 @@
           "git log *": "allow",
           "git show": "allow",
           "git show *": "allow",
-          "git rev-parse *": "allow"
+          "git rev-parse *": "allow",
+          "go test *": "allow",
+          "go vet *": "allow",
+          "go get *": "allow",
+          "go mod tidy": "allow",
+          "go mod vendor": "allow",
+          "go mod download *": "allow"
         },
         "task": "deny",
         "question": "deny",

@@ -127,12 +127,18 @@ noise and feedback already addressed by a later commit. Classify new input as:
 
 - actionable and unambiguous: relaunch one follow-up worker in the same
   worktree with the exact feedback and original item body;
-- question: bring it to the chat manager unless evidence provides a certain
-  answer;
+- question: dispatch a response worker when repository evidence can answer it;
+  otherwise bring it to the chat manager;
 - approval or informational: record it without dispatch;
 - scope or product change: pause and ask the user.
 
 Do not resolve human review threads for the reviewer.
+
+After a feedback worker completes, reply in the original review thread. Begin
+the reply with `AI-generated:`. State the answer first, then name the published
+commit when one exists. A feedback-only answer still requires a thread reply.
+The supervisor posts this reply before marking the feedback applied; a reply
+failure leaves the work item actionable.
 
 After the target branch changes, do not publish a stale branch. A follow-up
 worker may reconcile the latest target while preserving both reviewed behavior

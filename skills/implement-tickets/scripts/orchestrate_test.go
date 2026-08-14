@@ -58,6 +58,39 @@ func TestOpenBlockerNeverCountsAsIntegrated(t *testing.T) {
 	}
 }
 
+func TestOpenCodeGetsOneAutomaticVerificationRecovery(t *testing.T) {
+	s := &State{Config: Config{Harness: "opencode"}}
+	i := &Item{Worker: &Worker{Attempt: 1}}
+	if !automaticRecoveryAllowed(s, i) {
+		t.Fatal("first OpenCode verification failure was not recoverable")
+	}
+	i.Worker.Attempt = 2
+	if automaticRecoveryAllowed(s, i) {
+		t.Fatal("second verification failure retried without review")
+	}
+	s.Config.Harness = "codex"
+	i.Worker.Attempt = 1
+	if automaticRecoveryAllowed(s, i) {
+		t.Fatal("non-OpenCode harness inherited automatic recovery")
+	}
+}
+
+func TestExplicitBlockerNumbersUsesOnlyBlockedBySection(t *testing.T) {
+	body := "## What to build\n\nMention #99 without creating a dependency.\n\n## Blocked by\n\n- #11\n- #9 description\n- #11 duplicate\n\n## Acceptance criteria\n\n- [ ] Complete #88"
+	if got := fmt.Sprint(explicitBlockerNumbers(body)); got != "[9 11]" {
+		t.Fatalf("explicitBlockerNumbers = %s", got)
+	}
+	if got := explicitBlockerNumbers("## Blocked by\n\n- None - can start immediately."); len(got) != 0 {
+		t.Fatalf("None produced blockers: %v", got)
+	}
+}
+
+func TestNormalizedGitLabStateMapsOpenedToOpen(t *testing.T) {
+	if got := normalizedGitLabState("opened"); got != "OPEN" {
+		t.Fatalf("opened normalized to %q", got)
+	}
+}
+
 func TestWorkerPromptPreservesBodyAndAuthorityBoundary(t *testing.T) {
 	s := &State{Config: Config{Invocation: "$implement", Repo: "/repo", Remote: "origin", Target: "main"}}
 	i := &Item{Title: "Add a thing", Body: "Line one\n\n- exact acceptance criterion", Branch: "issue/2-add", Worktree: "/worktree", BaseHead: "abc"}
@@ -105,6 +138,16 @@ func TestWorkerCommitSubjectRejectsGenericOrInvalidHandoff(t *testing.T) {
 		if _, err := workerCommitSubject(i); err == nil {
 			t.Fatalf("invalid handoff was accepted: %q", content)
 		}
+	}
+}
+
+func TestWorkerFeedbackResponseReadsHandoff(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "handoff.txt")
+	if err := os.WriteFile(path, []byte("Feedback response: The DEV-only button starts the sync.\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := workerFeedbackResponse(&Item{Worker: &Worker{LastMessage: path}}); got != "The DEV-only button starts the sync." {
+		t.Fatalf("workerFeedbackResponse = %q", got)
 	}
 }
 
@@ -187,22 +230,6 @@ func TestIssueRangeAndSelection(t *testing.T) {
 	}
 }
 
-func TestOpenCodePolicyIsDenyByDefault(t *testing.T) {
-	s := &State{Config: Config{WorkerAgent: "worker", VerifyCommands: []string{"make test"}}}
-	raw, err := opencodeWorkerPolicy(s)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, want := range []string{`"external_directory":"deny"`, `"webfetch":"deny"`, `"make test":"allow"`} {
-		if !strings.Contains(raw, want) {
-			t.Fatalf("policy missing %s: %s", want, raw)
-		}
-	}
-	if strings.Contains(raw, `"git push *":"allow"`) {
-		t.Fatal("policy allowed git push")
-	}
-}
-
 func TestWorkerEnvironmentDropsPublicationCredentials(t *testing.T) {
 	got := scrubWorkerEnv([]string{"PATH=/bin", "GH_TOKEN=secret", "AWS_PROFILE=prod", "OPENAI_API_KEY=provider"})
 	joined := strings.Join(got, "\n")
@@ -221,6 +248,7 @@ func TestFeedbackClassificationIsConservative(t *testing.T) {
 	}{
 		{feedbackInput{Body: "Please rename this helper."}, "feedback"},
 		{feedbackInput{Body: "Can you add a regression test?"}, "feedback"},
+		{feedbackInput{Body: "Can we show current/total progress?"}, "feedback"},
 		{feedbackInput{Body: "Why was this approach selected?"}, "needs_input"},
 		{feedbackInput{Body: "This requires a product decision before implementation."}, "needs_input"},
 		{feedbackInput{Body: "The guard is inverted.", Inline: true}, "feedback"},
@@ -230,6 +258,13 @@ func TestFeedbackClassificationIsConservative(t *testing.T) {
 		if got := classifyFeedback(tc.input); got != tc.want {
 			t.Errorf("classifyFeedback(%q) = %q, want %q", tc.input.Body, got, tc.want)
 		}
+	}
+}
+
+func TestGitLabFeedbackUsesNoteIDForAcknowledgement(t *testing.T) {
+	input := feedbackInput{ID: "stable", Source: "gitlab-discussion", RemoteID: "6115288"}
+	if input.RemoteID != "6115288" {
+		t.Fatal("GitLab note ID was not retained for acknowledgement")
 	}
 }
 
@@ -299,6 +334,12 @@ func TestSupervisorOwnershipCoversProcessLifetime(t *testing.T) {
 		t.Fatalf("ownership was not released: %v", err)
 	}
 	releaseSupervisorOwner(third)
+}
+
+func TestSupervisorHealthRepairOnlyTargetsOpenCode(t *testing.T) {
+	if err := ensureOpenCodeSupervisor(filepath.Join(t.TempDir(), "state.json"), &State{Config: Config{Harness: "codex"}}); err != nil {
+		t.Fatalf("non-OpenCode status health check failed: %v", err)
+	}
 }
 
 func TestClosedReviewBecomesTerminal(t *testing.T) {

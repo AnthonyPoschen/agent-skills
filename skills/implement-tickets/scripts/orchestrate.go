@@ -182,6 +182,8 @@ type Request struct {
 	Path      string `json:"path,omitempty"`
 	Line      int    `json:"line,omitempty"`
 	HeadOID   string `json:"head_oid,omitempty"`
+	ThreadID  string `json:"thread_id,omitempty"`
+	ReplySent bool   `json:"reply_sent,omitempty"`
 }
 
 type event struct {
@@ -194,9 +196,9 @@ type event struct {
 }
 
 type feedbackInput struct {
-	ID, Source, Body, Author, URL, Path, HeadOID string
-	Line                                         int
-	Inline, RequestedChanges                     bool
+	ID, Source, RemoteID, ThreadID, Body, Author, URL, Path, HeadOID string
+	Line                                                             int
+	Inline, RequestedChanges                                         bool
 }
 
 type reviewSnapshot struct {
@@ -556,7 +558,15 @@ func githubLabels(slug string) ([]string, error) {
 
 func sourceLogin(source string) (string, error) {
 	if source == "gitlab" {
-		return run("", nil, "glab", "api", "user", "--jq", ".username")
+		out, err := run("", nil, "glab", "api", "user")
+		if err != nil {
+			return "", err
+		}
+		var user struct{ Username string }
+		if err := json.Unmarshal([]byte(out), &user); err != nil {
+			return "", err
+		}
+		return user.Username, nil
 	}
 	return run("", nil, "gh", "api", "user", "--jq", ".login")
 }
@@ -583,7 +593,17 @@ func sourceLabels(source, slug string) ([]string, error) {
 
 func sourceDefaultBranch(source, slug string) (string, error) {
 	if source == "gitlab" {
-		return run("", nil, "glab", "api", "projects/"+url.PathEscape(slug), "--jq", ".default_branch")
+		out, err := run("", nil, "glab", "api", "projects/"+url.PathEscape(slug))
+		if err != nil {
+			return "", err
+		}
+		var project struct {
+			DefaultBranch string `json:"default_branch"`
+		}
+		if err := json.Unmarshal([]byte(out), &project); err != nil {
+			return "", err
+		}
+		return project.DefaultBranch, nil
 	}
 	return run("", nil, "gh", "repo", "view", slug, "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name")
 }
@@ -835,6 +855,9 @@ func cmdSupervise(args []string) error {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	for {
 		err := locked(*path, func(s *State) error {
+			if err := processInbox(s); err != nil {
+				return err
+			}
 			if s.StopRequested {
 				return errStop
 			}
@@ -843,9 +866,6 @@ func cmdSupervise(args []string) error {
 				appendEvent(s, event{At: now(), Type: "sync_failed", Message: syncErr.Error()})
 			}
 			if err := reapWorkers(*path, s); err != nil {
-				return err
-			}
-			if err := processInbox(s); err != nil {
 				return err
 			}
 			if syncErr == nil {
@@ -1207,11 +1227,11 @@ func gitlabIssues(s *State) ([]*Item, error) {
 		if err := json.Unmarshal([]byte(out), &row); err != nil {
 			return nil, err
 		}
-		i := &Item{Number: row.IID, NodeID: strconv.Itoa(row.ID), Title: row.Title, Body: row.Description, URL: row.WebURL, State: strings.ToUpper(row.State), Labels: row.Labels}
+		i := &Item{Number: row.IID, NodeID: strconv.Itoa(row.ID), Title: row.Title, Body: row.Description, URL: row.WebURL, State: normalizedGitLabState(row.State), Labels: row.Labels}
 		for _, assignee := range row.Assignees {
 			i.Assignees = append(i.Assignees, assignee.Username)
 		}
-		links, err := gitlabBlockers(s, number)
+		links, err := gitlabBlockers(s, number, row.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -1221,7 +1241,14 @@ func gitlabIssues(s *State) ([]*Item, error) {
 	return result, nil
 }
 
-func gitlabBlockers(s *State, number int) ([]Blocker, error) {
+func normalizedGitLabState(state string) string {
+	if strings.EqualFold(state, "opened") {
+		return "OPEN"
+	}
+	return strings.ToUpper(state)
+}
+
+func gitlabBlockers(s *State, number int, description string) ([]Blocker, error) {
 	project := "projects/" + url.PathEscape(s.Config.RepoSlug)
 	out, err := run("", nil, "glab", "api", project+"/issues/"+strconv.Itoa(number)+"/links?per_page=100")
 	if err != nil {
@@ -1250,7 +1277,70 @@ func gitlabBlockers(s *State, number int) ([]Blocker, error) {
 		}
 		result = append(result, blocker)
 	}
+	known := make(map[int]bool, len(result))
+	for _, blocker := range result {
+		known[blocker.Number] = true
+	}
+	for _, blockerNumber := range explicitBlockerNumbers(description) {
+		if known[blockerNumber] {
+			continue
+		}
+		issue, issueErr := run("", nil, "glab", "api", project+"/issues/"+strconv.Itoa(blockerNumber))
+		if issueErr != nil {
+			return nil, fmt.Errorf("query explicit GitLab blocker #%d: %w", blockerNumber, issueErr)
+		}
+		var row struct {
+			State string `json:"state"`
+		}
+		if err := json.Unmarshal([]byte(issue), &row); err != nil {
+			return nil, err
+		}
+		blocker := Blocker{Number: blockerNumber, State: strings.ToUpper(row.State), Repository: s.Config.RepoSlug}
+		if blocker.State == "CLOSED" {
+			blocker.Integrated = gitlabIssueIntegrated(s, blockerNumber)
+		}
+		if !blocker.Integrated {
+			blocker.Reason = "no merged related merge request is present on the configured target"
+		}
+		result = append(result, blocker)
+	}
 	return result, nil
+}
+
+var issueReference = regexp.MustCompile(`(?m)(?:^|\s)-?\s*#(\d+)\b`)
+
+// explicitBlockerNumbers reads the documented Blocked by section without
+// treating incidental issue references elsewhere in the description as edges.
+func explicitBlockerNumbers(description string) []int {
+	seen := map[int]bool{}
+	var numbers []int
+	inSection := false
+	for _, line := range strings.Split(description, "\n") {
+		heading := strings.TrimSpace(line)
+		if strings.EqualFold(heading, "## Blocked by") {
+			inSection = true
+			continue
+		}
+		if inSection == false {
+			continue
+		}
+		if strings.HasPrefix(heading, "## ") {
+			break
+		}
+		if strings.Contains(strings.ToLower(line), "none") {
+			return nil
+		}
+		for _, match := range issueReference.FindAllStringSubmatch(line, -1) {
+			number, err := strconv.Atoi(match[1])
+			if err != nil || seen[number] {
+				continue
+			}
+			seen[number] = true
+			numbers = append(numbers, number)
+		}
+	}
+	sort.Ints(numbers)
+	return numbers
 }
 
 func gitlabIssueIntegrated(s *State, number int) bool {
@@ -1289,7 +1379,7 @@ func refreshMissingItem(s *State, i *Item) error {
 		if err := json.Unmarshal([]byte(out), &row); err != nil {
 			return err
 		}
-		i.State, i.Labels, i.Assignees = strings.ToUpper(row.State), row.Labels, nil
+		i.State, i.Labels, i.Assignees = normalizedGitLabState(row.State), row.Labels, nil
 		for _, assignee := range row.Assignees {
 			i.Assignees = append(i.Assignees, assignee.Username)
 		}
@@ -1408,6 +1498,15 @@ func prepareWorktree(s *State, i *Item) error {
 	if _, err := run("", nil, "git", "clone", "--no-checkout", "--no-local", s.Config.Repo, i.Worktree); err != nil {
 		return err
 	}
+	for _, key := range []string{"user.name", "user.email"} {
+		value, err := git(s.Config.Repo, "config", "--get", key)
+		if err != nil || strings.TrimSpace(value) == "" {
+			return fmt.Errorf("read manager checkout %s: %w", key, err)
+		}
+		if _, err := git(i.Worktree, "config", key, strings.TrimSpace(value)); err != nil {
+			return fmt.Errorf("set worker checkout %s: %w", key, err)
+		}
+	}
 	if _, err := git(i.Worktree, "remote", "set-url", s.Config.Remote, strings.TrimSpace(remoteURL)); err != nil {
 		return err
 	}
@@ -1524,6 +1623,8 @@ Rules:
 - Stop with a precise handoff when authority or product judgment is required.
 - End a successful handoff with exactly one Commit subject: <type>: <summary> line.
   Derive that concise Conventional Commit subject from the actual diff, not the issue number.
+- When this worker responds to review feedback, also end with exactly one
+  Feedback response: <concise answer> line for the supervisor to post in the original thread.
 `, s.Config.Invocation, i.Title, i.Body, s.Config.Repo, s.Config.Remote, s.Config.Target, i.BaseHead, i.Branch, i.Worktree, context.String())
 }
 
@@ -1588,11 +1689,7 @@ func cmdWorker(args []string) error {
 		}
 		defer handoff.Close()
 		cmd.Stdout = io.MultiWriter(os.Stdout, handoff)
-		policy, policyErr := opencodeWorkerPolicy(s)
-		if policyErr != nil {
-			return policyErr
-		}
-		cmd.Env = append(scrubWorkerEnv(os.Environ()), "OPENCODE_CONFIG_CONTENT="+policy)
+		cmd.Env = scrubWorkerEnv(os.Environ())
 	}
 	err = cmd.Run()
 	code := 0
@@ -1631,7 +1728,14 @@ func reapWorkers(statePath string, s *State) error {
 			continue
 		}
 		if err := verifyItem(s, i); err != nil {
-			i.Status, i.Error = "needs_attention", err.Error()
+			i.Error = err.Error()
+			if automaticRecoveryAllowed(s, i) {
+				queueRequest(s, i, Request{ID: stableID("verification-recovery", strconv.Itoa(i.Number), strconv.Itoa(i.Worker.Attempt)), Action: "resume", Message: "Repair the verification failure without changing scope. Evidence: " + err.Error(), CreatedAt: now(), Status: "queued", Source: "supervisor"})
+				i.Status = "feedback"
+				appendEvent(s, event{At: now(), Type: "verification_recovery_queued", Item: i.Number, Message: err.Error()})
+				continue
+			}
+			i.Status = "needs_attention"
 			appendEvent(s, event{At: now(), Type: "verification_failed", Item: i.Number, Message: err.Error()})
 			continue
 		}
@@ -1643,6 +1747,11 @@ func reapWorkers(statePath string, s *State) error {
 			}
 		} else {
 			i.Status = "awaiting_publication"
+		}
+		if err := replyToFeedback(s, i); err != nil {
+			i.Status, i.Error = "needs_attention", err.Error()
+			appendEvent(s, event{At: now(), Type: "feedback_reply_failed", Item: i.Number, Message: err.Error()})
+			continue
 		}
 		completeWorkerRequests(i)
 		if s.Config.Publish {
@@ -1658,6 +1767,12 @@ func reapWorkers(statePath string, s *State) error {
 	return nil
 }
 
+// automaticRecoveryAllowed retries one unambiguous harness-local verification
+// failure. Further failures preserve evidence for human product judgment.
+func automaticRecoveryAllowed(s *State, i *Item) bool {
+	return s.Config.Harness == "opencode" && i.Worker != nil && i.Worker.Attempt == 1
+}
+
 func completeWorkerRequests(i *Item) {
 	if i.Worker == nil {
 		return
@@ -1671,6 +1786,53 @@ func completeWorkerRequests(i *Item) {
 			i.Pending[n].Status = "applied"
 		}
 	}
+}
+
+// replyToFeedback closes the feedback loop before the supervisor marks the
+// request applied. Workers never receive tracker authority.
+func replyToFeedback(s *State, i *Item) error {
+	if s.Config.Source != "gitlab" || i.PR == nil || i.Worker == nil {
+		return nil
+	}
+	response := workerFeedbackResponse(i)
+	for n := range i.Pending {
+		req := &i.Pending[n]
+		if req.Action != "feedback" || req.ReplySent || req.ThreadID == "" || !contains(i.Worker.RequestIDs, req.ID) {
+			continue
+		}
+		if response == "" {
+			return errors.New("feedback worker handoff is missing `Feedback response: <concise answer>`")
+		}
+		body := "AI-generated: " + response
+		if i.PR.HeadOID != "" {
+			body += "\n\nUpdated commit: " + short(i.PR.HeadOID)
+		}
+		if _, err := run("", strings.NewReader(body), "glab", "mr", "note", "create", strconv.Itoa(i.PR.Number), "--repo", s.Config.RepoSlug, "--reply", req.ThreadID); err != nil {
+			return fmt.Errorf("reply to GitLab feedback: %w", err)
+		}
+		req.ReplySent = true
+		appendEvent(s, event{At: now(), Type: "feedback_replied", Item: i.Number, Message: req.ThreadID})
+	}
+	return nil
+}
+
+func workerFeedbackResponse(i *Item) string {
+	if i.Worker == nil {
+		return ""
+	}
+	b, err := os.ReadFile(i.Worker.LastMessage)
+	if err != nil {
+		return ""
+	}
+	for _, text := range handoffTexts(b) {
+		for _, line := range strings.Split(text, "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "Feedback response:") {
+				return strings.TrimSpace(strings.TrimPrefix(line, "Feedback response:"))
+			}
+		}
+	}
+	return ""
 }
 
 func verifyItem(s *State, i *Item) error {
@@ -1710,7 +1872,7 @@ func verifyItem(s *State, i *Item) error {
 			return err
 		}
 		message := fmt.Sprintf("%s\n\nAssisted-by: %s", subject, harnessCredit(s.Config.Harness))
-		if _, err := git(i.Worktree, "-c", "user.name=Ticket Orchestrator", "-c", "user.email=ticket-orchestrator@users.noreply.github.com", "commit", "-m", message); err != nil {
+		if _, err := git(i.Worktree, "commit", "-m", message); err != nil {
 			return fmt.Errorf("create supervisor checkpoint commit: %w", err)
 		}
 		appendEvent(s, event{At: now(), Type: "checkpoint_created", Item: i.Number, Message: "verified worker changes committed"})
@@ -1893,8 +2055,13 @@ func syncPull(s *State, i *Item) error {
 		pr.Checks = strings.Join(snapshot.Failures, ", ")
 		queueRequest(s, i, Request{ID: stableID("ci", pr.HeadOID, pr.Checks), Action: "ci_failed", Message: "Failing checks: " + pr.Checks, CreatedAt: now(), Status: "queued", Source: s.Config.Source, HeadOID: pr.HeadOID})
 	}
+	if len(snapshot.Feedback) > 0 {
+		appendEvent(s, event{At: now(), Type: "review_feedback_polled", Item: i.Number, Message: fmt.Sprintf("%d human comment(s)", len(snapshot.Feedback))})
+	}
 	for _, input := range snapshot.Feedback {
-		queueFeedback(s, i, input)
+		if err := queueFeedback(s, i, input); err != nil {
+			appendEvent(s, event{At: now(), Type: "feedback_ack_failed", Item: i.Number, Message: err.Error()})
+		}
 	}
 	return nil
 }
@@ -1948,12 +2115,12 @@ func pollGitHubReview(s *State, branch string) (*reviewSnapshot, error) {
 	}
 	for _, c := range d.Comments {
 		if humanFeedback(c.Author.Login, c.Body) {
-			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-comment", c.ID), Source: "github-comment", Body: c.Body, Author: c.Author.Login, URL: c.URL, HeadOID: pr.HeadOID})
+			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-comment", c.ID), Source: "github-comment", RemoteID: c.ID, Body: c.Body, Author: c.Author.Login, URL: c.URL, HeadOID: pr.HeadOID})
 		}
 	}
 	for _, r := range d.Reviews {
 		if humanFeedback(r.Author.Login, r.Body) && r.State == "CHANGES_REQUESTED" {
-			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-review", r.ID), Source: "github-review", Body: r.Body, Author: r.Author.Login, RequestedChanges: true, HeadOID: pr.HeadOID})
+			snapshot.Feedback = append(snapshot.Feedback, feedbackInput{ID: stableID("github-review", r.ID), Source: "github-review", RemoteID: r.ID, Body: r.Body, Author: r.Author.Login, RequestedChanges: true, HeadOID: pr.HeadOID})
 		}
 	}
 	threads, err := githubReviewThreads(s, pr)
@@ -2012,7 +2179,7 @@ func githubReviewThreads(s *State, pr *Pull) ([]feedbackInput, error) {
 		}
 		for _, comment := range thread.Comments.Nodes {
 			if humanFeedback(comment.Author.Login, comment.Body) {
-				result = append(result, feedbackInput{ID: stableID("github-thread", thread.ID, comment.ID), Source: "github-thread", Body: comment.Body, Author: comment.Author.Login, URL: comment.URL, Path: thread.Path, Line: line, Inline: true, HeadOID: pr.HeadOID})
+				result = append(result, feedbackInput{ID: stableID("github-thread", thread.ID, comment.ID), Source: "github-thread", RemoteID: comment.ID, Body: comment.Body, Author: comment.Author.Login, URL: comment.URL, Path: thread.Path, Line: line, Inline: true, HeadOID: pr.HeadOID})
 			}
 		}
 	}
@@ -2123,7 +2290,7 @@ func pollGitLabReview(s *State, branch string) (*reviewSnapshot, error) {
 			if note.System || note.Resolved || !humanFeedback(note.Author.Username, note.Body) {
 				continue
 			}
-			input := feedbackInput{ID: stableID("gitlab-discussion", discussion.ID, strconv.Itoa(note.ID)), Source: "gitlab-discussion", Body: note.Body, Author: note.Author.Username, HeadOID: mr.HeadOID, Inline: !discussion.Individual || note.Position != nil}
+			input := feedbackInput{ID: stableID("gitlab-discussion", discussion.ID, strconv.Itoa(note.ID)), Source: "gitlab-discussion", RemoteID: strconv.Itoa(note.ID), ThreadID: discussion.ID, Body: note.Body, Author: note.Author.Username, HeadOID: mr.HeadOID, Inline: !discussion.Individual || note.Position != nil}
 			if note.Position != nil {
 				input.Path, input.Line = note.Position.NewPath, note.Position.NewLine
 				if input.Path == "" {
@@ -2154,13 +2321,43 @@ func mergedIntoTarget(s *State, i *Item) bool {
 	return i.PR != nil && i.PR.State == "MERGED" && isAncestor(s.Config.Repo, i.PR.MergeOID, s.Config.Remote+"/"+s.Config.Target)
 }
 
-func queueFeedback(s *State, i *Item, input feedbackInput) {
+func queueFeedback(s *State, i *Item, input feedbackInput) error {
 	action := classifyFeedback(input)
+	for n := range i.Pending {
+		if i.Pending[n].ID == input.ID && i.Pending[n].Action == "observed" && action == "feedback" {
+			i.Pending[n].Action, i.Pending[n].Status = "feedback", "queued"
+			appendEvent(s, event{At: now(), Type: "feedback_promoted", Item: i.Number, Message: requestSummary(i.Pending[n])})
+			applyPendingStatus(i)
+			return acknowledgeFeedback(s, i, input)
+		}
+	}
+	newFeedback := !contains(i.SeenFeedback, input.ID) && !containsRequest(i.Pending, input.ID)
 	queueRequest(s, i, Request{
 		ID: input.ID, Action: action, Message: strings.TrimSpace(input.Body),
 		CreatedAt: now(), Status: "queued", Source: input.Source, URL: input.URL,
-		Path: input.Path, Line: input.Line, HeadOID: input.HeadOID,
+		Path: input.Path, Line: input.Line, HeadOID: input.HeadOID, ThreadID: input.ThreadID,
 	})
+	if action == "feedback" && newFeedback {
+		if err := acknowledgeFeedback(s, i, input); err != nil {
+			return err
+		}
+		appendEvent(s, event{At: now(), Type: "feedback_acknowledged", Item: i.Number, Message: input.Source})
+	}
+	return nil
+}
+
+func acknowledgeFeedback(s *State, i *Item, input feedbackInput) error {
+	if input.RemoteID == "" || i.PR == nil {
+		return errors.New("feedback acknowledgement lacks provider-native comment ID")
+	}
+	if s.Config.Source == "gitlab" {
+		endpoint := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/merge_requests/" + strconv.Itoa(i.PR.Number) + "/notes/" + input.RemoteID + "/award_emoji"
+		_, err := run("", nil, "glab", "api", "--method", "POST", endpoint, "-f", "name=eyes")
+		return err
+	}
+	mutation := `mutation($subject:ID!){addReaction(input:{subjectId:$subject,content:EYES}){reaction{content}}}`
+	_, err := run("", nil, "gh", "api", "graphql", "-f", "query="+mutation, "-F", "subject="+input.RemoteID)
+	return err
 }
 
 func classifyFeedback(input feedbackInput) string {
@@ -2178,7 +2375,7 @@ func classifyFeedback(input feedbackInput) string {
 	}
 	for _, marker := range []string{
 		"please ", "fix ", "change ", "update ", "add ", "remove ", "rename ",
-		"use ", "ensure ", "must ", "need to ", "can you ", "could you ", "should ",
+		"use ", "ensure ", "must ", "need to ", "can you ", "can we ", "could you ", "should ", "i'd like ",
 	} {
 		if strings.Contains(body, marker) {
 			return "feedback"
@@ -2285,6 +2482,7 @@ func processInbox(s *State) error {
 			i.Status = "stopped"
 		} else if req.Action == "resume" && i.Status != "running" {
 			i.Pending = append(i.Pending, req.Request)
+			s.StopRequested = false
 			i.Status = "feedback"
 		} else if req.Action == "feedback" {
 			req.Source = "operator"
@@ -2373,6 +2571,9 @@ func cmdStatus(args []string) error {
 	if err != nil {
 		return err
 	}
+	if err := ensureOpenCodeSupervisor(*path, s); err != nil {
+		return err
+	}
 	if *asJSON {
 		return json.NewEncoder(os.Stdout).Encode(s)
 	}
@@ -2395,6 +2596,32 @@ func cmdStatus(args []string) error {
 		fmt.Printf("#%-4d %-21s %-7s %-6s %-9d %s\n", i.Number, i.Status, worker, pr, pending, i.Title)
 	}
 	return nil
+}
+
+// ensureOpenCodeSupervisor restores the durable loop only for OpenCode runs.
+// Other harnesses own their lifecycle and are never started from status.
+func ensureOpenCodeSupervisor(statePath string, s *State) error {
+	if s.Config.Harness != "opencode" || s.StopRequested || runComplete(s) {
+		return nil
+	}
+	owner, err := acquireSupervisorOwner(statePath)
+	if err != nil {
+		return nil // An existing supervisor owns the run.
+	}
+	releaseSupervisorOwner(owner)
+	cmd := exec.Command(os.Args[0], "supervise", "--state", statePath)
+	logPath := filepath.Join(s.Config.RunDir, "supervisor.log")
+	log, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		return err
+	}
+	cmd.Stdout, cmd.Stderr = log, log
+	if err := cmd.Start(); err != nil {
+		log.Close()
+		return err
+	}
+	appendEvent(s, event{At: now(), Type: "supervisor_restarted", Message: strconv.Itoa(cmd.Process.Pid)})
+	return saveState(statePath, s)
 }
 
 func cmdEvents(args []string) error {
@@ -2618,6 +2845,16 @@ func parseRepoSlug(remote string) (string, error) {
 
 func parseRemote(remote string) (string, string, error) {
 	remote = strings.TrimSuffix(strings.TrimSpace(remote), ".git")
+	if parsed, err := url.Parse(remote); err == nil && parsed.Scheme == "https" && parsed.Host != "" {
+		provider := "gitlab"
+		if parsed.Host == "github.com" {
+			provider = "github"
+		}
+		slug := strings.TrimPrefix(parsed.Path, "/")
+		if len(strings.Split(slug, "/")) >= 2 {
+			return provider, slug, nil
+		}
+	}
 	provider := ""
 	for _, candidate := range []struct{ prefix, provider string }{
 		{"git@github.com:", "github"}, {"ssh://git@github.com/", "github"}, {"https://github.com/", "github"},
@@ -2695,55 +2932,6 @@ func stableID(values ...string) string {
 func humanFeedback(login, body string) bool {
 	trimmed := strings.TrimSpace(body)
 	return login != "" && trimmed != "" && !strings.HasSuffix(login, "[bot]") && !strings.HasPrefix(trimmed, "AI-generated:")
-}
-
-func opencodeWorkerPolicy(s *State) (string, error) {
-	bash := map[string]string{
-		"*":               "deny",
-		"git status":      "allow",
-		"git status *":    "allow",
-		"git diff":        "allow",
-		"git diff *":      "allow",
-		"git log":         "allow",
-		"git log *":       "allow",
-		"git show":        "allow",
-		"git show *":      "allow",
-		"git rev-parse *": "allow",
-	}
-	for _, command := range s.Config.VerifyCommands {
-		command = strings.TrimSpace(command)
-		if command != "" && !strings.ContainsAny(command, "\n\r") {
-			bash[command] = "allow"
-		}
-	}
-	permission := map[string]any{
-		"*":                  "deny",
-		"read":               map[string]string{"*": "allow", "*.env": "deny", "*.env.*": "deny", "*.env.example": "allow"},
-		"edit":               "allow",
-		"glob":               "allow",
-		"grep":               "allow",
-		"lsp":                "allow",
-		"skill":              "allow",
-		"bash":               bash,
-		"task":               "deny",
-		"question":           "deny",
-		"webfetch":           "deny",
-		"websearch":          "deny",
-		"external_directory": "deny",
-		"doom_loop":          "deny",
-	}
-	config := map[string]any{
-		"$schema":    "https://opencode.ai/config.json",
-		"autoupdate": false,
-		"share":      "disabled",
-		"agent": map[string]any{s.Config.WorkerAgent: map[string]any{
-			"description": "Headless implementation worker restricted to one orchestration worktree.",
-			"mode":        "primary",
-			"permission":  permission,
-		}},
-	}
-	b, err := json.Marshal(config)
-	return string(b), err
 }
 
 func scrubWorkerEnv(values []string) []string {
