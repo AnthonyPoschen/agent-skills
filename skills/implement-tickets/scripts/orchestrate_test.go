@@ -109,7 +109,7 @@ func TestWorkerCommitSubjectUsesAIHandoff(t *testing.T) {
 		t.Fatal(err)
 	}
 	i := &Item{Worker: &Worker{LastMessage: plain}}
-	if got, err := workerCommitSubject(i); err != nil || got != "fix: remove stale review state" {
+	if got, err := workerCommitSubject(&State{}, i); err != nil || got != "fix: remove stale review state" {
 		t.Fatalf("workerCommitSubject = %q, %v", got, err)
 	}
 
@@ -118,7 +118,7 @@ func TestWorkerCommitSubjectUsesAIHandoff(t *testing.T) {
 		t.Fatal(err)
 	}
 	i.Worker.LastMessage = jsonPath
-	if got, err := workerCommitSubject(i); err != nil || got != "feat(events): relay supervisor progress" {
+	if got, err := workerCommitSubject(&State{}, i); err != nil || got != "feat(events): relay supervisor progress" {
 		t.Fatalf("JSON workerCommitSubject = %q, %v", got, err)
 	}
 }
@@ -135,9 +135,17 @@ func TestWorkerCommitSubjectRejectsGenericOrInvalidHandoff(t *testing.T) {
 		if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := workerCommitSubject(i); err == nil {
+		if _, err := workerCommitSubject(&State{}, i); err == nil {
 			t.Fatalf("invalid handoff was accepted: %q", content)
 		}
+	}
+}
+
+func TestOpenCodeDerivesCommitSubjectFromWorkItemTitle(t *testing.T) {
+	s := &State{Config: Config{Harness: "opencode"}}
+	i := &Item{Title: "feat(sync): reconcile catalogue after complete discovery", Worker: &Worker{LastMessage: filepath.Join(t.TempDir(), "missing.txt")}}
+	if got, err := workerCommitSubject(s, i); err != nil || got != i.Title {
+		t.Fatalf("workerCommitSubject = %q, %v", got, err)
 	}
 }
 
@@ -249,6 +257,7 @@ func TestFeedbackClassificationIsConservative(t *testing.T) {
 		{feedbackInput{Body: "Please rename this helper."}, "feedback"},
 		{feedbackInput{Body: "Can you add a regression test?"}, "feedback"},
 		{feedbackInput{Body: "Can we show current/total progress?"}, "feedback"},
+		{feedbackInput{Body: "Anything that is 404 should not fail the run."}, "feedback"},
 		{feedbackInput{Body: "Why was this approach selected?"}, "needs_input"},
 		{feedbackInput{Body: "This requires a product decision before implementation."}, "needs_input"},
 		{feedbackInput{Body: "The guard is inverted.", Inline: true}, "feedback"},

@@ -1867,7 +1867,7 @@ func verifyItem(s *State, i *Item) error {
 		if _, err := git(i.Worktree, "add", "--all"); err != nil {
 			return fmt.Errorf("stage verified worker diff: %w", err)
 		}
-		subject, err := workerCommitSubject(i)
+		subject, err := workerCommitSubject(s, i)
 		if err != nil {
 			return err
 		}
@@ -1886,12 +1886,16 @@ func verifyItem(s *State, i *Item) error {
 
 var conventionalSubject = regexp.MustCompile(`^(feat|fix|refactor|test|docs|build|ci|chore|style|perf|revert)(\([a-z0-9._/-]+\))?!?: [a-z0-9][^\r\n]*$`)
 
-func workerCommitSubject(i *Item) (string, error) {
+func workerCommitSubject(s *State, i *Item) (string, error) {
 	if i.Worker == nil || i.Worker.LastMessage == "" {
 		return "", errors.New("worker handoff is unavailable for commit-message generation")
 	}
 	b, err := os.ReadFile(i.Worker.LastMessage)
 	if err != nil {
+		if s.Config.Harness == "opencode" && conventionalSubject.MatchString(i.Title) {
+			appendEvent(s, event{At: now(), Type: "commit_subject_derived", Item: i.Number, Message: i.Title})
+			return i.Title, nil
+		}
 		return "", fmt.Errorf("read worker handoff for commit subject: %w", err)
 	}
 	for _, text := range handoffTexts(b) {
@@ -1905,6 +1909,12 @@ func workerCommitSubject(i *Item) (string, error) {
 				return "", fmt.Errorf("worker proposed invalid Conventional Commit subject %q", subject)
 			}
 			return subject, nil
+		}
+	}
+	if s.Config.Harness == "opencode" {
+		if conventionalSubject.MatchString(i.Title) {
+			appendEvent(s, event{At: now(), Type: "commit_subject_derived", Item: i.Number, Message: i.Title})
+			return i.Title, nil
 		}
 	}
 	return "", errors.New("worker handoff is missing `Commit subject: <type>: <summary>`")
@@ -2375,7 +2385,7 @@ func classifyFeedback(input feedbackInput) string {
 	}
 	for _, marker := range []string{
 		"please ", "fix ", "change ", "update ", "add ", "remove ", "rename ",
-		"use ", "ensure ", "must ", "need to ", "can you ", "can we ", "could you ", "should ", "i'd like ",
+		"use ", "ensure ", "must ", "need to ", "can you ", "can we ", "could you ", "should ", "should not ", "anything that ", "i'd like ",
 	} {
 		if strings.Contains(body, marker) {
 			return "feedback"

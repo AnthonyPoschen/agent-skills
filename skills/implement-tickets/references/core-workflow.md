@@ -110,8 +110,10 @@ After a worker exits successfully:
    contracts when present.
 5. Validate the implementing AI's proposed Conventional Commit subject, stage
    the verified diff, and create a supervisor-owned checkpoint commit with the
-   required `Assisted-by` trailer. A missing or invalid subject pauses the item;
-   do not fall back to `feat: implement issue N`.
+   required `Assisted-by` trailer. For OpenCode only, when a successful worker
+   omits its subject, the supervisor may use the item's already-valid
+   Conventional Commit title. Record a `commit_subject_derived` event. Never
+   fall back to an issue-number subject.
 6. Push only the expected branch with an explicit refspec.
 7. Create or update one draft review. Verify its source, target, head commit,
    body, and checks after every write.
