@@ -7,8 +7,10 @@ instructions before any `glab` command.
 
 Use `glab` to list open work items and read their complete descriptions,
 comments, discussions, merge requests, and CI results. Parse dependencies only
-from the explicit `Blocked by` section. Treat a blocker as complete only after
-its merge request is merged into the target branch.
+from the explicit `Blocked by` section. Treat a blocker as complete after its
+merge request is merged into the target branch on every repository listed in
+the project contract. A leftover open issue does not block dependents. Close
+it after verified integration so the GitLab UI catches up.
 
 ## Updates
 
@@ -17,8 +19,12 @@ the issue. Read the merge request after each write to verify its source branch,
 target branch, description, and state.
 
 Use GitLab discussions for threaded feedback. Every agent-written merge request
-comment starts with `AI-generated:`. Do not close issues manually, merge merge
-requests, or mark a discussion resolved without verified work.
+comment starts with `AI-generated:`. Post that reply on the merge request in
+the same poll that discovers the question. A chat-only answer does not
+complete the loop. Do not merge merge requests or mark a discussion resolved
+on the reviewer's behalf. Close an issue only after its merge request is
+merged into the target branch and the merge commit is an ancestor. If GitLab
+did not auto-close it, close it then. Never close an unintegrated issue.
 
 ## Feedback
 

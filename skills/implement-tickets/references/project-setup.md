@@ -41,15 +41,35 @@ the two sources to drift silently.
 ## Project Contract
 
 Copy [`assets/implement-tickets.json`](../assets/implement-tickets.json) to
-`.github/implement-tickets.json` and adapt it. Supported fields are:
+`.github/implement-tickets.json` and adapt it. This file is the shared project
+contract for every harness and work-source combination. Do not put
+Grok-only, Codex-only, OpenCode-only, GitHub-only, or GitLab-only operational
+fields here. Harness and source adapters read the same keys.
+
+Supported fields are:
 
 - `version`: contract version; currently `1`;
 - `source`: `github` or `gitlab`; `jira` is recognized as a fail-closed beta;
 - `target` and `remote`: integration ref;
 - `ready_label`: the label that explicitly authorizes scheduling;
 - `concurrency`: bounded active-worker limit;
-- `verification`: independent commands run by the supervisor after a worker;
+- `verification`: independent commands run by the manager or supervisor after
+  a worker;
 - `implementation_invocation`: optional project implementation skill prefix;
+- `related_repositories`: other Git repositories a work item may change.
+  Each entry has `name` (host slug), `path` (repo-relative checkout), and
+  optional `role`. A listed repository is required for an item only when
+  that item has a review there. An unused listed repo does not block
+  integration. Use a closing reference only when every required repository
+  change will land in that one review;
+- `sequences`: shared numbered file prefixes that parallel workers must not
+  collide on. Each entry has `directory` and `pattern` with one capturing
+  group of digits. At dispatch the manager reserves `max+1` from the target
+  checkout, sibling checkouts, and related-repository paths, then writes that
+  token into the worker prompt;
+- `forbidden_commit_patterns`: staged added lines the supervisor must reject.
+  Each entry has `path` and a regular-expression `pattern`. Use this for
+  local module path replaces such as `replace example.com/mod => ../mod`;
 - `harness`, `worker_agent`, `worker_model`, and `manager_model`: optional
   execution settings when the project deliberately owns them.
 
@@ -59,6 +79,40 @@ those values.
 
 Unknown fields and unsupported contract versions fail closed. Command-line
 arguments override contract fields for a specific run.
+
+Example with the optional shared fields:
+
+```json
+{
+  "version": 1,
+  "source": "github",
+  "target": "master",
+  "remote": "origin",
+  "ready_label": "ready-for-agent",
+  "concurrency": 3,
+  "verification": ["go test -mod=vendor ./..."],
+  "implementation_invocation": "$implement",
+  "related_repositories": [
+    {
+      "name": "example/controller",
+      "path": "../controller",
+      "role": "controller"
+    }
+  ],
+  "sequences": [
+    {
+      "directory": "db/migrations",
+      "pattern": "^(\\d{6})_"
+    }
+  ],
+  "forbidden_commit_patterns": [
+    {
+      "path": "go.mod",
+      "pattern": "^replace\\s+\\S+\\s+=>\\s+\\.\\./"
+    }
+  ]
+}
+```
 
 ## Required Preflight Questions
 

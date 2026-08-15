@@ -21,8 +21,15 @@ Query full issue bodies, labels, assignees, comments, state, and blocker states.
 The normal ready predicate is:
 
 ```text
-OPEN + ready label + unassigned + no open/unintegrated blocker
+OPEN + ready label + unassigned + no unintegrated blocker
 ```
+
+A blocker is integrated when a merged review for that item is an ancestor of
+the fetched target on the primary repository and on every related repository
+where that item actually opened a review. An unused listed repo does not
+block integration. The blocker's tracker issue may still be open. Close
+leftover open issues after verified integration so the GitHub UI catches up;
+do not wait for that close before scheduling dependents.
 
 A run-owned assignment may resume its matching branch/worktree. Refuse another
 assignee unless the user explicitly transfers ownership.
@@ -71,16 +78,27 @@ coverage, security, or scanner apps. Ignore other bot comments and unendorsed
 third-party feedback.
 
 Every agent-written PR comment starts with `AI-generated:`. Keep comments
-concise: changed location first, then short action bullets. Do not resolve a
-human thread or approve the manager's own PR.
+concise: changed location first, then short action bullets. Post the reply on
+the pull request or issue in the same poll that discovers the question. A
+chat-only answer does not complete the loop. Do not resolve a human thread or
+approve the manager's own PR.
 
 ## Human Merge Boundary
 
 Never run `gh pr merge`, enable auto-merge, or mark a draft ready unless the
 user explicitly changes the workflow. A human merge is the dependency gate.
-After notification of a merge, fetch the target, verify the merge commit is an
-ancestor, verify the issue state, safely prune only authorized worktrees, and
-recompute readiness.
+After notification of a merge, fetch the target and verify the merge commit is
+an ancestor. If the issue is still open, close it:
+
+```sh
+gh issue close <number> --repo OWNER/REPO \
+  --comment "AI-generated: Closed after <pr> merged as <oid> on <target>."
+```
+
+GitHub MCP is an allowed transport for the same manager-owned close when the
+discovered schema matches; workers still do not call GitHub. Then safely prune
+only authorized worktrees, recompute readiness, and launch newly unblocked
+ready items.
 
 Treat a human-closed, unmerged PR as terminal `review_closed`; do not relaunch
 its branch. It is not integration success. When all selected items are

@@ -1,10 +1,15 @@
 # OpenCode Harness
 
 Use this adapter when the chat manager or background workers run through
-OpenCode. Unlike a tool-rich Codex chat manager, an OpenCode chat session should
-not be the only owner of a long-running queue. Start the bundled supervisor so
-worker processes, logs, feedback cursors, and dependency gates survive chat
-turns and restarts.
+OpenCode. An OpenCode chat session should not be the only owner of a
+long-running queue. Start the bundled supervisor so worker processes, logs,
+feedback cursors, and dependency gates survive chat turns and restarts.
+
+The OpenCode chat session is the operator console. It should not implement
+tickets itself. After `supervise` is running, keep one chat turn on
+`ticket-orchestrator events --follow --state <state.json>` or poll `status`.
+Write human requests through `inbox`. That is how progress stays visible
+without stuffing the chat context with worker transcripts.
 
 ## Initial Setup
 
@@ -19,12 +24,20 @@ The repository owns the worker definition and permissions in `opencode.json` or
 silently override the project's reviewed policy. See the readable starting
 template at [worker policy template](../../assets/opencode-worker-policy.json).
 
-Start from the template's deny-by-default policy, then grant only the project
-commands the worker needs. Keep `worker` in `primary` mode so headless
-`opencode run --agent worker` cannot fall back to a broader built-in agent. The
-supervisor removes tracker, SSH-agent, and common cloud/application credentials
-from the worker environment, but project configuration remains the authority
-for tool permissions.
+Start from the template's deny-by-default policy, then grant the project's
+actual test and build commands. The template already allows common `make`,
+`npm`/`pnpm`/`yarn`/`bun`, `go`, `cargo`, and `pytest` invocations. Add any
+other command the worker must run. Keep `worker` in `primary` mode so headless
+`opencode run --agent worker` cannot fall back to a broader built-in agent.
+
+A missing allow rule is the usual OpenCode failure mode. Headless runs reject
+unanswered permission prompts, so the worker exits and the supervisor reports
+that the policy blocked a command. Fix the project policy and retry. Do not
+pass `--auto` to a headless orchestration worker.
+
+The supervisor removes tracker, SSH-agent, and common cloud/application
+credentials from the worker environment, but project configuration remains the
+authority for tool permissions.
 
 OpenCode permissions are tool controls, not an operating-system sandbox. An
 allowed build command executes with the host user's process and network
@@ -97,7 +110,8 @@ the repository, so worker logs do not dirty Git.
 
 ## Worker Launch
 
-The supervisor launches a dedicated worker session with raw JSON events:
+The supervisor attaches the prompt as a file instead of putting the issue body
+on the process command line:
 
 ```sh
 opencode run \
@@ -105,22 +119,33 @@ opencode run \
   --format json \
   --title "orchestration-<item>" \
   --dir "$WORKTREE" \
-  "$(<"$PROMPT_FILE")"
+  --file "$PROMPT_FILE" \
+  "Read the attached prompt and do only that work."
 ```
+
+Follow-up workers on the same item resume the previous OpenCode session with
+`--session` and receive only the new feedback. They do not pay for the original
+issue body or rule dump again. If the session is gone, the supervisor cold
+starts with the full prompt.
 
 Pass `--model provider/model` only when the user selected an explicit worker
 model that is not already defined by the worker agent. Never pass `--auto` to a
 headless orchestration worker. The supervisor may accept other launcher
 arguments after preflight.
 
-## OpenCode 2 Migration
+After exit, the supervisor extracts the session ID and the last assistant text
+from the JSON event log. The compact text is the handoff. Long tool-result
+lines stay in the event log and must not hide `Commit subject:`.
+
+## OpenCode 2
 
 OpenCode 2 has a stronger ordered action/resource policy, rejects unanswered
 permissions during non-interactive runs, canonicalizes edit paths, and rejects
-symlink escapes. A future adapter should translate the policy to V2
-`permissions` rules and use `shell` and `subagent` action names. V2 still states
-that an allowed shell command has the host user's filesystem, process, and
-network authority, so retain the same OS-isolation recommendation.
+symlink escapes. Translate the project policy to V2 `permissions` rules and use
+`shell` and `subagent` action names when the repository is already on V2. Do
+not invent a V2 policy that has not been reviewed in the project. V2 still
+states that an allowed shell command has the host user's filesystem, process,
+and network authority, so retain the same OS-isolation recommendation.
 
 OpenCode workers receive the same offline publication contract as Codex
 workers. They leave tested worktree diffs but do not write Git metadata, push,
@@ -133,7 +158,7 @@ The supervisor wraps each OpenCode process with a durable exit-code file. On
 restart it distinguishes a live worker from a completed or PID-reused process,
 then resumes polling without launching a second owner. If a worker dies or its
 log stalls, preserve its worktree/log and dispatch at most one recovery worker
-that inspects existing state first.
+that inspects existing state first. Prefer resuming the recorded session.
 
 Direct user feedback goes through the supervisor inbox. Safe requests wait for
 the current worker to exit or checkpoint; cancel and safety requests may stop

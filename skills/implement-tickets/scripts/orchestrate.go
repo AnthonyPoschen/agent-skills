@@ -72,8 +72,34 @@ type Config struct {
 	VerifyCommands []string `json:"verify_commands,omitempty"`
 	Invocation     string   `json:"implementation_invocation,omitempty"`
 	Publish        bool     `json:"publish"`
-	IssueNumbers   []int    `json:"issue_numbers,omitempty"`
-	IssueQuery     string   `json:"issue_query,omitempty"`
+	IssueNumbers            []int                     `json:"issue_numbers,omitempty"`
+	IssueQuery              string                    `json:"issue_query,omitempty"`
+	RelatedRepositories     []RelatedRepository       `json:"related_repositories,omitempty"`
+	Sequences               []Sequence                `json:"sequences,omitempty"`
+	ForbiddenCommitPatterns []ForbiddenCommitPattern  `json:"forbidden_commit_patterns,omitempty"`
+}
+
+// RelatedRepository is a second Git repository this project must change for
+// some work items. Name is the host slug (GitHub owner/repo or GitLab path).
+// Path is a repository-relative checkout used by interactive managers.
+type RelatedRepository struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+	Role string `json:"role,omitempty"`
+}
+
+// Sequence reserves unique numeric prefixes in a shared directory so parallel
+// workers do not collide. Pattern must contain one capturing group of digits.
+type Sequence struct {
+	Directory string `json:"directory"`
+	Pattern   string `json:"pattern"`
+}
+
+// ForbiddenCommitPattern rejects a staged added line in path before the
+// supervisor creates a checkpoint. Pattern is a regular expression.
+type ForbiddenCommitPattern struct {
+	Path    string `json:"path"`
+	Pattern string `json:"pattern"`
 }
 
 // ProjectSetup is the repository-owned orchestration contract. Command-line
@@ -88,9 +114,12 @@ type ProjectSetup struct {
 	Concurrency  int      `json:"concurrency,omitempty"`
 	Verification []string `json:"verification,omitempty"`
 	Invocation   string   `json:"implementation_invocation,omitempty"`
-	WorkerAgent  string   `json:"worker_agent,omitempty"`
-	WorkerModel  string   `json:"worker_model,omitempty"`
-	ManagerModel string   `json:"manager_model,omitempty"`
+	WorkerAgent             string                   `json:"worker_agent,omitempty"`
+	WorkerModel             string                   `json:"worker_model,omitempty"`
+	ManagerModel            string                   `json:"manager_model,omitempty"`
+	RelatedRepositories     []RelatedRepository      `json:"related_repositories,omitempty"`
+	Sequences               []Sequence               `json:"sequences,omitempty"`
+	ForbiddenCommitPatterns []ForbiddenCommitPattern `json:"forbidden_commit_patterns,omitempty"`
 }
 
 type State struct {
@@ -131,6 +160,8 @@ type Item struct {
 	Error             string    `json:"error,omitempty"`
 	UpdatedAt         string    `json:"updated_at,omitempty"`
 	CheckoutRemovedAt string    `json:"checkout_removed_at,omitempty"`
+	WorkerSession          string    `json:"worker_session,omitempty"`
+	SequenceReservations   []string  `json:"sequence_reservations,omitempty"`
 }
 
 type Blocker struct {
@@ -152,6 +183,7 @@ type Worker struct {
 	ExitPath    string   `json:"exit_path"`
 	Attempt     int      `json:"attempt"`
 	RequestIDs  []string `json:"request_ids,omitempty"`
+	SessionID   string   `json:"session_id,omitempty"`
 }
 
 type Pull struct {
@@ -273,7 +305,7 @@ func cmdInit(args []string) error {
 	fs := flag.NewFlagSet("init", flag.ContinueOnError)
 	repo := fs.String("repo", ".", "target repository")
 	source := fs.String("source", "github", "work source (github)")
-	harness := fs.String("harness", "", "worker harness (codex or opencode); discovered when unambiguous")
+	harness := fs.String("harness", "", "worker harness (codex, grok, or opencode); discovered when unambiguous")
 	target := fs.String("target", "", "target branch; defaults to the repository default branch")
 	remote := fs.String("remote", "origin", "Git remote")
 	label := fs.String("ready-label", "", "label that explicitly makes an issue schedulable")
@@ -429,10 +461,10 @@ func cmdInit(args []string) error {
 	if *harness == "" {
 		*harness = discoverHarness()
 		if *harness == "" {
-			questions = append(questions, "Which worker harness should run: codex or opencode? Pass --harness <name>.")
+			questions = append(questions, "Which worker harness should run: codex, grok, or opencode? Pass --harness <name>.")
 		}
-	} else if *harness != "codex" && *harness != "opencode" {
-		questions = append(questions, fmt.Sprintf("Worker harness %q is unsupported; choose codex or opencode.", *harness))
+	} else if !supportedHarness(*harness) {
+		questions = append(questions, fmt.Sprintf("Worker harness %q is unsupported; choose codex, grok, or opencode.", *harness))
 	}
 	if len(verify) == 0 {
 		verify = discoverVerification(absRepo)
@@ -462,8 +494,10 @@ func cmdInit(args []string) error {
 	if len(questions) > 0 {
 		return setupError(questions)
 	}
-	if _, err := run("", nil, harnessBinary(*harness), "--version"); err != nil {
-		return fmt.Errorf("%s preflight: %w", *harness, err)
+	if supervisorLaunchesWorkers(*harness) {
+		if _, err := run("", nil, harnessBinary(*harness), "--version"); err != nil {
+			return fmt.Errorf("%s preflight: %w", *harness, err)
+		}
 	}
 	if *runID == "" {
 		*runID = time.Now().UTC().Format("20060102T150405Z")
@@ -486,15 +520,21 @@ func cmdInit(args []string) error {
 			return err
 		}
 	}
+	cfg := Config{Repo: absRepo, RepoSlug: slug, Source: *source, Harness: *harness,
+		Target: *target, Remote: *remote, ReadyLabel: *label, Concurrency: *concurrency,
+		PollSeconds: *poll, StallMinutes: *stall, WorktreeRoot: *worktrees, RunDir: runDir,
+		WorkerAgent: *agent, WorkerModel: *workerModel, ManagerModel: *managerModel,
+		LauncherArgs: launcher, VerifyCommands: verify, Invocation: *invocation, Publish: *publish,
+		IssueNumbers: issues, IssueQuery: *issueQuery}
+	if setup != nil {
+		cfg.RelatedRepositories = setup.RelatedRepositories
+		cfg.Sequences = setup.Sequences
+		cfg.ForbiddenCommitPatterns = setup.ForbiddenCommitPatterns
+	}
 	s := &State{
 		Version: stateVersion, RunID: *runID, CreatedAt: now(), UpdatedAt: now(),
 		Login: strings.TrimSpace(loginOut), Items: map[string]*Item{},
-		Config: Config{Repo: absRepo, RepoSlug: slug, Source: *source, Harness: *harness,
-			Target: *target, Remote: *remote, ReadyLabel: *label, Concurrency: *concurrency,
-			PollSeconds: *poll, StallMinutes: *stall, WorktreeRoot: *worktrees, RunDir: runDir,
-			WorkerAgent: *agent, WorkerModel: *workerModel, ManagerModel: *managerModel,
-			LauncherArgs: launcher, VerifyCommands: verify, Invocation: *invocation, Publish: *publish,
-			IssueNumbers: issues, IssueQuery: *issueQuery},
+		Config: cfg,
 	}
 	statePath := filepath.Join(runDir, "state.json")
 	appendEvent(s, event{At: now(), Type: "run_initialized", Message: slug})
@@ -510,6 +550,14 @@ func harnessBinary(h string) string {
 		return "opencode"
 	}
 	return "codex"
+}
+
+func supportedHarness(h string) bool {
+	return h == "codex" || h == "grok" || h == "opencode"
+}
+
+func supervisorLaunchesWorkers(h string) bool {
+	return h == "codex" || h == "opencode"
 }
 
 func loadProjectSetup(repo, rel string) (*ProjectSetup, error) {
@@ -1184,14 +1232,10 @@ func githubIssues(s *State) ([]*Item, error) {
 		}
 		for _, b := range n.BlockedBy.Nodes {
 			blocker := Blocker{Number: b.Number, State: b.State, Repository: b.Repository.NameWithOwner}
-			for _, p := range b.Closing.Nodes {
-				if b.State == "CLOSED" && p.MergedAt != "" && p.BaseRefName == s.Config.Target && p.MergeCommit != nil && isAncestor(s.Config.Repo, p.MergeCommit.OID, s.Config.Remote+"/"+s.Config.Target) {
-					blocker.Integrated = true
-					break
-				}
-			}
-			if !blocker.Integrated {
-				blocker.Reason = "no merged closing PR is present on the configured target"
+			if githubBlockerIntegrated(s, b.Number, b.Closing.Nodes) {
+				blocker.Integrated = true
+			} else {
+				blocker.Reason = "no merged review for this blocker is present on the configured target"
 			}
 			i.Blockers = append(i.Blockers, blocker)
 		}
@@ -1350,6 +1394,193 @@ func explicitBlockerNumbers(description string) []int {
 	return numbers
 }
 
+func githubBlockerIntegrated(s *State, number int, closing []struct {
+	Number      int
+	BaseRefName string
+	MergedAt    string
+	MergeCommit *struct{ OID string }
+}) bool {
+	for _, p := range closing {
+		if p.MergedAt != "" && p.BaseRefName == s.Config.Target && p.MergeCommit != nil && isAncestor(s.Config.Repo, p.MergeCommit.OID, s.Config.Remote+"/"+s.Config.Target) {
+			return githubRelatedReviewsMerged(s, number)
+		}
+	}
+	if item := s.Items[strconv.Itoa(number)]; item != nil && item.PR != nil && item.PR.MergeOID != "" && isAncestor(s.Config.Repo, item.PR.MergeOID, s.Config.Remote+"/"+s.Config.Target) {
+		return githubRelatedReviewsMerged(s, number)
+	}
+	if githubHeadPrefixMerged(s.Config.RepoSlug, s.Config.Target, fmt.Sprintf("issue/%d-", number)) {
+		return githubRelatedReviewsMerged(s, number)
+	}
+	return false
+}
+
+func githubRelatedReviewsMerged(s *State, number int) bool {
+	if len(s.Config.RelatedRepositories) == 0 {
+		return true
+	}
+	prefix := fmt.Sprintf("issue/%d-", number)
+	for _, rel := range s.Config.RelatedRepositories {
+		if rel.Name == "" {
+			continue
+		}
+		// A listed repo is required only when this item opened a review there.
+		if githubHeadPrefixOpen(rel.Name, s.Config.Target, prefix) && !githubHeadPrefixMerged(rel.Name, s.Config.Target, prefix) {
+			return false
+		}
+	}
+	return true
+}
+
+func githubHeadPrefixMerged(slug, target, prefix string) bool {
+	return githubHeadPrefixExists(slug, target, prefix, "merged")
+}
+
+func githubHeadPrefixOpen(slug, target, prefix string) bool {
+	return githubHeadPrefixExists(slug, target, prefix, "open")
+}
+
+func githubHeadPrefixExists(slug, target, prefix, state string) bool {
+	out, err := run("", nil, "gh", "pr", "list", "--repo", slug, "--state", state, "--base", target, "--json", "headRefName", "--limit", "100")
+	if err != nil {
+		return false
+	}
+	var rows []struct {
+		HeadRefName string `json:"headRefName"`
+	}
+	if json.Unmarshal([]byte(out), &rows) != nil {
+		return false
+	}
+	for _, row := range rows {
+		if strings.HasPrefix(row.HeadRefName, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+func reviewLinkLine(s *State, i *Item) string {
+	if len(s.Config.RelatedRepositories) > 0 {
+		return fmt.Sprintf("Related #%d", i.Number)
+	}
+	return fmt.Sprintf("Closes #%d", i.Number)
+}
+
+func workerContractAppendix(s *State, i *Item) string {
+	var b strings.Builder
+	if len(i.SequenceReservations) > 0 {
+		b.WriteString("\nReserved sequence tokens. Use the next unused token; do not reuse a number already on the target or a sibling checkout:\n")
+		for _, token := range i.SequenceReservations {
+			b.WriteString("- ")
+			b.WriteString(token)
+			b.WriteString("\n")
+		}
+	}
+	if len(s.Config.ForbiddenCommitPatterns) > 0 {
+		b.WriteString("\nDo not commit a line matching these forbidden patterns:\n")
+		for _, rule := range s.Config.ForbiddenCommitPatterns {
+			fmt.Fprintf(&b, "- %s: %s\n", rule.Path, rule.Pattern)
+		}
+	}
+	if len(s.Config.RelatedRepositories) > 0 {
+		b.WriteString("\nRelated repositories. Keep matching issue branches; do not commit a path replace to a sibling checkout:\n")
+		for _, rel := range s.Config.RelatedRepositories {
+			fmt.Fprintf(&b, "- %s (%s)\n", rel.Name, rel.Path)
+		}
+	}
+	return b.String()
+}
+
+func reserveSequences(s *State, i *Item) error {
+	if len(s.Config.Sequences) == 0 {
+		return nil
+	}
+	i.SequenceReservations = nil
+	for _, seq := range s.Config.Sequences {
+		used := map[int]bool{}
+		width := collectSequenceNumbers(filepath.Join(s.Config.Repo, seq.Directory), seq.Pattern, used)
+		for _, other := range s.Items {
+			if other == nil || other.Worktree == "" {
+				continue
+			}
+			if w := collectSequenceNumbers(filepath.Join(other.Worktree, seq.Directory), seq.Pattern, used); w > width {
+				width = w
+			}
+		}
+		for _, rel := range s.Config.RelatedRepositories {
+			if rel.Path == "" {
+				continue
+			}
+			path := rel.Path
+			if !filepath.IsAbs(path) {
+				path = filepath.Join(s.Config.Repo, path)
+			}
+			if w := collectSequenceNumbers(filepath.Join(path, seq.Directory), seq.Pattern, used); w > width {
+				width = w
+			}
+		}
+		if width == 0 {
+			width = 6
+		}
+		next := 0
+		for n := range used {
+			if n > next {
+				next = n
+			}
+		}
+		i.SequenceReservations = append(i.SequenceReservations, fmt.Sprintf("%s: %0*d", seq.Directory, width, next+1))
+	}
+	return nil
+}
+
+func collectSequenceNumbers(dir, pattern string, used map[int]bool) int {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return 0
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return 0
+	}
+	width := 0
+	for _, entry := range entries {
+		matches := re.FindStringSubmatch(entry.Name())
+		if len(matches) < 2 {
+			continue
+		}
+		n, convErr := strconv.Atoi(matches[1])
+		if convErr != nil {
+			continue
+		}
+		used[n] = true
+		if len(matches[1]) > width {
+			width = len(matches[1])
+		}
+	}
+	return width
+}
+
+func rejectForbiddenCommits(s *State, worktree string) error {
+	for _, rule := range s.Config.ForbiddenCommitPatterns {
+		re, err := regexp.Compile(rule.Pattern)
+		if err != nil {
+			return fmt.Errorf("forbidden commit pattern %s: %w", rule.Path, err)
+		}
+		out, diffErr := git(worktree, "diff", "--cached", "-U0", "--", rule.Path)
+		if diffErr != nil {
+			continue
+		}
+		for _, line := range strings.Split(out, "\n") {
+			if !strings.HasPrefix(line, "+") || strings.HasPrefix(line, "+++") {
+				continue
+			}
+			if re.MatchString(strings.TrimPrefix(line, "+")) {
+				return fmt.Errorf("forbidden commit pattern in %s: %s", rule.Path, rule.Pattern)
+			}
+		}
+	}
+	return nil
+}
+
 func gitlabIssueIntegrated(s *State, number int) bool {
 	endpoint := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/issues/" + strconv.Itoa(number) + "/related_merge_requests"
 	out, err := run("", nil, "glab", "api", endpoint)
@@ -1442,6 +1673,9 @@ func ready(i *Item, login, label string) bool {
 }
 
 func dispatch(statePath string, s *State) error {
+	if !supervisorLaunchesWorkers(s.Config.Harness) {
+		return nil
+	}
 	active := 0
 	for _, i := range s.Items {
 		if i.Status == "running" && i.Worker != nil && processAlive(i.Worker.PID, i.Worker.PIDStart) {
@@ -1491,7 +1725,7 @@ func prepareWorktree(s *State, i *Item) error {
 		if !info.IsDir() {
 			return errors.New("managed checkout uses shared Git metadata; preserve it and start a fresh run with self-contained checkouts")
 		}
-		return nil
+		return reserveSequences(s, i)
 	}
 	if _, err := os.Stat(i.Worktree); err == nil {
 		return fmt.Errorf("refusing existing unmanaged path %s", i.Worktree)
@@ -1525,7 +1759,7 @@ func prepareWorktree(s *State, i *Item) error {
 	}
 	_, _ = git(i.Worktree, "branch", "--unset-upstream")
 	i.Managed, i.BaseHead = true, s.TargetHead
-	return nil
+	return reserveSequences(s, i)
 }
 
 func claimIssue(s *State, i *Item) error {
@@ -1592,6 +1826,13 @@ func launchWorker(statePath string, s *State, i *Item) error {
 }
 
 func workerPrompt(s *State, i *Item) string {
+	if s.Config.Harness == "opencode" && i.WorkerSession != "" {
+		return followupWorkerPrompt(s, i)
+	}
+	return fullWorkerPrompt(s, i)
+}
+
+func queuedFeedbackContext(i *Item) string {
 	var context strings.Builder
 	for _, r := range i.Pending {
 		if r.Status == "queued" && actionableRequest(r) && r.Message != "" {
@@ -1602,6 +1843,10 @@ func workerPrompt(s *State, i *Item) string {
 			fmt.Fprintf(&context, "\nOperator/review input (%s; %s; %s):\n%s\n", r.Action, location, r.URL, r.Message)
 		}
 	}
+	return context.String()
+}
+
+func fullWorkerPrompt(s *State, i *Item) string {
 	return fmt.Sprintf(`%s
 
 Implement exactly one work item in the existing isolated worktree.
@@ -1617,22 +1862,46 @@ Repository: %s
 Target ref at dispatch: %s/%s (%s)
 Assigned branch: %s
 Assigned worktree: %s
-%s
+%s%s
 Rules:
 - Read and obey every applicable project instruction file.
 - Preserve unrelated changes and already integrated behavior.
 - Implement only this item and its smallest supporting changes.
-- Run focused checks regularly and the full applicable suite at the end.
+- Run focused checks for the code you changed. Do not rerun the supervisor's project-wide suite.
 - Review the final diff and leave the tested changes unstaged for the supervisor.
 - Do not modify Git metadata or create commits; the supervisor owns the checkpoint commit.
 - Do not query GitHub or another tracker.
 - Do not push, create or edit a pull request, merge, close issues, or delete worktrees.
 - Stop with a precise handoff when authority or product judgment is required.
+- If the new input is a question, answer from repository evidence and do not change code.
+- If the input is an unambiguous implementation request with no missing assumption, implement it.
+- If an assumption would be required, stop and say what must be decided.
 - End a successful handoff with exactly one Commit subject: <type>: <summary> line.
   Derive that concise Conventional Commit subject from the actual diff, not the issue number.
 - When this worker responds to review feedback, also end with exactly one
   Feedback response: <concise answer> line for the supervisor to post in the original thread.
-`, s.Config.Invocation, i.Title, i.Body, s.Config.Repo, s.Config.Remote, s.Config.Target, i.BaseHead, i.Branch, i.Worktree, context.String())
+`, s.Config.Invocation, i.Title, i.Body, s.Config.Repo, s.Config.Remote, s.Config.Target, i.BaseHead, i.Branch, i.Worktree, queuedFeedbackContext(i), workerContractAppendix(s, i))
+}
+
+func followupWorkerPrompt(s *State, i *Item) string {
+	return fmt.Sprintf(`%s
+
+Continue the same work item in the existing isolated worktree. The original title, body, and rules are already in this session. Apply only the new input below. Do not re-read the whole repository unless the new input requires it.
+
+Title: %s
+Assigned branch: %s
+Assigned worktree: %s
+%s
+Rules:
+- Change only what the new input requires.
+- If the new input is a question, answer from repository evidence and do not change code.
+- If the input is an unambiguous implementation request with no missing assumption, implement it.
+- If an assumption would be required, stop and say what must be decided.
+- Run focused checks for the code you changed. Do not rerun the supervisor's project-wide suite.
+- Leave tested changes unstaged. Do not commit, push, or call the tracker.
+- End with Commit subject: <type>: <summary>
+- If this is review feedback, also end with Feedback response: <concise answer>
+`, s.Config.Invocation, i.Title, i.Branch, i.Worktree, queuedFeedbackContext(i))
 }
 
 func queuedRequestIDs(i *Item) []string {
@@ -1670,20 +1939,26 @@ func cmdWorker(args []string) error {
 		return err
 	}
 	var argv []string
-	if s.Config.Harness == "codex" {
+	switch s.Config.Harness {
+	case "codex":
 		argv = []string{"exec", "--json", "--sandbox", "workspace-write", "-c", `approval_policy="never"`, "--ephemeral", "-C", i.Worktree, "-o", i.Worker.LastMessage}
 		if s.Config.WorkerModel != "" {
 			argv = append(argv, "--model", s.Config.WorkerModel)
 		}
 		argv = append(argv, s.Config.LauncherArgs...)
 		argv = append(argv, "-")
-	} else {
-		argv = []string{"run", "--agent", s.Config.WorkerAgent, "--format", "json", "--title", "orchestration-" + strconv.Itoa(i.Number), "--dir", i.Worktree}
+	case "opencode":
+		argv = []string{"run", "--agent", s.Config.WorkerAgent, "--format", "json", "--title", "orchestration-" + strconv.Itoa(i.Number), "--dir", i.Worktree, "--file", i.Worker.PromptPath}
 		if s.Config.WorkerModel != "" {
 			argv = append(argv, "--model", s.Config.WorkerModel)
 		}
+		if i.WorkerSession != "" {
+			argv = append(argv, "--session", i.WorkerSession)
+		}
 		argv = append(argv, s.Config.LauncherArgs...)
-		argv = append(argv, string(promptBytes))
+		argv = append(argv, "Read the attached prompt and do only that work.")
+	default:
+		return fmt.Errorf("harness %q does not launch CLI workers", s.Config.Harness)
 	}
 	cmd := exec.Command(harnessBinary(s.Config.Harness), argv...)
 	cmd.Dir, cmd.Stdout, cmd.Stderr = i.Worktree, os.Stdout, os.Stderr
@@ -1729,8 +2004,12 @@ func reapWorkers(statePath string, s *State) error {
 			return err
 		}
 		code, _ := strconv.Atoi(strings.TrimSpace(string(exitBytes)))
+		captureOpenCodeArtifacts(s, i)
 		if code != 0 {
 			i.Status, i.Error = "failed", fmt.Sprintf("worker exited with code %d", code)
+			if reason := openCodeFailureReason(i); reason != "" {
+				i.Error = reason
+			}
 			appendEvent(s, event{At: now(), Type: "worker_failed", Item: i.Number, Message: i.Error})
 			continue
 		}
@@ -1798,13 +2077,16 @@ func completeWorkerRequests(i *Item) {
 // replyToFeedback closes the feedback loop before the supervisor marks the
 // request applied. Workers never receive tracker authority.
 func replyToFeedback(s *State, i *Item) error {
-	if s.Config.Source != "gitlab" || i.PR == nil || i.Worker == nil {
+	if i.PR == nil || i.Worker == nil {
 		return nil
 	}
 	response := workerFeedbackResponse(i)
 	for n := range i.Pending {
 		req := &i.Pending[n]
-		if req.Action != "feedback" || req.ReplySent || req.ThreadID == "" || !contains(i.Worker.RequestIDs, req.ID) {
+		if req.Action != "feedback" || req.ReplySent || !contains(i.Worker.RequestIDs, req.ID) {
+			continue
+		}
+		if s.Config.Source == "gitlab" && req.ThreadID == "" {
 			continue
 		}
 		if response == "" {
@@ -1814,11 +2096,39 @@ func replyToFeedback(s *State, i *Item) error {
 		if i.PR.HeadOID != "" {
 			body += "\n\nUpdated commit: " + short(i.PR.HeadOID)
 		}
+		if err := postFeedbackReply(s, i, req, body); err != nil {
+			return err
+		}
+		req.ReplySent = true
+		target := req.ThreadID
+		if target == "" {
+			target = req.URL
+		}
+		appendEvent(s, event{At: now(), Type: "feedback_replied", Item: i.Number, Message: target})
+	}
+	return nil
+}
+
+func postFeedbackReply(s *State, i *Item, req *Request, body string) error {
+	if s.Config.Source == "gitlab" {
 		if _, err := run("", strings.NewReader(body), "glab", "mr", "note", "create", strconv.Itoa(i.PR.Number), "--repo", s.Config.RepoSlug, "--reply", req.ThreadID); err != nil {
 			return fmt.Errorf("reply to GitLab feedback: %w", err)
 		}
-		req.ReplySent = true
-		appendEvent(s, event{At: now(), Type: "feedback_replied", Item: i.Number, Message: req.ThreadID})
+		return nil
+	}
+	bodyPath := filepath.Join(s.Config.RunDir, "workers", "reply-"+req.ID+".md")
+	if err := os.WriteFile(bodyPath, []byte(body), 0o600); err != nil {
+		return err
+	}
+	if req.ThreadID != "" {
+		mutation := `mutation($thread:ID!,$body:String!){addPullRequestReviewThreadReply(input:{pullRequestReviewThreadId:$thread,body:$body}){comment{id}}}`
+		if _, err := run("", nil, "gh", "api", "graphql", "-f", "query="+mutation, "-F", "thread="+req.ThreadID, "-F", "body=@"+bodyPath); err != nil {
+			return fmt.Errorf("reply to GitHub review thread: %w", err)
+		}
+		return nil
+	}
+	if _, err := run("", nil, "gh", "pr", "comment", strconv.Itoa(i.PR.Number), "--repo", s.Config.RepoSlug, "--body-file", bodyPath); err != nil {
+		return fmt.Errorf("reply to GitHub review comment: %w", err)
 	}
 	return nil
 }
@@ -1873,6 +2183,9 @@ func verifyItem(s *State, i *Item) error {
 	if strings.TrimSpace(status) != "" {
 		if _, err := git(i.Worktree, "add", "--all"); err != nil {
 			return fmt.Errorf("stage verified worker diff: %w", err)
+		}
+		if err := rejectForbiddenCommits(s, i.Worktree); err != nil {
+			return err
 		}
 		subject, err := workerCommitSubject(s, i)
 		if err != nil {
@@ -1929,14 +2242,104 @@ func workerCommitSubject(s *State, i *Item) (string, error) {
 
 func handoffTexts(b []byte) []string {
 	result := []string{string(b)}
-	scanner := bufio.NewScanner(strings.NewReader(string(b)))
-	for scanner.Scan() {
+	scanJSONLines(b, func(line []byte) {
 		var value any
-		if json.Unmarshal(scanner.Bytes(), &value) == nil {
+		if json.Unmarshal(line, &value) == nil {
 			collectStrings(value, &result)
 		}
-	}
+	})
 	return result
+}
+
+func scanJSONLines(b []byte, fn func([]byte)) {
+	scanner := bufio.NewScanner(strings.NewReader(string(b)))
+	scanner.Buffer(make([]byte, 0, 1024*1024), 16*1024*1024)
+	for scanner.Scan() {
+		fn(scanner.Bytes())
+	}
+}
+
+func captureOpenCodeArtifacts(s *State, i *Item) {
+	if s.Config.Harness != "opencode" || i.Worker == nil || i.Worker.LogPath == "" {
+		return
+	}
+	b, err := os.ReadFile(i.Worker.LogPath)
+	if err != nil {
+		return
+	}
+	if id := openCodeSessionID(b); id != "" {
+		i.WorkerSession = id
+		i.Worker.SessionID = id
+	}
+	if text := openCodeLastAssistantText(b); text != "" && i.Worker.LastMessage != "" {
+		_ = os.WriteFile(i.Worker.LastMessage, []byte(text+"\n"), 0o600)
+	}
+}
+
+func openCodeSessionID(b []byte) string {
+	var found string
+	scanJSONLines(b, func(line []byte) {
+		var value any
+		if json.Unmarshal(line, &value) != nil {
+			return
+		}
+		if id := firstNamedString(value, "sessionID", "session_id", "sessionId"); id != "" {
+			found = id
+		}
+	})
+	return found
+}
+
+func openCodeLastAssistantText(b []byte) string {
+	var last string
+	scanJSONLines(b, func(line []byte) {
+		var value any
+		if json.Unmarshal(line, &value) != nil {
+			return
+		}
+		if text := firstNamedString(value, "text"); text != "" {
+			last = text
+		}
+	})
+	return last
+}
+
+func firstNamedString(value any, names ...string) string {
+	switch typed := value.(type) {
+	case map[string]any:
+		for _, name := range names {
+			if text, ok := typed[name].(string); ok && strings.TrimSpace(text) != "" {
+				return text
+			}
+		}
+		for _, child := range typed {
+			if text := firstNamedString(child, names...); text != "" {
+				return text
+			}
+		}
+	case []any:
+		for _, child := range typed {
+			if text := firstNamedString(child, names...); text != "" {
+				return text
+			}
+		}
+	}
+	return ""
+}
+
+func openCodeFailureReason(i *Item) string {
+	if i.Worker == nil || i.Worker.LogPath == "" {
+		return ""
+	}
+	b, err := os.ReadFile(i.Worker.LogPath)
+	if err != nil {
+		return ""
+	}
+	lower := strings.ToLower(string(b))
+	if strings.Contains(lower, "permission") && (strings.Contains(lower, "denied") || strings.Contains(lower, "rejected") || strings.Contains(lower, "unanswered") || strings.Contains(lower, "ask")) {
+		return "OpenCode worker stopped on a permission prompt; grant the command in the project worker policy and retry"
+	}
+	return ""
 }
 
 func collectStrings(value any, result *[]string) {
@@ -1955,10 +2358,48 @@ func collectStrings(value any, result *[]string) {
 }
 
 func harnessCredit(harness string) string {
-	if harness == "opencode" {
+	switch harness {
+	case "opencode":
 		return "OpenCode/AI"
+	case "grok":
+		return "Grok/AI"
+	default:
+		return "Codex/AI"
 	}
-	return "Codex/AI"
+}
+
+func integrationCloseComment(s *State, i *Item) string {
+	review, oid := "the linked review", "unknown"
+	if i.PR != nil {
+		if i.PR.URL != "" {
+			review = i.PR.URL
+		} else if i.PR.Number > 0 {
+			review = "#" + strconv.Itoa(i.PR.Number)
+		}
+		if i.PR.MergeOID != "" {
+			oid = short(i.PR.MergeOID)
+		}
+	}
+	return fmt.Sprintf("AI-generated: Closed after %s merged as %s on %s.", review, oid, s.Config.Target)
+}
+
+func closeIntegratedItem(s *State, i *Item) error {
+	if i.State == "CLOSED" {
+		return nil
+	}
+	comment := integrationCloseComment(s, i)
+	var err error
+	if s.Config.Source == "gitlab" {
+		_, err = run("", nil, "glab", "issue", "close", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--comment", comment)
+	} else {
+		_, err = run("", nil, "gh", "issue", "close", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--comment", comment)
+	}
+	if err != nil {
+		return err
+	}
+	i.State = "CLOSED"
+	appendEvent(s, event{At: now(), Type: "item_closed", Item: i.Number, Message: comment})
+	return nil
 }
 
 func publishItem(s *State, i *Item) error {
@@ -1974,7 +2415,7 @@ func publishItem(s *State, i *Item) error {
 		return err
 	}
 	if pr == nil {
-		body := fmt.Sprintf("Closes #%d\n\n## Summary\n\nImplementation for `%s`.\n\n## Verification\n\n", i.Number, i.Title)
+		body := fmt.Sprintf("%s\n\n## Summary\n\nImplementation for `%s`.\n\n## Verification\n\n", reviewLinkLine(s, i), i.Title)
 		if len(i.Verification) == 0 {
 			body += "Independent verification is recorded in the worker handoff.\n"
 		} else {
@@ -2056,6 +2497,9 @@ func syncPull(s *State, i *Item) error {
 			i.Status = "integrated"
 			if previousStatus != "integrated" {
 				appendEvent(s, event{At: now(), Type: "integrated", Item: i.Number, Message: pr.URL})
+			}
+			if err := closeIntegratedItem(s, i); err != nil {
+				appendEvent(s, event{At: now(), Type: "item_close_failed", Item: i.Number, Message: err.Error()})
 			}
 		} else {
 			i.Status = "closed_unverified"
@@ -2600,7 +3044,7 @@ func classifyFeedback(input feedbackInput) string {
 		}
 	}
 	if strings.HasSuffix(body, "?") {
-		return "needs_input"
+		return "feedback"
 	}
 	if input.Inline || input.RequestedChanges {
 		return "feedback"
@@ -3013,7 +3457,7 @@ func eventPriority(kind string) string {
 	case "feedback_detected", "input_required", "ci_failed", "worker_lost", "worker_failed",
 		"verification_failed", "publication_failed", "checkpoint_created", "branch_pushed",
 		"published", "followup_queued", "queue_blocked", "queue_idle", "integrated",
-		"review_closed", "terminal_worker_stopped", "checkout_removed", "worktree_root_removed", "run_completed":
+		"item_closed", "review_closed", "terminal_worker_stopped", "checkout_removed", "worktree_root_removed", "run_completed":
 		return "important"
 	case "worker_started", "worker_completed", "queue_progress":
 		return "progress"

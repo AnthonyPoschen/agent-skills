@@ -96,11 +96,15 @@ at a time.
 
 Poll comments, reactions, unresolved inline threads, requested-change reviews,
 and checks for every waiting review without requiring another user prompt.
-Apply the authorization policy in the core workflow before constructing a
-follow-up prompt. Keep polling while a worker runs. Snapshot the authorized
-feedback IDs given to that worker; newly authorized IDs belong to a later
-follow-up. Surface important supervisor events under an `Events` lead-in and
-keep unchanged polls silent.
+Apply the authorization and classification policy in the core workflow before
+constructing a follow-up prompt. In the same poll, reply on the ticket to
+authorized questions and launch a follow-up worker for unambiguous
+implementation requests. Keep polling while a worker runs. Snapshot the
+authorized feedback IDs given to that worker; newly authorized IDs belong to
+a later follow-up. Surface important supervisor events under an `Events`
+lead-in and keep unchanged polls silent. If a required manager write is
+denied, report the exact pending action immediately. Treat HTTP 402 as a
+stall and resume once after credits are restored.
 
 After `run_completed`, relay the final event and return a final answer. The
 supervisor must already have stopped workers, removed verified run-owned

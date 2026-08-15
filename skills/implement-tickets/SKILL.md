@@ -1,6 +1,6 @@
 ---
 name: implement-tickets
-description: Orchestrate a selected set, range, query, or dependency-linked backlog of work items through isolated workers, worktrees, review feedback, and human-controlled merges. Use when the user asks to implement tickets, implement all tickets, run selected issues in parallel, coordinate ticket agents, monitor worker progress, or process review feedback across GitLab, GitHub, or local work-item files.
+description: Orchestrate a selected set, range, query, or dependency-linked backlog of work items through isolated workers, worktrees, review feedback, and human-controlled merges. Use when the user asks to implement tickets, implement all tickets, run selected issues in parallel, coordinate ticket agents, monitor worker progress, or process review feedback across GitLab, GitHub, or local work-item files, including from a Grok session with native subagents.
 ---
 
 # Implement Tickets
@@ -18,17 +18,20 @@ tracker or worker action:
 - GitLab: [GitLab work source](references/work-sources/gitlab.md)
 - Jira beta: [Jira work source](references/work-sources/jira.md)
 - Codex: [Codex harness](references/harnesses/codex.md)
+- Grok: [Grok harness](references/harnesses/grok.md)
 - OpenCode: [OpenCode harness](references/harnesses/opencode.md)
 
 For harnesses that already provide agents, sandboxes, or progress UI, read the
 [capability contract](references/harnesses/capabilities.md). Use only the
 supervisor capabilities that add durable or deterministic behavior.
 
-Codex can run the manager loop directly and use `codex exec` as the worker
-isolation boundary. OpenCode needs the bundled Go supervisor to provide durable
-state and process management. Build `scripts/orchestrate.go` for OpenCode and
-for any environment where the chat session cannot safely own a long-running
-loop. The supervisor uses only the Go standard library.
+Codex and Grok can run the manager loop directly. Codex isolates workers with
+`codex exec`. Grok isolates workers with background `spawn_subagent` and keeps
+reviews moving with monitors plus a scheduled poll. OpenCode needs the bundled
+Go supervisor to provide durable state and process management. Build
+`scripts/orchestrate.go` for OpenCode and for any environment where the chat
+session cannot safely own a long-running loop. The supervisor uses only the Go
+standard library and does not launch Grok subagents.
 If no adapter fits, inspect the repository and write the missing adapter
 contract before starting work.
 
@@ -43,8 +46,10 @@ contract before starting work.
    workers, open reviews, and candidate work items.
 4. Refuse to start when the primary worktree has unrelated uncommitted changes.
    Never reset, clean, or overwrite another person's work.
-5. Confirm the manager may push branches and create draft reviews, but only a human may
-   merge.
+5. Confirm the manager has standing authority to push branches, post review
+   comments, and close leftover open items after verified integration. Only a
+   human may merge. If the host denies one of those writes, report the pending
+   action immediately.
 6. Select an isolated checkout location and concurrency cap. Default to three;
    a smaller ready set naturally lowers concurrency. Do not launch an unbounded
    backlog merely because many items appear ready.
@@ -52,8 +57,10 @@ contract before starting work.
    background workers. Preserve existing harness provider settings. Do not add
    provider restrictions unless the user explicitly requests them.
 8. For OpenCode, initialize and start the bundled supervisor before launching
-   workers. For Codex, either run the manager loop directly or use the same
-   supervisor when durable unattended operation is requested.
+   workers, then keep the chat session on `events --follow` or `status`. For
+   Codex or Grok, run the manager loop in this chat session. Use the same
+   supervisor for durable state when unattended operation is requested; Grok
+   still launches its own workers.
 
 ## Adapter Contract
 
@@ -83,7 +90,8 @@ user-selected background model. Do not assume a provider, model, or cost tier.
 - Build the dependency graph only from explicit blocker references. Do not infer
   dependencies from ticket order.
 - A work item is ready only when every declared blocker is integrated into the
-  target branch.
+  target branch. Tracker CLOSED is not required. A leftover open issue after a
+  verified merge does not block dependents.
 - Use a deterministic branch and one isolated checkout per work item.
 - Create worker branches without an upstream. Only the manager pushes the
   assigned source branch through an explicit refspec.
@@ -118,17 +126,24 @@ user-selected background model. Do not assume a provider, model, or cost tier.
   authorization comment tied to it. Include both comments in the follow-up
   worker prompt when authorization is written as a comment.
 - Poll feedback while reviews wait for a human merge. A user must not need to
-  prompt the manager after leaving a review comment. Feedback discovered while
-  a worker owns the branch is queued for a later follow-up worker.
-- In Codex, keep the manager turn open while the run is nonterminal and relay
-  important supervisor events through commentary. Detached execution cannot
-  write into a chat turn after a final answer; never promise that it can.
+  prompt the manager after leaving a review comment. In the same poll, apply
+  the core-workflow feedback policy: reply on the ticket, launch a follow-up
+  worker, or post a clarifying question. Feedback discovered while a worker
+  owns the branch is queued for a later follow-up worker.
+- In Codex or Grok, keep the manager turn open while the run is nonterminal and
+  relay important supervisor events through commentary. Grok also starts a
+  review monitor and a scheduled poll so a merge or new comment wakes the next
+  turn without a user prompt. Detached execution cannot write into a chat turn
+  after a final answer; never promise that it can.
 - Every agent-written review comment begins with `AI-generated:`. Use concise
   ASD-STE100-style technical English: changed location first, then short action
   bullets. Do not write commit-message paragraphs or routine test lists.
-- Never merge, enable auto-merge, close a work item manually, approve the
-  manager's own review, or mark human feedback resolved on the reviewer's
-  behalf.
+- Never merge, enable auto-merge, approve the manager's own review, or mark
+  human feedback resolved on the reviewer's behalf. Close a work item only
+  after the linked review is merged and the merge commit is an ancestor of the
+  fetched target. If the tracker did not auto-close it, close it then. Never
+  close an unintegrated item. After that closure or a verified auto-close,
+  recompute readiness and launch newly unblocked ready items up to the cap.
 
 ## Completion
 

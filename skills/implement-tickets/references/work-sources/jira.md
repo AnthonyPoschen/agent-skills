@@ -18,7 +18,8 @@ record:
 Map Jira keys to normalized supervisor items. Map inward blocker links to
 explicit blockers. A completed Jira status alone does not prove integration:
 verify the linked pull/merge request commit is present on the configured Git
-target branch.
+target branch for every repository listed in the project contract. A leftover
+open Jira item after that Git proof does not block dependents.
 
 Jira supplies work and discussion state; GitHub or GitLab remains the review and
 Git integration source. Poll both sides and deduplicate by provider object ID and

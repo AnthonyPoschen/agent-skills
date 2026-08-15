@@ -54,7 +54,107 @@ func TestReadyRequiresIntegratedBlockers(t *testing.T) {
 func TestOpenBlockerNeverCountsAsIntegrated(t *testing.T) {
 	i := &Item{State: "OPEN", Labels: []string{"ready-for-agent"}, Blockers: []Blocker{{Number: 1, State: "OPEN", Integrated: false}}}
 	if ready(i, "me", "ready-for-agent") {
-		t.Fatal("open blocker was accepted")
+		t.Fatal("unintegrated open blocker was accepted")
+	}
+}
+
+func TestIntegratedBlockerMayRemainOpenOnTracker(t *testing.T) {
+	i := &Item{State: "OPEN", Labels: []string{"ready-for-agent"}, Blockers: []Blocker{{Number: 1, State: "OPEN", Integrated: true}}}
+	if !ready(i, "me", "ready-for-agent") {
+		t.Fatal("Git-integrated blocker still blocked readiness because the tracker issue is open")
+	}
+}
+
+func TestReviewLinkLineUsesRelatedWhenContractListsRepositories(t *testing.T) {
+	item := &Item{Number: 36}
+	if got := reviewLinkLine(&State{}, item); got != "Closes #36" {
+		t.Fatalf("single-repo closing line = %q", got)
+	}
+	s := &State{Config: Config{RelatedRepositories: []RelatedRepository{{Name: "org/controller", Path: "../controller"}}}}
+	if got := reviewLinkLine(s, item); got != "Related #36" {
+		t.Fatalf("multi-repo closing line = %q", got)
+	}
+}
+
+func TestCollectSequenceNumbersAndReserveNext(t *testing.T) {
+	dir := t.TempDir()
+	mig := filepath.Join(dir, "db", "migrations")
+	if err := os.MkdirAll(mig, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"000029_a.up.sql", "000030_b.up.sql", "README.md"} {
+		if err := os.WriteFile(filepath.Join(mig, name), []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s := &State{
+		Config: Config{
+			Repo: dir,
+			Sequences: []Sequence{{Directory: "db/migrations", Pattern: `^(\d{6})_`}},
+		},
+		Items: map[string]*Item{},
+	}
+	item := &Item{Number: 40}
+	if err := reserveSequences(s, item); err != nil {
+		t.Fatal(err)
+	}
+	if len(item.SequenceReservations) != 1 || item.SequenceReservations[0] != "db/migrations: 000031" {
+		t.Fatalf("reservations = %#v", item.SequenceReservations)
+	}
+}
+
+func TestRejectForbiddenCommitsDetectsPathReplace(t *testing.T) {
+	s := &State{Config: Config{ForbiddenCommitPatterns: []ForbiddenCommitPattern{{Path: "go.mod", Pattern: `^replace\s+\S+\s+=>\s+\.\./`}}}}
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module x\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := run(dir, nil, "git", "init"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := git(dir, "config", "user.email", "t@example.test"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := git(dir, "config", "user.name", "t"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := git(dir, "add", "go.mod"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := git(dir, "commit", "-m", "init"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module x\n\nreplace example.com/mod => ../mod\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := git(dir, "add", "go.mod"); err != nil {
+		t.Fatal(err)
+	}
+	if err := rejectForbiddenCommits(s, dir); err == nil {
+		t.Fatal("path replace was accepted")
+	}
+}
+
+func TestProjectSetupAcceptsSharedOptionalFields(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, ".github"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body := `{
+  "version": 1,
+  "source": "github",
+  "target": "master",
+  "related_repositories": [{"name": "org/other", "path": "../other", "role": "controller"}],
+  "sequences": [{"directory": "db/migrations", "pattern": "^(\\\\d{6})_"}],
+  "forbidden_commit_patterns": [{"path": "go.mod", "pattern": "^replace"}]
+}`
+	path := filepath.Join(dir, ".github", "implement-tickets.json")
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	setup, err := loadProjectSetup(dir, ".github/implement-tickets.json")
+	if err != nil || setup == nil || len(setup.RelatedRepositories) != 1 || len(setup.Sequences) != 1 || len(setup.ForbiddenCommitPatterns) != 1 {
+		t.Fatalf("setup = %#v err=%v", setup, err)
 	}
 }
 
@@ -258,7 +358,8 @@ func TestFeedbackClassificationIsConservative(t *testing.T) {
 		{feedbackInput{Body: "Can you add a regression test?"}, "feedback"},
 		{feedbackInput{Body: "Can we show current/total progress?"}, "feedback"},
 		{feedbackInput{Body: "Anything that is 404 should not fail the run."}, "feedback"},
-		{feedbackInput{Body: "Why was this approach selected?"}, "needs_input"},
+		{feedbackInput{Body: "Why was this approach selected?"}, "feedback"},
+		{feedbackInput{Body: "is this easy for other games to use the same tool?"}, "feedback"},
 		{feedbackInput{Body: "This requires a product decision before implementation."}, "needs_input"},
 		{feedbackInput{Body: "The guard is inverted.", Inline: true}, "feedback"},
 		{feedbackInput{Body: "Looks good to me."}, "observed"},
@@ -484,5 +585,82 @@ func TestCleanupWaitsForWholeRunAndKeepsAuditLogs(t *testing.T) {
 	}
 	if !runComplete(s) {
 		t.Fatal("cleaned terminal run was not complete")
+	}
+}
+
+func TestSupportedHarnessIncludesGrok(t *testing.T) {
+	if !supportedHarness("grok") || supervisorLaunchesWorkers("grok") {
+		t.Fatal("grok should be a supported interactive harness that does not launch CLI workers")
+	}
+	if !supervisorLaunchesWorkers("opencode") || !supervisorLaunchesWorkers("codex") {
+		t.Fatal("codex and opencode should still launch CLI workers")
+	}
+}
+
+func TestGrokDispatchDoesNotLaunchWorkers(t *testing.T) {
+	s := &State{
+		Config: Config{Harness: "grok", Concurrency: 3},
+		Items:  map[string]*Item{"1": {Number: 1, Status: "ready", Title: "Do a thing"}},
+	}
+	if err := dispatch(filepath.Join(t.TempDir(), "state.json"), s); err != nil {
+		t.Fatal(err)
+	}
+	if s.Items["1"].Status != "ready" || s.Items["1"].Worker != nil {
+		t.Fatalf("grok dispatch mutated item: %#v", s.Items["1"])
+	}
+}
+
+func TestHarnessCreditIncludesGrok(t *testing.T) {
+	if got := harnessCredit("grok"); got != "Grok/AI" {
+		t.Fatalf("harnessCredit(grok) = %q", got)
+	}
+}
+
+func TestFollowupPromptOmitsCanonicalBody(t *testing.T) {
+	s := &State{Config: Config{Invocation: "$implement", Harness: "opencode"}}
+	i := &Item{
+		Title: "Add a thing", Body: "Line one\n\n- exact acceptance criterion",
+		Branch: "issue/2-add", Worktree: "/worktree", WorkerSession: "ses_123",
+		Pending: []Request{{Status: "queued", Action: "feedback", Message: "rename the helper", Source: "github-comment"}},
+	}
+	prompt := workerPrompt(s, i)
+	if strings.Contains(prompt, i.Body) {
+		t.Fatal("follow-up prompt re-sent the canonical body")
+	}
+	if !strings.Contains(prompt, "rename the helper") || !strings.Contains(prompt, "Continue the same work item") {
+		t.Fatalf("follow-up prompt missing new input: %s", prompt)
+	}
+}
+
+func TestOpenCodeSessionIDReadsNestedJSON(t *testing.T) {
+	raw := `{"type":"tool","payload":{"huge":"` + strings.Repeat("x", 80_000) + `"}}` + "\n" +
+		`{"type":"session.created","properties":{"sessionID":"ses_abc"}}` + "\n"
+	if got := openCodeSessionID([]byte(raw)); got != "ses_abc" {
+		t.Fatalf("openCodeSessionID = %q", got)
+	}
+}
+
+func TestHandoffTextsReadsLongJSONLines(t *testing.T) {
+	raw := `{"type":"tool","payload":{"huge":"` + strings.Repeat("x", 80_000) + `"}}` + "\n" +
+		`{"part":{"text":"Commit subject: fix: keep long event lines\n"}}` + "\n"
+	found := false
+	for _, text := range handoffTexts([]byte(raw)) {
+		if strings.Contains(text, "Commit subject: fix: keep long event lines") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("long JSONL handoff dropped the commit subject")
+	}
+}
+
+func TestIntegrationCloseCommentNamesReviewAndTarget(t *testing.T) {
+	s := &State{Config: Config{Target: "master"}}
+	i := &Item{PR: &Pull{URL: "https://example.test/pull/9", MergeOID: "abcdef1234567890"}}
+	got := integrationCloseComment(s, i)
+	for _, want := range []string{"AI-generated:", "https://example.test/pull/9", "abcdef1", "master"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("close comment %q missing %q", got, want)
+		}
 	}
 }
