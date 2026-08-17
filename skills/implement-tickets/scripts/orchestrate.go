@@ -53,30 +53,30 @@ func (s *intList) Set(v string) error {
 }
 
 type Config struct {
-	Repo           string   `json:"repo"`
-	RepoSlug       string   `json:"repo_slug"`
-	Source         string   `json:"source"`
-	Harness        string   `json:"harness"`
-	Target         string   `json:"target"`
-	Remote         string   `json:"remote"`
-	ReadyLabel     string   `json:"ready_label"`
-	Concurrency    int      `json:"concurrency"`
-	PollSeconds    int      `json:"poll_seconds"`
-	StallMinutes   int      `json:"stall_minutes"`
-	WorktreeRoot   string   `json:"worktree_root"`
-	RunDir         string   `json:"run_dir"`
-	WorkerAgent    string   `json:"worker_agent,omitempty"`
-	WorkerModel    string   `json:"worker_model,omitempty"`
-	ManagerModel   string   `json:"manager_model,omitempty"`
-	LauncherArgs   []string `json:"launcher_args,omitempty"`
-	VerifyCommands []string `json:"verify_commands,omitempty"`
-	Invocation     string   `json:"implementation_invocation,omitempty"`
-	Publish        bool     `json:"publish"`
-	IssueNumbers            []int                     `json:"issue_numbers,omitempty"`
-	IssueQuery              string                    `json:"issue_query,omitempty"`
-	RelatedRepositories     []RelatedRepository       `json:"related_repositories,omitempty"`
-	Sequences               []Sequence                `json:"sequences,omitempty"`
-	ForbiddenCommitPatterns []ForbiddenCommitPattern  `json:"forbidden_commit_patterns,omitempty"`
+	Repo                    string                   `json:"repo"`
+	RepoSlug                string                   `json:"repo_slug"`
+	Source                  string                   `json:"source"`
+	Harness                 string                   `json:"harness"`
+	Target                  string                   `json:"target"`
+	Remote                  string                   `json:"remote"`
+	ReadyLabel              string                   `json:"ready_label"`
+	Concurrency             int                      `json:"concurrency"`
+	PollSeconds             int                      `json:"poll_seconds"`
+	StallMinutes            int                      `json:"stall_minutes"`
+	WorktreeRoot            string                   `json:"worktree_root"`
+	RunDir                  string                   `json:"run_dir"`
+	WorkerAgent             string                   `json:"worker_agent,omitempty"`
+	WorkerModel             string                   `json:"worker_model,omitempty"`
+	ManagerModel            string                   `json:"manager_model,omitempty"`
+	LauncherArgs            []string                 `json:"launcher_args,omitempty"`
+	VerifyCommands          []string                 `json:"verify_commands,omitempty"`
+	Invocation              string                   `json:"implementation_invocation,omitempty"`
+	Publish                 bool                     `json:"publish"`
+	IssueNumbers            []int                    `json:"issue_numbers,omitempty"`
+	IssueQuery              string                   `json:"issue_query,omitempty"`
+	RelatedRepositories     []RelatedRepository      `json:"related_repositories,omitempty"`
+	Sequences               []Sequence               `json:"sequences,omitempty"`
+	ForbiddenCommitPatterns []ForbiddenCommitPattern `json:"forbidden_commit_patterns,omitempty"`
 }
 
 // RelatedRepository is a second Git repository this project must change for
@@ -105,15 +105,15 @@ type ForbiddenCommitPattern struct {
 // ProjectSetup is the repository-owned orchestration contract. Command-line
 // flags override it; tool and documentation discovery fill only missing data.
 type ProjectSetup struct {
-	Version      int      `json:"version"`
-	Source       string   `json:"source,omitempty"`
-	Target       string   `json:"target,omitempty"`
-	Remote       string   `json:"remote,omitempty"`
-	ReadyLabel   string   `json:"ready_label,omitempty"`
-	Harness      string   `json:"harness,omitempty"`
-	Concurrency  int      `json:"concurrency,omitempty"`
-	Verification []string `json:"verification,omitempty"`
-	Invocation   string   `json:"implementation_invocation,omitempty"`
+	Version                 int                      `json:"version"`
+	Source                  string                   `json:"source,omitempty"`
+	Target                  string                   `json:"target,omitempty"`
+	Remote                  string                   `json:"remote,omitempty"`
+	ReadyLabel              string                   `json:"ready_label,omitempty"`
+	Harness                 string                   `json:"harness,omitempty"`
+	Concurrency             int                      `json:"concurrency,omitempty"`
+	Verification            []string                 `json:"verification,omitempty"`
+	Invocation              string                   `json:"implementation_invocation,omitempty"`
 	WorkerAgent             string                   `json:"worker_agent,omitempty"`
 	WorkerModel             string                   `json:"worker_model,omitempty"`
 	ManagerModel            string                   `json:"manager_model,omitempty"`
@@ -138,30 +138,30 @@ type State struct {
 }
 
 type Item struct {
-	Number            int       `json:"number"`
-	NodeID            string    `json:"node_id,omitempty"`
-	Title             string    `json:"title"`
-	Body              string    `json:"body"`
-	URL               string    `json:"url"`
-	State             string    `json:"tracker_state"`
-	Labels            []string  `json:"labels,omitempty"`
-	Assignees         []string  `json:"assignees,omitempty"`
-	Blockers          []Blocker `json:"blockers,omitempty"`
-	Status            string    `json:"status"`
-	Branch            string    `json:"branch,omitempty"`
-	Worktree          string    `json:"worktree,omitempty"`
-	BaseHead          string    `json:"base_head,omitempty"`
-	Managed           bool      `json:"managed,omitempty"`
-	Worker            *Worker   `json:"worker,omitempty"`
-	PR                *Pull     `json:"pull_request,omitempty"`
-	Verification      []Check   `json:"verification,omitempty"`
-	SeenFeedback      []string  `json:"seen_feedback,omitempty"`
-	Pending           []Request `json:"pending_requests,omitempty"`
-	Error             string    `json:"error,omitempty"`
-	UpdatedAt         string    `json:"updated_at,omitempty"`
-	CheckoutRemovedAt string    `json:"checkout_removed_at,omitempty"`
-	WorkerSession          string    `json:"worker_session,omitempty"`
-	SequenceReservations   []string  `json:"sequence_reservations,omitempty"`
+	Number               int       `json:"number"`
+	NodeID               string    `json:"node_id,omitempty"`
+	Title                string    `json:"title"`
+	Body                 string    `json:"body"`
+	URL                  string    `json:"url"`
+	State                string    `json:"tracker_state"`
+	Labels               []string  `json:"labels,omitempty"`
+	Assignees            []string  `json:"assignees,omitempty"`
+	Blockers             []Blocker `json:"blockers,omitempty"`
+	Status               string    `json:"status"`
+	Branch               string    `json:"branch,omitempty"`
+	Worktree             string    `json:"worktree,omitempty"`
+	BaseHead             string    `json:"base_head,omitempty"`
+	Managed              bool      `json:"managed,omitempty"`
+	Worker               *Worker   `json:"worker,omitempty"`
+	PR                   *Pull     `json:"pull_request,omitempty"`
+	Verification         []Check   `json:"verification,omitempty"`
+	SeenFeedback         []string  `json:"seen_feedback,omitempty"`
+	Pending              []Request `json:"pending_requests,omitempty"`
+	Error                string    `json:"error,omitempty"`
+	UpdatedAt            string    `json:"updated_at,omitempty"`
+	CheckoutRemovedAt    string    `json:"checkout_removed_at,omitempty"`
+	WorkerSession        string    `json:"worker_session,omitempty"`
+	SequenceReservations []string  `json:"sequence_reservations,omitempty"`
 }
 
 type Blocker struct {
@@ -2027,7 +2027,7 @@ func reapWorkers(statePath string, s *State) error {
 		}
 		if s.Config.Publish {
 			if err := publishItem(s, i); err != nil {
-				i.Status, i.Error = "publication_failed", err.Error()
+				i.Status, i.Error = "needs_attention", err.Error()
 				appendEvent(s, event{At: now(), Type: "publication_failed", Item: i.Number, Message: err.Error()})
 				continue
 			}
@@ -2403,10 +2403,13 @@ func closeIntegratedItem(s *State, i *Item) error {
 }
 
 func publishItem(s *State, i *Item) error {
+	if err := reconcileTarget(s, i); err != nil {
+		return err
+	}
 	if err := verifyItem(s, i); err != nil {
 		return err
 	}
-	if _, err := git(i.Worktree, "push", s.Config.Remote, "HEAD:refs/heads/"+i.Branch); err != nil {
+	if _, err := git(i.Worktree, "push", "--force-with-lease", s.Config.Remote, "HEAD:refs/heads/"+i.Branch); err != nil {
 		return fmt.Errorf("push explicit branch refspec: %w", err)
 	}
 	appendEvent(s, event{At: now(), Type: "branch_pushed", Item: i.Number, Message: i.Branch})
@@ -2439,7 +2442,7 @@ func publishItem(s *State, i *Item) error {
 		}
 		pr, err = findPull(s, i.Branch)
 		if err != nil || pr == nil {
-			return errors.New("draft PR creation did not read back")
+			return errors.New("review creation did not read back")
 		}
 	}
 	localHead, err := git(i.Worktree, "rev-parse", "HEAD")
@@ -2471,13 +2474,28 @@ func awaitPublishedPull(s *State, branch, head string) (*Pull, error) {
 		}
 	}
 	if latest == nil {
-		return nil, errors.New("draft review did not read back after publication")
+		return nil, errors.New("review did not read back after publication")
 	}
-	return nil, fmt.Errorf("draft review readback stayed stale: expected head %s, observed %s", short(head), short(latest.HeadOID))
+	return nil, fmt.Errorf("review readback stayed stale: expected head %s, observed %s", short(head), short(latest.HeadOID))
 }
 
 func publishedPullMatches(pr *Pull, head string) bool {
-	return pr != nil && pr.Draft && pr.HeadOID == head
+	return pr != nil && pr.HeadOID == head
+}
+
+func reconcileTarget(s *State, i *Item) error {
+	if _, err := git(i.Worktree, "fetch", "--prune", s.Config.Remote, s.Config.Target); err != nil {
+		return fmt.Errorf("fetch remote target: %w", err)
+	}
+	target := s.Config.Remote + "/" + s.Config.Target
+	if isAncestor(i.Worktree, target, "HEAD") {
+		return nil
+	}
+	if _, err := git(i.Worktree, "rebase", target); err != nil {
+		return fmt.Errorf("rebase onto fetched remote target %s: %w", target, err)
+	}
+	appendEvent(s, event{At: now(), Type: "target_rebased", Item: i.Number, Message: target})
+	return nil
 }
 
 func syncPull(s *State, i *Item) error {
@@ -3003,7 +3021,6 @@ func queueFeedback(s *State, i *Item, input feedbackInput) error {
 		if err := acknowledgeFeedback(s, i, input); err != nil {
 			return err
 		}
-		appendEvent(s, event{At: now(), Type: "feedback_acknowledged", Item: i.Number, Message: input.Source})
 	}
 	return nil
 }
@@ -3012,14 +3029,20 @@ func acknowledgeFeedback(s *State, i *Item, input feedbackInput) error {
 	if input.RemoteID == "" || i.PR == nil {
 		return errors.New("feedback acknowledgement lacks provider-native comment ID")
 	}
+	var err error
 	if s.Config.Source == "gitlab" {
 		endpoint := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/merge_requests/" + strconv.Itoa(i.PR.Number) + "/notes/" + input.RemoteID + "/award_emoji"
-		_, err := run("", nil, "glab", "api", "--method", "POST", endpoint, "-f", "name=eyes")
+		_, err = run("", nil, "glab", "api", "--method", "POST", endpoint, "-f", "name=eyes")
+	} else {
+		mutation := `mutation($subject:ID!){addReaction(input:{subjectId:$subject,content:EYES}){reaction{content}}}`
+		_, err = run("", nil, "gh", "api", "graphql", "-f", "query="+mutation, "-F", "subject="+input.RemoteID)
+	}
+	if err != nil {
+		appendEvent(s, event{At: now(), Type: "feedback_acknowledgement_failed", Item: i.Number, Message: err.Error()})
 		return err
 	}
-	mutation := `mutation($subject:ID!){addReaction(input:{subjectId:$subject,content:EYES}){reaction{content}}}`
-	_, err := run("", nil, "gh", "api", "graphql", "-f", "query="+mutation, "-F", "subject="+input.RemoteID)
-	return err
+	appendEvent(s, event{At: now(), Type: "feedback_acknowledged", Item: i.Number, Message: input.Source})
+	return nil
 }
 
 func classifyFeedback(input feedbackInput) string {
@@ -3134,6 +3157,11 @@ func processInbox(s *State) error {
 		if json.Unmarshal(scanner.Bytes(), &req) != nil {
 			continue
 		}
+		if req.Action == "stop" && req.Item == 0 {
+			s.StopRequested = true
+			appendEvent(s, event{At: now(), Type: "stop_requested", Message: req.Message})
+			continue
+		}
 		i := s.Items[strconv.Itoa(req.Item)]
 		if i == nil || containsRequest(i.Pending, req.ID) {
 			continue
@@ -3187,18 +3215,26 @@ func cmdStop(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	return locked(*path, func(s *State) error {
-		s.StopRequested = true
-		if *workers {
-			for _, i := range s.Items {
-				if i.Worker != nil && processAlive(i.Worker.PID, i.Worker.PIDStart) {
-					_ = syscall.Kill(-i.Worker.PID, syscall.SIGTERM)
-					i.Status = "stopped"
-				}
+	s, err := loadState(*path)
+	if err != nil {
+		return err
+	}
+	req := struct {
+		Item int `json:"item"`
+		Request
+	}{0, Request{ID: stableID("stop", now()), Action: "stop", Message: "operator requested stop", CreatedAt: now(), Status: "queued"}}
+	if *workers {
+		req.Message = "operator requested stop and worker termination"
+		for _, i := range s.Items {
+			if i.Worker != nil && processAlive(i.Worker.PID, i.Worker.PIDStart) {
+				_ = syscall.Kill(-i.Worker.PID, syscall.SIGTERM)
 			}
 		}
-		return saveState(*path, s)
-	})
+	}
+	if err := appendJSON(filepath.Join(s.Config.RunDir, "inbox.jsonl"), req); err != nil {
+		return err
+	}
+	return nil
 }
 
 func cmdPublish(args []string) error {

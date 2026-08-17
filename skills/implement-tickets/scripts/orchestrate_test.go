@@ -89,7 +89,7 @@ func TestCollectSequenceNumbersAndReserveNext(t *testing.T) {
 	}
 	s := &State{
 		Config: Config{
-			Repo: dir,
+			Repo:      dir,
 			Sequences: []Sequence{{Directory: "db/migrations", Pattern: `^(\d{6})_`}},
 		},
 		Items: map[string]*Item{},
@@ -484,7 +484,7 @@ func TestEventsAreSequencedAndPrioritized(t *testing.T) {
 	}
 }
 
-func TestPublishedPullMustBeDraftAtExpectedHead(t *testing.T) {
+func TestPublishedPullMustMatchExpectedHead(t *testing.T) {
 	head := "abc123"
 	if !publishedPullMatches(&Pull{Draft: true, HeadOID: head}, head) {
 		t.Fatal("matching draft pull was rejected")
@@ -492,8 +492,34 @@ func TestPublishedPullMustBeDraftAtExpectedHead(t *testing.T) {
 	if publishedPullMatches(&Pull{Draft: true, HeadOID: "stale"}, head) {
 		t.Fatal("stale pull head was accepted")
 	}
-	if publishedPullMatches(&Pull{Draft: false, HeadOID: head}, head) {
-		t.Fatal("non-draft pull was accepted")
+	if !publishedPullMatches(&Pull{Draft: false, HeadOID: head}, head) {
+		t.Fatal("matching ready pull was rejected")
+	}
+}
+
+func TestProcessInboxStopsSupervisorWithoutItem(t *testing.T) {
+	dir := t.TempDir()
+	s := &State{Config: Config{RunDir: dir}, Items: map[string]*Item{}}
+	request := struct {
+		Item int `json:"item"`
+		Request
+	}{0, Request{ID: "stop", Action: "stop", Message: "operator requested stop", Status: "queued"}}
+	if err := appendJSON(filepath.Join(dir, "inbox.jsonl"), request); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := processInbox(s); err != nil {
+		t.Fatal(err)
+	}
+	if !s.StopRequested {
+		t.Fatal("stop request did not stop the supervisor")
+	}
+	events, err := readEvents(filepath.Join(dir, "events.jsonl"), 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 1 || events[0].Type != "stop_requested" {
+		t.Fatalf("events = %#v, want stop_requested", events)
 	}
 }
 

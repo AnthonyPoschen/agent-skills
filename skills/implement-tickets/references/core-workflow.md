@@ -201,12 +201,14 @@ commit when one exists. A question or feedback-only answer still requires a
 thread reply. The manager or supervisor posts this reply before marking the
 feedback applied; a reply failure leaves the work item actionable.
 
-After the target branch changes, do not publish a stale branch. A follow-up
-worker may reconcile the latest target while preserving both reviewed behavior
-sets. A normal merge is safer for already reviewed parallel work; a rebase is
-appropriate when linear history is required. Unique sequence-number collisions
-and pinned digest updates are mechanical when both independently reviewed
-behaviors are kept. Never make a substantive product conflict choice silently.
+After the target branch changes, do not publish a stale branch. Fetch the remote
+target immediately and reconcile against the fetched remote-tracking ref
+(`refs/remotes/<remote>/<target>`), never a local target branch that may be
+stale. A follow-up worker may preserve both reviewed behavior sets. A normal
+merge is safer for already reviewed parallel work; a rebase is appropriate when
+linear history is required. Unique sequence-number collisions and pinned digest
+updates are mechanical when both independently reviewed behaviors are kept.
+Never make a substantive product conflict choice silently.
 
 For CI failures, collect the failing check names and logs in the manager, then
 give the offline follow-up worker the exact failure evidence. Do not grant the
