@@ -54,8 +54,10 @@ contract before starting work.
    a smaller ready set naturally lowers concurrency. Do not launch an unbounded
    backlog merely because many items appear ready.
 7. Select the provider/model for the chat manager and the provider/model for
-   background workers. Preserve existing harness provider settings. Do not add
-   provider restrictions unless the user explicitly requests them.
+   background workers. Apply the selected harness defaults unless the user
+   overrides them. State both roles, models, and reasoning levels in the
+   first start message. Preserve existing harness provider settings. Do not
+   add provider restrictions unless the user explicitly requests them.
 8. For OpenCode, initialize and start the bundled supervisor before launching
    workers, then keep the chat session on `events --follow` or `status`. For
    Codex or Grok, run the manager loop in this chat session. Use the same

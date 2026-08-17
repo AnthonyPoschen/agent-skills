@@ -12,7 +12,19 @@ adapters launch Codex or OpenCode, not Grok subagents.
 
 Keep the manager loop in this Grok chat session. At start, confirm standing
 authority to push branches, post review comments, and close leftover open
-items after verified integration. The manager:
+items after verified integration. State the manager and worker model and
+reasoning levels in that first user-visible start message.
+
+Grok defaults, unless the user overrides them for this run:
+
+- Manager and publication review stay on the current session model at
+  `high` reasoning. Do not lower the manager to the worker effort.
+- Isolated workers use `grok-4.6` at `medium` reasoning. Pass
+  `model: grok-4.6` on `spawn_subagent` and keep
+  `reasoning_effort: medium` on the ticket-worker agent.
+
+Record those values in run state as `manager_model` and `worker_model`.
+The manager:
 
 1. Selects the ready set from the work-source adapter.
 2. Claims each item, prepares one isolated checkout, and launches one worker.
@@ -63,6 +75,7 @@ spawn_subagent
   background: true
   capability_mode: all
   cwd: the prepared checkout
+  model: grok-4.6
 ```
 
 `cwd` and `isolation: worktree` are mutually exclusive. Prefer a manager-prepared
@@ -71,9 +84,10 @@ the primary worktree. Use `isolation: worktree` only when no checkout exists
 yet; record the returned path as the item checkout and never apply that
 worktree onto the primary tree.
 
-Pass `model` only when the user or project selected a worker model. Allowed
-explicit slugs are the models this Grok session may spawn. Omit `model` to
-inherit the manager session.
+The Grok default worker model is `grok-4.6`. Pass that slug unless the user
+selected a different worker model. Do not omit `model` so workers inherit
+the manager's high reasoning. Allowed explicit slugs are the models this
+Grok session may spawn.
 
 Write run state outside the repository before the first launch. Default to
 `$HOME/tmp/implement-tickets/<repo>-<run-id>/` so checkouts stay off tmpfs

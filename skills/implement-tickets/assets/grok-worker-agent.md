@@ -2,7 +2,8 @@
 name: ticket-worker
 description: Implements one isolated orchestration work item and leaves a tested checkout diff for the manager to publish.
 prompt_mode: full
-model: inherit
+model: grok-4.6
+reasoning_effort: medium
 permission_mode: default
 agents_md: true
 mcpInheritance: none
