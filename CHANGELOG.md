@@ -2,6 +2,9 @@
 
 ## Recent Releases
 
+- `v2026.8.17` - Added Grok-native ticket orchestration and hardened shared
+  project contracts, feedback handling, and integration safeguards. See
+  `docs/releases/v2026.8.17.md`.
 - `v2026.8.14+2` - Combined hardened OpenCode orchestration with authorized
   review follow-ups and independent completed-worker publication. See
   `docs/releases/v2026.8.14+2.md`.
