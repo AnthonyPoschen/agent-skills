@@ -73,10 +73,13 @@ type Config struct {
 	Invocation              string                   `json:"implementation_invocation,omitempty"`
 	Publish                 bool                     `json:"publish"`
 	IssueNumbers            []int                    `json:"issue_numbers,omitempty"`
+	WorkItemIDs             []string                 `json:"work_item_ids,omitempty"`
 	IssueQuery              string                   `json:"issue_query,omitempty"`
+	ConfirmDirectStory      bool                     `json:"confirm_direct_story,omitempty"`
 	RelatedRepositories     []RelatedRepository      `json:"related_repositories,omitempty"`
 	Sequences               []Sequence               `json:"sequences,omitempty"`
 	ForbiddenCommitPatterns []ForbiddenCommitPattern `json:"forbidden_commit_patterns,omitempty"`
+	Jira                    *JiraSetup               `json:"jira,omitempty"`
 }
 
 // RelatedRepository is a second Git repository this project must change for
@@ -149,6 +152,7 @@ type State struct {
 }
 
 type Item struct {
+	ID                   string    `json:"id,omitempty"`
 	Number               int       `json:"number"`
 	NodeID               string    `json:"node_id,omitempty"`
 	Title                string    `json:"title"`
@@ -173,9 +177,11 @@ type Item struct {
 	CheckoutRemovedAt    string    `json:"checkout_removed_at,omitempty"`
 	WorkerSession        string    `json:"worker_session,omitempty"`
 	SequenceReservations []string  `json:"sequence_reservations,omitempty"`
+	JiraCommented        bool      `json:"jira_commented,omitempty"`
 }
 
 type Blocker struct {
+	ID         string `json:"id,omitempty"`
 	Number     int    `json:"number"`
 	State      string `json:"state"`
 	Repository string `json:"repository,omitempty"`
@@ -315,7 +321,7 @@ commands:
 func cmdInit(args []string) error {
 	fs := flag.NewFlagSet("init", flag.ContinueOnError)
 	repo := fs.String("repo", ".", "target repository")
-	source := fs.String("source", "github", "work source (github)")
+	source := fs.String("source", "github", "work source (github, gitlab, or jira)")
 	harness := fs.String("harness", "", "worker harness (codex, grok, or opencode); discovered when unambiguous")
 	target := fs.String("target", "", "target branch; defaults to the repository default branch")
 	remote := fs.String("remote", "origin", "Git remote")
@@ -332,13 +338,16 @@ func cmdInit(args []string) error {
 	invocation := fs.String("implementation-invocation", "$implement", "worker prompt prefix")
 	projectConfig := fs.String("project-config", ".github/implement-tickets.json", "repository-owned orchestration contract")
 	publish := fs.Bool("publish", false, "push and create draft PRs after verification")
-	issueQuery := fs.String("issue-query", "", "GitHub issue search query selecting this run")
+	confirmDirectStory := fs.Bool("confirm-direct-story", false, "confirm direct implementation of selected Jira Stories without executable children")
+	issueQuery := fs.String("issue-query", "", "work-item query selecting this run (GitHub search or Jira JQL)")
 	var launcher, verify stringList
 	var issues intList
+	var workItems stringList
 	var issueRanges stringList
 	fs.Var(&launcher, "launcher-arg", "extra harness argument (repeatable)")
 	fs.Var(&verify, "verify-command", "trusted verification shell command (repeatable)")
 	fs.Var(&issues, "issue", "specific issue number (repeatable)")
+	fs.Var(&workItems, "work-item", "specific work-item ID or Jira key (repeatable)")
 	fs.Var(&issueRanges, "issue-range", "inclusive issue range such as 10-20 (repeatable)")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -353,8 +362,8 @@ func cmdInit(args []string) error {
 		issues = append(issues, expanded...)
 	}
 	issues = uniqueInts(issues)
-	if *issueQuery != "" && len(issues) > 0 {
-		return errors.New("--issue-query cannot be combined with --issue or --issue-range")
+	if *issueQuery != "" && (len(issues) > 0 || len(workItems) > 0) {
+		return errors.New("--issue-query cannot be combined with --issue, --issue-range, or --work-item")
 	}
 	absRepo, err := filepath.Abs(*repo)
 	if err != nil {
@@ -407,11 +416,19 @@ func cmdInit(args []string) error {
 	if *source != "github" && *source != "gitlab" && *source != "jira" {
 		return fmt.Errorf("unsupported work source %q; choose github, gitlab, or jira", *source)
 	}
+	if *source == "jira" && len(issues) > 0 {
+		return errors.New("Jira uses string work-item IDs; replace --issue or --issue-range with --work-item <JIRA-123>")
+	}
+	if *source == "jira" && (setup == nil || setup.Jira == nil) {
+		return errors.New("source=jira requires a jira object in .github/implement-tickets.json")
+	}
 	if *source == "jira" {
 		if _, lookErr := exec.LookPath("acli"); lookErr != nil {
-			return errors.New("Jira adapter is beta and not executable yet; install/authenticate Atlassian acli for future adapter testing")
+			return errors.New("source=jira requires Atlassian acli; install it and authenticate with `acli jira auth login`")
 		}
-		return errors.New("Jira adapter is beta: acli was found, but repository/review linkage and polling require live contract testing before workers may launch")
+		if _, authErr := run("", nil, "acli", "jira", "auth", "status"); authErr != nil {
+			return fmt.Errorf("source=jira requires authenticated Atlassian acli: %w", authErr)
+		}
 	}
 	if *harness == "opencode" && contains(launcher, "--auto") {
 		return errors.New("--launcher-arg --auto is forbidden for headless OpenCode workers")
@@ -436,7 +453,9 @@ func cmdInit(args []string) error {
 	}
 	if !explicit["source"] {
 		*source = detectedSource
-	} else if *source != detectedSource {
+	} else if *source == "jira" && detectedSource != "gitlab" {
+		return errors.New("source=jira currently requires a GitLab repository remote for merge-request publication")
+	} else if *source != "jira" && *source != detectedSource {
 		return fmt.Errorf("--source %s does not match remote provider %s", *source, detectedSource)
 	}
 	loginOut, err := sourceLogin(*source)
@@ -461,12 +480,14 @@ func cmdInit(args []string) error {
 			questions = append(questions, "Which branch is the integration target? Pass --target <branch>.")
 		}
 	}
-	if *label == "" {
+	if *source == "jira" && *label == "" {
+		questions = append(questions, "Which Jira label explicitly makes executable child work ready? Pass --ready-label <label>.")
+	} else if *label == "" {
 		*label = discoverReadyLabel(projectText, labels)
 		if *label == "" {
 			questions = append(questions, fmt.Sprintf("Which GitHub label makes an issue ready for an agent? Pass --ready-label <label>. Available labels: %s.", printable(labels)))
 		}
-	} else if !contains(labels, *label) {
+	} else if *source != "jira" && !contains(labels, *label) {
 		questions = append(questions, fmt.Sprintf("The ready label %q does not exist. Create it or choose one of: %s.", *label, printable(labels)))
 	}
 	if *harness == "" {
@@ -483,7 +504,17 @@ func cmdInit(args []string) error {
 			questions = append(questions, "Which independent verification command proves each worker result? Pass --verify-command <command> (repeatable).")
 		}
 	}
-	if *label != "" && contains(labels, *label) {
+	if *source == "jira" && *label != "" {
+		candidates, issueErr := jiraCandidateKeys(setup.Jira, *label, workItems, *issueQuery)
+		if issueErr != nil {
+			return fmt.Errorf("inspect selected Jira work items: %w", issueErr)
+		}
+		if len(candidates) == 0 {
+			questions = append(questions, fmt.Sprintf("The Jira selection contains no executable child work carrying label %q. Select a ready child with --work-item <KEY>, select a container with ready descendants, or label the intended children.", *label))
+		} else {
+			workItems = candidates
+		}
+	} else if *label != "" && contains(labels, *label) {
 		candidates, issueErr := sourceCandidateNumbers(*source, slug, *label, issues, *issueQuery)
 		if issueErr != nil {
 			return fmt.Errorf("inspect selected issues: %w", issueErr)
@@ -536,11 +567,12 @@ func cmdInit(args []string) error {
 		PollSeconds: *poll, StallMinutes: *stall, WorktreeRoot: *worktrees, RunDir: runDir,
 		WorkerAgent: *agent, WorkerModel: *workerModel, ManagerModel: *managerModel,
 		LauncherArgs: launcher, VerifyCommands: verify, Invocation: *invocation, Publish: *publish,
-		IssueNumbers: issues, IssueQuery: *issueQuery}
+		IssueNumbers: issues, WorkItemIDs: workItems, IssueQuery: *issueQuery, ConfirmDirectStory: *confirmDirectStory}
 	if setup != nil {
 		cfg.RelatedRepositories = setup.RelatedRepositories
 		cfg.Sequences = setup.Sequences
 		cfg.ForbiddenCommitPatterns = setup.ForbiddenCommitPatterns
+		cfg.Jira = setup.Jira
 	}
 	s := &State{
 		Version: stateVersion, RunID: *runID, CreatedAt: now(), UpdatedAt: now(),
@@ -623,7 +655,7 @@ func githubLabels(slug string) ([]string, error) {
 }
 
 func sourceLogin(source string) (string, error) {
-	if source == "gitlab" {
+	if source == "gitlab" || source == "jira" {
 		out, err := run("", nil, "glab", "api", "user")
 		if err != nil {
 			return "", err
@@ -638,6 +670,9 @@ func sourceLogin(source string) (string, error) {
 }
 
 func sourceLabels(source, slug string) ([]string, error) {
+	if source == "jira" {
+		return nil, nil
+	}
 	if source == "github" {
 		return githubLabels(slug)
 	}
@@ -658,7 +693,7 @@ func sourceLabels(source, slug string) ([]string, error) {
 }
 
 func sourceDefaultBranch(source, slug string) (string, error) {
-	if source == "gitlab" {
+	if source == "gitlab" || source == "jira" {
 		out, err := run("", nil, "glab", "api", "projects/"+url.PathEscape(slug))
 		if err != nil {
 			return "", err
@@ -1151,12 +1186,13 @@ func syncState(_ string, s *State) error {
 	}
 	seen := map[string]bool{}
 	for _, fresh := range issues {
-		key := strconv.Itoa(fresh.Number)
+		key := itemKey(fresh)
 		seen[key] = true
 		old := s.Items[key]
 		if old != nil {
 			fresh.Status, fresh.Branch, fresh.Worktree, fresh.BaseHead, fresh.Managed = old.Status, old.Branch, old.Worktree, old.BaseHead, old.Managed
 			fresh.Worker, fresh.PR, fresh.Verification, fresh.SeenFeedback, fresh.Pending, fresh.Error = old.Worker, old.PR, old.Verification, old.SeenFeedback, old.Pending, old.Error
+			fresh.JiraCommented = old.JiraCommented
 		}
 		if fresh.Status == "" {
 			fresh.Status = "waiting"
@@ -1256,10 +1292,285 @@ func githubIssues(s *State) ([]*Item, error) {
 }
 
 func sourceIssues(s *State) ([]*Item, error) {
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "jira" {
+		return jiraIssues(s)
+	}
+	if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 		return gitlabIssues(s)
 	}
 	return githubIssues(s)
+}
+
+type jiraWorkItem struct {
+	Key    string `json:"key"`
+	ID     string `json:"id"`
+	Self   string `json:"self"`
+	Fields struct {
+		Summary     string   `json:"summary"`
+		Description any      `json:"description"`
+		Labels      []string `json:"labels"`
+		Status      struct {
+			Name string `json:"name"`
+		} `json:"status"`
+		IssueType struct {
+			Name string `json:"name"`
+		} `json:"issuetype"`
+		Assignee *struct {
+			DisplayName string `json:"displayName"`
+		} `json:"assignee"`
+		Parent *struct {
+			Key string `json:"key"`
+		} `json:"parent"`
+		IssueLinks []struct {
+			Type        struct{ Name, Inward, Outward string } `json:"type"`
+			InwardIssue *struct {
+				Key    string `json:"key"`
+				Fields struct {
+					Status struct {
+						Name string `json:"name"`
+					} `json:"status"`
+				} `json:"fields"`
+			} `json:"inwardIssue"`
+			OutwardIssue *struct {
+				Key    string `json:"key"`
+				Fields struct {
+					Status struct {
+						Name string `json:"name"`
+					} `json:"status"`
+				} `json:"fields"`
+			} `json:"outwardIssue"`
+		} `json:"issuelinks"`
+	} `json:"fields"`
+}
+
+func jiraCandidateKeys(setup *JiraSetup, label string, selected []string, query string) ([]string, error) {
+	if len(selected) > 0 {
+		return uniqueStrings(selected), nil
+	}
+	jql := fmt.Sprintf("project = %q AND labels = %q", setup.Project, label)
+	if query != "" {
+		jql = "(" + query + ") AND labels = " + strconv.Quote(label)
+	}
+	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", jql, "--fields", "key", "--paginate", "--json")
+	if err != nil {
+		return nil, err
+	}
+	var rows []struct {
+		Key string `json:"key"`
+	}
+	if err := json.Unmarshal([]byte(out), &rows); err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(rows))
+	for _, row := range rows {
+		keys = append(keys, row.Key)
+	}
+	return uniqueStrings(keys), nil
+}
+
+func jiraIssues(s *State) ([]*Item, error) {
+	if s.Config.Jira == nil {
+		return nil, errors.New("Jira configuration is missing from run state")
+	}
+	keys, err := jiraCandidateKeys(s.Config.Jira, s.Config.ReadyLabel, s.Config.WorkItemIDs, s.Config.IssueQuery)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]bool{}
+	var result []*Item
+	for _, key := range keys {
+		items, err := jiraExpandItem(s, key, seen)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, items...)
+	}
+	return result, nil
+}
+
+func jiraExpandItem(s *State, key string, seen map[string]bool) ([]*Item, error) {
+	if seen[key] {
+		return nil, nil
+	}
+	seen[key] = true
+	work, err := jiraView(key)
+	if err != nil {
+		return nil, err
+	}
+	if contains(s.Config.Jira.ContainerTypes, work.Fields.IssueType.Name) {
+		children, err := jiraChildren(key)
+		if err != nil {
+			return nil, err
+		}
+		var result []*Item
+		for _, child := range children {
+			items, err := jiraExpandItem(s, child, seen)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, items...)
+		}
+		if len(result) == 0 && s.Config.ConfirmDirectStory {
+			item := &Item{ID: work.Key, NodeID: work.ID, Title: work.Fields.Summary, Body: adfText(work.Fields.Description), URL: jiraURL(work.Self, work.Key), State: normalizedJiraState(work.Fields.Status.Name, s.Config.Jira.CompletedStatuses), Labels: work.Fields.Labels}
+			blockers, blockerErr := jiraBlockers(s, work)
+			if blockerErr != nil {
+				return nil, blockerErr
+			}
+			item.Blockers = blockers
+			return []*Item{item}, nil
+		}
+		if len(result) == 0 {
+			return nil, fmt.Errorf("Jira container %s has no %s descendants; direct Story implementation requires explicit user confirmation. Ask the user, then rerun init with --confirm-direct-story --work-item %s", key, s.Config.Jira.ChildType, key)
+		}
+		return result, nil
+	}
+	if work.Fields.IssueType.Name != s.Config.Jira.ChildType {
+		return nil, fmt.Errorf("Jira item %s has type %q, expected executable child type %q", key, work.Fields.IssueType.Name, s.Config.Jira.ChildType)
+	}
+	item := &Item{ID: work.Key, NodeID: work.ID, Title: work.Fields.Summary, Body: adfText(work.Fields.Description), URL: jiraURL(work.Self, work.Key), State: normalizedJiraState(work.Fields.Status.Name, s.Config.Jira.CompletedStatuses), Labels: work.Fields.Labels}
+	blockers, err := jiraBlockers(s, work)
+	if err != nil {
+		return nil, err
+	}
+	item.Blockers = blockers
+	return []*Item{item}, nil
+}
+
+func jiraView(key string) (*jiraWorkItem, error) {
+	out, err := run("", nil, "acli", "jira", "workitem", "view", key, "--fields", "*all", "--json")
+	if err != nil {
+		return nil, fmt.Errorf("query Jira work item %s: %w", key, err)
+	}
+	var work jiraWorkItem
+	if err := json.Unmarshal([]byte(out), &work); err != nil {
+		return nil, err
+	}
+	if work.Key == "" {
+		return nil, fmt.Errorf("Jira work item %s was not returned", key)
+	}
+	return &work, nil
+}
+
+func jiraChildren(parent string) ([]string, error) {
+	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", "parent = "+strconv.Quote(parent), "--fields", "key", "--paginate", "--json")
+	if err != nil {
+		return nil, fmt.Errorf("query Jira children for %s: %w", parent, err)
+	}
+	var rows []struct {
+		Key string `json:"key"`
+	}
+	if err := json.Unmarshal([]byte(out), &rows); err != nil {
+		return nil, err
+	}
+	keys := make([]string, 0, len(rows))
+	for _, row := range rows {
+		keys = append(keys, row.Key)
+	}
+	return keys, nil
+}
+
+func jiraBlockers(s *State, work *jiraWorkItem) ([]Blocker, error) {
+	var blockers []Blocker
+	for _, link := range work.Fields.IssueLinks {
+		if link.Type.Name != s.Config.Jira.BlocksLinkType || link.InwardIssue == nil {
+			continue
+		}
+		blocker := Blocker{ID: link.InwardIssue.Key, State: normalizedJiraState(link.InwardIssue.Fields.Status.Name, s.Config.Jira.CompletedStatuses)}
+		blocker.Integrated = blocker.State == "CLOSED" || jiraReviewMerged(s, blocker.ID)
+		if !blocker.Integrated {
+			blocker.Reason = "Jira Blocks dependency is not completed or merged into the configured target"
+		}
+		blockers = append(blockers, blocker)
+	}
+	return blockers, nil
+}
+
+func jiraReviewMerged(s *State, key string) bool {
+	branch := "agent/" + key + "_"
+	return gitlabHeadPrefixMerged(s, branch)
+}
+
+func gitlabHeadPrefixMerged(s *State, prefix string) bool {
+	endpoint := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/merge_requests?state=merged&target_branch=" + url.QueryEscape(s.Config.Target) + "&per_page=100"
+	out, err := run("", nil, "glab", "api", endpoint)
+	if err != nil {
+		return false
+	}
+	var rows []struct {
+		SourceBranch   string `json:"source_branch"`
+		MergeCommitSHA string `json:"merge_commit_sha"`
+	}
+	if json.Unmarshal([]byte(out), &rows) != nil {
+		return false
+	}
+	for _, row := range rows {
+		if strings.HasPrefix(row.SourceBranch, prefix) && isAncestor(s.Config.Repo, row.MergeCommitSHA, s.Config.Remote+"/"+s.Config.Target) {
+			return true
+		}
+	}
+	return false
+}
+
+func normalizedJiraState(status string, completed []string) string {
+	if containsFold(completed, status) {
+		return "CLOSED"
+	}
+	return "OPEN"
+}
+func jiraURL(self, key string) string {
+	if index := strings.Index(self, "/rest/"); index >= 0 {
+		return self[:index] + "/browse/" + key
+	}
+	return key
+}
+func adfText(value any) string {
+	var text []string
+	var walk func(any)
+	walk = func(node any) {
+		object, ok := node.(map[string]any)
+		if !ok {
+			return
+		}
+		if value, ok := object["text"].(string); ok {
+			text = append(text, value)
+		}
+		if content, ok := object["content"].([]any); ok {
+			for _, child := range content {
+				walk(child)
+			}
+		}
+		if object["type"] == "paragraph" || object["type"] == "heading" || object["type"] == "listItem" {
+			text = append(text, "\n")
+		}
+	}
+	walk(value)
+	return strings.TrimSpace(strings.Join(text, ""))
+}
+
+func jiraCommentMergeRequest(s *State, i *Item) error {
+	if i.JiraCommented || i.PR == nil || i.PR.URL == "" {
+		return nil
+	}
+	adf := map[string]any{"type": "doc", "version": 1, "content": []any{
+		map[string]any{"type": "paragraph", "content": []any{map[string]any{"type": "emoji", "attrs": map[string]any{"shortName": ":robot:", "text": "🤖"}}}},
+		map[string]any{"type": "paragraph", "content": []any{
+			map[string]any{"type": "text", "text": "GitLab merge request: "},
+			map[string]any{"type": "text", "text": fmt.Sprintf("!%d", i.PR.Number), "marks": []any{map[string]any{"type": "link", "attrs": map[string]any{"href": i.PR.URL}}}},
+		}},
+	}}
+	body, err := json.Marshal(adf)
+	if err != nil {
+		return err
+	}
+	commentPath := filepath.Join(s.Config.RunDir, "jira-comment-"+slugify(i.ID)+".json")
+	if err := os.WriteFile(commentPath, body, 0o600); err != nil {
+		return err
+	}
+	if _, err := run("", nil, "acli", "jira", "workitem", "comment", "create", "--key", i.ID, "--body-adf", commentPath); err != nil {
+		return fmt.Errorf("comment Jira with GitLab merge request: %w", err)
+	}
+	i.JiraCommented = true
+	return nil
 }
 
 func gitlabIssues(s *State) ([]*Item, error) {
@@ -1470,6 +1781,9 @@ func githubHeadPrefixExists(slug, target, prefix, state string) bool {
 }
 
 func reviewLinkLine(s *State, i *Item) string {
+	if s.Config.Source == "jira" {
+		return fmt.Sprintf("Jira: [%s](%s)", i.ID, i.URL)
+	}
 	if len(s.Config.RelatedRepositories) > 0 {
 		return fmt.Sprintf("Related #%d", i.Number)
 	}
@@ -1615,6 +1929,17 @@ func gitlabIssueIntegrated(s *State, number int) bool {
 }
 
 func refreshMissingItem(s *State, i *Item) error {
+	if s.Config.Source == "jira" {
+		work, err := jiraView(i.ID)
+		if err != nil {
+			return err
+		}
+		i.State, i.Labels, i.Assignees = normalizedJiraState(work.Fields.Status.Name, s.Config.Jira.CompletedStatuses), work.Fields.Labels, nil
+		if work.Fields.Assignee != nil {
+			i.Assignees = append(i.Assignees, work.Fields.Assignee.DisplayName)
+		}
+		return syncPull(s, i)
+	}
 	if s.Config.Source == "gitlab" {
 		out, err := run("", nil, "glab", "api", "projects/"+url.PathEscape(s.Config.RepoSlug)+"/issues/"+strconv.Itoa(i.Number))
 		if err != nil {
@@ -1722,11 +2047,16 @@ func dispatch(statePath string, s *State) error {
 }
 
 func prepareWorktree(s *State, i *Item) error {
+	key := itemKey(i)
 	if i.Branch == "" {
-		i.Branch = fmt.Sprintf("issue/%d-%s", i.Number, slugify(i.Title))
+		if s.Config.Source == "jira" {
+			i.Branch = fmt.Sprintf("agent/%s_%s", key, slugify(i.Title))
+		} else {
+			i.Branch = fmt.Sprintf("issue/%s-%s", key, slugify(i.Title))
+		}
 	}
 	if i.Worktree == "" {
-		i.Worktree = filepath.Join(s.Config.WorktreeRoot, fmt.Sprintf("%d-%s", i.Number, slugify(i.Title)))
+		i.Worktree = filepath.Join(s.Config.WorktreeRoot, fmt.Sprintf("%s-%s", key, slugify(i.Title)))
 	}
 	if i.Managed {
 		info, err := os.Stat(filepath.Join(i.Worktree, ".git"))
@@ -1778,7 +2108,9 @@ func claimIssue(s *State, i *Item) error {
 		return nil
 	}
 	var err error
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "jira" {
+		_, err = run("", nil, "acli", "jira", "workitem", "assign", "--key", i.ID, "--assignee", "@me", "--yes")
+	} else if s.Config.Source == "gitlab" {
 		_, err = run("", nil, "glab", "issue", "update", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--assignee", s.Login)
 	} else {
 		_, err = run("", nil, "gh", "issue", "edit", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--add-assignee", "@me")
@@ -1794,7 +2126,7 @@ func launchWorker(statePath string, s *State, i *Item) error {
 	if i.Worker != nil {
 		attempt = i.Worker.Attempt + 1
 	}
-	token := fmt.Sprintf("%d-a%d-%d", i.Number, attempt, time.Now().UnixNano())
+	token := fmt.Sprintf("%s-a%d-%d", itemKey(i), attempt, time.Now().UnixNano())
 	dir := filepath.Join(s.Config.RunDir, "workers", token)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
@@ -1814,7 +2146,7 @@ func launchWorker(statePath string, s *State, i *Item) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(exe, "_worker", "--state", statePath, "--item", strconv.Itoa(i.Number), "--token", token)
+	cmd := exec.Command(exe, "_worker", "--state", statePath, "--item", itemKey(i), "--token", token)
 	cmd.Stdout, cmd.Stderr = log, log
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	i.Worker = &Worker{Token: token, StartedAt: now(), PromptPath: promptPath, LogPath: logPath, ExitPath: exitPath, LastMessage: filepath.Join(dir, "last-message.txt"), Attempt: attempt, RequestIDs: queuedRequestIDs(i)}
@@ -1932,7 +2264,7 @@ func actionableRequest(request Request) bool {
 func cmdWorker(args []string) error {
 	fs := flag.NewFlagSet("_worker", flag.ContinueOnError)
 	path := fs.String("state", "", "state")
-	number := fs.Int("item", 0, "item")
+	itemID := fs.String("item", "", "work-item ID")
 	token := fs.String("token", "", "worker token")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -1941,7 +2273,7 @@ func cmdWorker(args []string) error {
 	if err != nil {
 		return err
 	}
-	i := s.Items[strconv.Itoa(*number)]
+	i := s.Items[*itemID]
 	if i == nil || i.Worker == nil || i.Worker.Token != *token {
 		return errors.New("worker ownership token no longer matches state")
 	}
@@ -1959,7 +2291,7 @@ func cmdWorker(args []string) error {
 		argv = append(argv, s.Config.LauncherArgs...)
 		argv = append(argv, "-")
 	case "opencode":
-		argv = []string{"run", "--agent", s.Config.WorkerAgent, "--format", "json", "--title", "orchestration-" + strconv.Itoa(i.Number), "--dir", i.Worktree, "--file", i.Worker.PromptPath}
+		argv = []string{"run", "--agent", s.Config.WorkerAgent, "--format", "json", "--title", "orchestration-" + itemKey(i), "--dir", i.Worktree, "--file", i.Worker.PromptPath}
 		if s.Config.WorkerModel != "" {
 			argv = append(argv, "--model", s.Config.WorkerModel)
 		}
@@ -2097,7 +2429,7 @@ func replyToFeedback(s *State, i *Item) error {
 		if req.Action != "feedback" || req.ReplySent || !contains(i.Worker.RequestIDs, req.ID) {
 			continue
 		}
-		if s.Config.Source == "gitlab" && req.ThreadID == "" {
+		if (s.Config.Source == "gitlab" || s.Config.Source == "jira") && req.ThreadID == "" {
 			continue
 		}
 		if response == "" {
@@ -2121,7 +2453,7 @@ func replyToFeedback(s *State, i *Item) error {
 }
 
 func postFeedbackReply(s *State, i *Item, req *Request, body string) error {
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 		if _, err := run("", strings.NewReader(body), "glab", "mr", "note", "create", strconv.Itoa(i.PR.Number), "--repo", s.Config.RepoSlug, "--reply", req.ThreadID); err != nil {
 			return fmt.Errorf("reply to GitLab feedback: %w", err)
 		}
@@ -2398,9 +2730,24 @@ func closeIntegratedItem(s *State, i *Item) error {
 	if i.State == "CLOSED" {
 		return nil
 	}
+	if s.Config.Source == "jira" {
+		if s.Config.Jira == nil || len(s.Config.Jira.CompletedStatuses) == 0 {
+			return errors.New("Jira completed_statuses is required to transition an integrated item")
+		}
+		if err := jiraCommentMergeRequest(s, i); err != nil {
+			return err
+		}
+		_, err := run("", nil, "acli", "jira", "workitem", "transition", "--key", i.ID, "--status", s.Config.Jira.CompletedStatuses[0], "--yes")
+		if err != nil {
+			return err
+		}
+		i.State = "CLOSED"
+		appendEvent(s, event{At: now(), Type: "item_closed", Item: i.Number, Message: "transitioned " + i.ID + " after verified GitLab merge"})
+		return nil
+	}
 	comment := integrationCloseComment(s, i)
 	var err error
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 		_, err = run("", nil, "glab", "issue", "close", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--comment", comment)
 	} else {
 		_, err = run("", nil, "gh", "issue", "close", strconv.Itoa(i.Number), "--repo", s.Config.RepoSlug, "--comment", comment)
@@ -2441,7 +2788,7 @@ func publishItem(s *State, i *Item) error {
 		if err := atomicWrite(bodyPath, []byte(body), 0o600); err != nil {
 			return err
 		}
-		if s.Config.Source == "gitlab" {
+		if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 			endpoint := "projects/" + url.PathEscape(s.Config.RepoSlug) + "/merge_requests"
 			if _, err := run("", nil, "glab", "api", "--method", "POST", endpoint,
 				"-f", "source_branch="+i.Branch, "-f", "target_branch="+s.Config.Target,
@@ -2454,6 +2801,11 @@ func publishItem(s *State, i *Item) error {
 		pr, err = findPull(s, i.Branch)
 		if err != nil || pr == nil {
 			return errors.New("review creation did not read back")
+		}
+	}
+	if s.Config.Source == "jira" {
+		if err := jiraCommentMergeRequest(s, i); err != nil {
+			return err
 		}
 	}
 	localHead, err := git(i.Worktree, "rev-parse", "HEAD")
@@ -2512,7 +2864,11 @@ func reconcileTarget(s *State, i *Item) error {
 func syncPull(s *State, i *Item) error {
 	branch := i.Branch
 	if branch == "" {
-		branch = fmt.Sprintf("issue/%d-%s", i.Number, slugify(i.Title))
+		if s.Config.Source == "jira" {
+			branch = fmt.Sprintf("agent/%s_%s", itemKey(i), slugify(i.Title))
+		} else {
+			branch = fmt.Sprintf("issue/%d-%s", i.Number, slugify(i.Title))
+		}
 	}
 	snapshot, err := pollReview(s, branch)
 	if err != nil || snapshot == nil || snapshot.Review == nil {
@@ -2568,7 +2924,7 @@ func applyClosedReview(s *State, i *Item, pr *Pull, previousStatus string) bool 
 }
 
 func pollReview(s *State, branch string) (*reviewSnapshot, error) {
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 		return pollGitLabReview(s, branch)
 	}
 	return pollGitHubReview(s, branch)
@@ -2695,7 +3051,7 @@ func githubReviewFeedback(s *State, pr *Pull) ([]feedbackInput, []feedbackInput,
 }
 
 func findPull(s *State, branch string) (*Pull, error) {
-	if s.Config.Source == "gitlab" {
+	if s.Config.Source == "gitlab" || s.Config.Source == "jira" {
 		return findGitLabMergeRequest(s, branch)
 	}
 	return findGitHubPull(s, branch)
@@ -3162,18 +3518,19 @@ func processInbox(s *State) error {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		var req struct {
-			Item int `json:"item"`
+			Item json.RawMessage `json:"item"`
 			Request
 		}
 		if json.Unmarshal(scanner.Bytes(), &req) != nil {
 			continue
 		}
-		if req.Action == "stop" && req.Item == 0 {
+		itemID := inboxItemID(req.Item)
+		if req.Action == "stop" && itemID == "" {
 			s.StopRequested = true
 			appendEvent(s, event{At: now(), Type: "stop_requested", Message: req.Message})
 			continue
 		}
-		i := s.Items[strconv.Itoa(req.Item)]
+		i := s.Items[itemID]
 		if i == nil || containsRequest(i.Pending, req.ID) {
 			continue
 		}
@@ -3196,13 +3553,13 @@ func processInbox(s *State) error {
 func cmdInbox(args []string) error {
 	fs := flag.NewFlagSet("inbox", flag.ContinueOnError)
 	path := fs.String("state", "", "path to state.json")
-	item := fs.Int("item", 0, "issue number")
+	item := fs.String("item", "", "work-item ID")
 	action := fs.String("action", "feedback", "feedback, stop, or resume")
 	message := fs.String("message", "", "request text")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *path == "" || *item == 0 {
+	if *path == "" || *item == "" {
 		return errors.New("--state and --item are required")
 	}
 	if *action != "feedback" && *action != "stop" && *action != "resume" {
@@ -3213,9 +3570,9 @@ func cmdInbox(args []string) error {
 		return err
 	}
 	req := struct {
-		Item int `json:"item"`
+		Item string `json:"item"`
 		Request
-	}{*item, Request{ID: stableID(strconv.Itoa(*item), *action, *message, now()), Action: *action, Message: *message, CreatedAt: now(), Status: "queued"}}
+	}{*item, Request{ID: stableID(*item, *action, *message, now()), Action: *action, Message: *message, CreatedAt: now(), Status: "queued"}}
 	return appendJSON(filepath.Join(s.Config.RunDir, "inbox.jsonl"), req)
 }
 
@@ -3231,9 +3588,9 @@ func cmdStop(args []string) error {
 		return err
 	}
 	req := struct {
-		Item int `json:"item"`
+		Item string `json:"item"`
 		Request
-	}{0, Request{ID: stableID("stop", now()), Action: "stop", Message: "operator requested stop", CreatedAt: now(), Status: "queued"}}
+	}{"", Request{ID: stableID("stop", now()), Action: "stop", Message: "operator requested stop", CreatedAt: now(), Status: "queued"}}
 	if *workers {
 		req.Message = "operator requested stop and worker termination"
 		for _, i := range s.Items {
@@ -3251,12 +3608,12 @@ func cmdStop(args []string) error {
 func cmdPublish(args []string) error {
 	fs := flag.NewFlagSet("publish", flag.ContinueOnError)
 	path := fs.String("state", "", "path to state.json")
-	item := fs.Int("item", 0, "issue number")
+	item := fs.String("item", "", "work-item ID")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	return locked(*path, func(s *State) error {
-		i := s.Items[strconv.Itoa(*item)]
+		i := s.Items[*item]
 		if i == nil {
 			return errors.New("unknown item")
 		}
@@ -3287,7 +3644,7 @@ func cmdStatus(args []string) error {
 		return json.NewEncoder(os.Stdout).Encode(s)
 	}
 	fmt.Printf("RUN %s  TARGET %s@%s  HARNESS %s  LIMIT %d\n", s.RunID, s.Config.Target, short(s.TargetHead), s.Config.Harness, s.Config.Concurrency)
-	fmt.Println("ITEM  STATUS                WORKER  PR     BLOCKERS  TITLE")
+	fmt.Println("ITEM             STATUS                WORKER  PR     BLOCKERS  TITLE")
 	for _, i := range sortedItems(s) {
 		worker, pr := "-", "-"
 		if i.Worker != nil && i.Status == "running" {
@@ -3302,7 +3659,7 @@ func cmdStatus(args []string) error {
 				pending++
 			}
 		}
-		fmt.Printf("#%-4d %-21s %-7s %-6s %-9d %s\n", i.Number, i.Status, worker, pr, pending, i.Title)
+		fmt.Printf("%-16s %-21s %-7s %-6s %-9d %s\n", itemKey(i), i.Status, worker, pr, pending, i.Title)
 	}
 	return nil
 }
@@ -3611,8 +3968,41 @@ func sortedItems(s *State) []*Item {
 	for _, i := range s.Items {
 		items = append(items, i)
 	}
-	sort.Slice(items, func(a, b int) bool { return items[a].Number < items[b].Number })
+	sort.Slice(items, func(a, b int) bool { return itemKey(items[a]) < itemKey(items[b]) })
 	return items
+}
+
+func itemKey(i *Item) string {
+	if i.ID != "" {
+		return i.ID
+	}
+	return strconv.Itoa(i.Number)
+}
+
+func uniqueStrings(values []string) []string {
+	seen := map[string]bool{}
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value != "" && !seen[value] {
+			seen[value] = true
+			result = append(result, value)
+		}
+	}
+	sort.Strings(result)
+	return result
+}
+
+func inboxItemID(raw json.RawMessage) string {
+	var text string
+	if json.Unmarshal(raw, &text) == nil {
+		return strings.TrimSpace(text)
+	}
+	var number int
+	if json.Unmarshal(raw, &number) == nil && number > 0 {
+		return strconv.Itoa(number)
+	}
+	return ""
 }
 
 func contains(values []string, want string) bool {

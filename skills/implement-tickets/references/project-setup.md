@@ -146,12 +146,15 @@ stable project facts. Keep one-run choices in supervisor state instead.
 
 Select work for one run without changing the project contract:
 
-- repeat `--issue <number>` for a fixed set;
-- repeat `--issue-range <start>-<end>` for inclusive numeric ranges;
-- use `--issue-query <GitHub search>` for a dynamic category;
+- repeat `--issue <number>` for a fixed GitHub or GitLab set;
+- repeat `--issue-range <start>-<end>` for inclusive GitHub or GitLab ranges;
+- repeat `--work-item <ID>` for fixed string IDs, including Jira keys;
+- add `--confirm-direct-story` only after explicit user confirmation that a
+  selected Jira Story without executable children is safe to implement directly;
+- use `--issue-query <GitHub search or Jira JQL>` for a dynamic category;
 - omit all three to select every open issue carrying the ready label.
 
-An issue query cannot be combined with fixed numbers or ranges. Initialization
+An issue query cannot be combined with fixed numbers, ranges, or work-item IDs. Initialization
 resolves every selection mode to a fixed list of open, ready-labeled issue
 numbers and persists it in run state. Selection does not bypass assignment or
 dependency gates, and a restart does not absorb unrelated new work.

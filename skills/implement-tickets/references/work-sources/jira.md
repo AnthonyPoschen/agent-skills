@@ -1,9 +1,8 @@
-# Jira Work Source (Beta)
+# Jira Work Source
 
-Jira selection and contract shape are documented, but the bundled OpenCode
-supervisor remains fail-closed until its normalized item identifiers support
-Jira keys and it can poll Jira hierarchy and links without falling through to
-GitHub discovery. Do not launch Jira-backed workers through the supervisor yet.
+The bundled supervisor supports Jira-backed runs with GitLab merge requests.
+Use `--source jira --work-item PROJECT-123`; Jira keys are canonical string
+work-item IDs, so do not use numeric `--issue` or `--issue-range` selection.
 
 Use Atlassian CLI (`acli`) for authentication, JQL selection, work-item reads,
 comments, transitions, assignments, hierarchy, and links. During preflight,
@@ -18,19 +17,22 @@ discover and record:
 
 For a selected Story or higher container, recursively list child work until the
 configured executable child type is reached. A selected Sub-task is the single
-item run. Map inward native blocker links to explicit blockers. A completed Jira
-status alone does not prove integration:
+item run. The adapter reads native inward `Blocks` links only. If a Story has no
+configured child descendants, it fails unless the user has explicitly confirmed
+direct Story scope and initialization is rerun with `--confirm-direct-story`. A
+completed Jira status alone does not prove integration:
 verify the linked pull/merge request commit is present on the configured Git
 target branch for every repository listed in the project contract. A leftover
 open Jira item after that Git proof does not block dependents.
 
-Jira supplies work and discussion state; GitHub or GitLab remains the review and
-Git integration source. Poll both sides and deduplicate by provider object ID and
-revision. Treat Jira comments with the same actionable, question,
-informational, and scope-change classification used for review comments.
+Jira supplies work state and GitLab supplies review and integration state. Every
+GitLab merge request description includes a Jira link. Once the MR is created,
+the supervisor posts an ADF Jira comment with a native GitLab MR hyperlink. Only
+after GitLab reports the MR merged and its merge commit is an ancestor of the
+fetched target branch does the supervisor transition the Jira item to the first
+configured `completed_statuses` value.
 
-Before dispatch, verify `acli` authentication discovery, pagination, JQL
-escaping, parent traversal, issue-link direction, comment cursors, assignments,
-rate limiting, and linked-development reads in the configured project. If any
-required convention cannot be discovered from project documentation or APIs,
-ask all setup questions together before creating state.
+Before dispatch, verify `acli jira auth status`, pagination, JQL escaping,
+parent traversal, issue-link direction, assignments, and transitions in the
+configured project. Jira review-comment feedback polling is not implemented;
+review feedback continues through the GitLab MR.

@@ -16,7 +16,7 @@ tracker or worker action:
 
 - GitHub: [GitHub work source](references/work-sources/github.md)
 - GitLab: [GitLab work source](references/work-sources/gitlab.md)
-- Jira beta: [Jira work source](references/work-sources/jira.md)
+- Jira: [Jira work source](references/work-sources/jira.md)
 - Codex: [Codex harness](references/harnesses/codex.md)
 - Grok: [Grok harness](references/harnesses/grok.md)
 - OpenCode: [OpenCode harness](references/harnesses/opencode.md)
@@ -70,8 +70,10 @@ When the Jira adapter is enabled, a Jira Story or higher container discovers its
 descendant Sub-tasks directly from Jira. It builds the graph from native Jira
 `Blocks` links, then schedules every ready frontier Sub-task up to the
 concurrency cap. It does not discover GitLab or GitHub issues by Jira-key text
-matching. Git hosting remains the review and integration source selected by the
-project contract.
+matching. GitLab remains the review and integration source for the bundled Jira
+adapter. If a selected Story has no executable children, the supervisor fails
+and requires an explicit confirmed direct Story selection rather than assuming
+container scope is safe to implement.
 
 ## Adapter Contract
 
