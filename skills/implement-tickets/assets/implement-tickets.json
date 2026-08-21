@@ -8,5 +8,12 @@
   "verification": [
     "make test"
   ],
-  "implementation_invocation": "$implement"
+  "implementation_invocation": "$implement",
+  "jira": {
+    "project": "PROJECT",
+    "container_types": ["Story"],
+    "child_type": "Sub-task",
+    "completed_statuses": ["Closed"],
+    "blocks_link_type": "Blocks"
+  }
 }

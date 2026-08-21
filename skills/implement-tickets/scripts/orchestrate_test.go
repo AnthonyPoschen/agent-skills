@@ -143,6 +143,7 @@ func TestProjectSetupAcceptsSharedOptionalFields(t *testing.T) {
 	body := `{
   "version": 1,
   "source": "github",
+  "jira": {"project": "PROJECT", "container_types": ["Story"], "child_type": "Sub-task", "completed_statuses": ["Closed"], "blocks_link_type": "Blocks"},
   "target": "master",
   "related_repositories": [{"name": "org/other", "path": "../other", "role": "controller"}],
   "sequences": [{"directory": "db/migrations", "pattern": "^(\\\\d{6})_"}],
@@ -153,7 +154,7 @@ func TestProjectSetupAcceptsSharedOptionalFields(t *testing.T) {
 		t.Fatal(err)
 	}
 	setup, err := loadProjectSetup(dir, ".github/implement-tickets.json")
-	if err != nil || setup == nil || len(setup.RelatedRepositories) != 1 || len(setup.Sequences) != 1 || len(setup.ForbiddenCommitPatterns) != 1 {
+	if err != nil || setup == nil || setup.Jira == nil || setup.Jira.ChildType != "Sub-task" || len(setup.RelatedRepositories) != 1 || len(setup.Sequences) != 1 || len(setup.ForbiddenCommitPatterns) != 1 {
 		t.Fatalf("setup = %#v err=%v", setup, err)
 	}
 }

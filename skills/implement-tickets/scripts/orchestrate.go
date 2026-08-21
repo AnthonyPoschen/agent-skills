@@ -120,6 +120,17 @@ type ProjectSetup struct {
 	RelatedRepositories     []RelatedRepository      `json:"related_repositories,omitempty"`
 	Sequences               []Sequence               `json:"sequences,omitempty"`
 	ForbiddenCommitPatterns []ForbiddenCommitPattern `json:"forbidden_commit_patterns,omitempty"`
+	Jira                    *JiraSetup               `json:"jira,omitempty"`
+}
+
+// JiraSetup keeps Jira discovery details at the work-source boundary. Other
+// tracker adapters neither read nor require these fields.
+type JiraSetup struct {
+	Project           string   `json:"project"`
+	ContainerTypes    []string `json:"container_types"`
+	ChildType         string   `json:"child_type"`
+	CompletedStatuses []string `json:"completed_statuses"`
+	BlocksLinkType    string   `json:"blocks_link_type"`
 }
 
 type State struct {

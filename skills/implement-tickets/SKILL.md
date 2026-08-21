@@ -1,6 +1,6 @@
 ---
 name: implement-tickets
-description: Orchestrate a selected set, range, query, or dependency-linked backlog of work items through isolated workers, worktrees, review feedback, and human-controlled merges. Use when the user asks to implement tickets, implement all tickets, run selected issues in parallel, coordinate ticket agents, monitor worker progress, or process review feedback across GitLab, GitHub, or local work-item files, including from a Grok session with native subagents.
+description: Orchestrate a selected set, range, query, or dependency-linked backlog of work items through isolated workers, worktrees, review feedback, and human-controlled merges. Use when the user asks to implement tickets, implement all tickets, run selected issues in parallel, coordinate ticket agents, monitor worker progress, or process review feedback across GitLab, GitHub, Jira, or local work-item files, including from a Grok session with native subagents.
 ---
 
 # Implement Tickets
@@ -63,6 +63,15 @@ contract before starting work.
    Codex or Grok, run the manager loop in this chat session. Use the same
    supervisor for durable state when unattended operation is requested; Grok
    still launches its own workers.
+
+## Jira Containers
+
+When the Jira adapter is enabled, a Jira Story or higher container discovers its
+descendant Sub-tasks directly from Jira. It builds the graph from native Jira
+`Blocks` links, then schedules every ready frontier Sub-task up to the
+concurrency cap. It does not discover GitLab or GitHub issues by Jira-key text
+matching. Git hosting remains the review and integration source selected by the
+project contract.
 
 ## Adapter Contract
 

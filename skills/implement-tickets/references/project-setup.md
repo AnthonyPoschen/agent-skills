@@ -49,13 +49,17 @@ fields here. Harness and source adapters read the same keys.
 Supported fields are:
 
 - `version`: contract version; currently `1`;
-- `source`: `github` or `gitlab`; `jira` is recognized as a fail-closed beta;
+- `source`: `github`, `gitlab`, or `jira`;
 - `target` and `remote`: integration ref;
 - `ready_label`: the label that explicitly authorizes scheduling;
 - `concurrency`: bounded active-worker limit;
 - `verification`: independent commands run by the manager or supervisor after
   a worker;
 - `implementation_invocation`: optional project implementation skill prefix;
+- `jira`: required only when `source` is `jira`; contains `project`,
+  `container_types`, `child_type`, `completed_statuses`, and `blocks_link_type`.
+  The adapter uses this to discover descendant executable work and native
+  dependencies without imposing Jira concepts on other sources;
 - `related_repositories`: other Git repositories a work item may change.
   Each entry has `name` (host slug), `path` (repo-relative checkout), and
   optional `role`. A listed repository is required for an item only when
@@ -92,6 +96,13 @@ Example with the optional shared fields:
   "concurrency": 3,
   "verification": ["go test -mod=vendor ./..."],
   "implementation_invocation": "$implement",
+  "jira": {
+    "project": "PROJECT",
+    "container_types": ["Story"],
+    "child_type": "Sub-task",
+    "completed_statuses": ["Closed"],
+    "blocks_link_type": "Blocks"
+  },
   "related_repositories": [
     {
       "name": "example/controller",
