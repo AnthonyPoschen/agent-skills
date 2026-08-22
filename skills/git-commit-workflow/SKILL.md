@@ -21,11 +21,6 @@ history at the cost of mixing unrelated work.
 
 - Never discard, reset, restore, clean, or overwrite user changes unless the
   user explicitly asks for that destructive action.
-- Never push commits or tags. Do not run `git push`, push aliases, `git
-  push --tags`, `git push --follow-tags`, or any command that publishes local
-  commits to a remote.
-- If the user asks to commit and push, create the local commit only, then stop
-  and report that pushing is intentionally left for the user to review and run.
 - Inspect the worktree before staging: `git status --short`, then targeted
   diffs for changed files.
 - Stage only files that belong to the commit being made.
@@ -152,4 +147,3 @@ footers.
 7. Commit with a multi-line message so the trailer is preserved exactly.
 8. Repeat staging, validation, and commit for each remaining logical group.
 9. Show the resulting commit hashes and any remaining uncommitted changes.
-10. Do not push. Leave all commits local for user review.
