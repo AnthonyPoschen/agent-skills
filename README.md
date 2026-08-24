@@ -13,6 +13,8 @@ npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill implement-tickets
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
+npx skills add anthonyposchen/agent-skills --skill skill-evaluation
+npx skills add anthonyposchen/agent-skills --skill technical-writing
 ```
 
 ## Available Skills
@@ -26,6 +28,8 @@ npx skills add anthonyposchen/agent-skills --skill omarchy-development
 | `implement-tickets` | Dependency-aware selected work-item orchestration with isolated workers, review feedback, and human-controlled merges. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
+| `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
+| `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
 
 ## Install
 
@@ -45,6 +49,8 @@ npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill implement-tickets
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
+npx skills add anthonyposchen/agent-skills --skill skill-evaluation
+npx skills add anthonyposchen/agent-skills --skill technical-writing
 ```
 
 Install all skills:
@@ -78,6 +84,10 @@ skills/
     SKILL.md
     references/
   makefile/
+    SKILL.md
+  technical-writing/
+    SKILL.md
+  skill-evaluation/
     SKILL.md
 ```
 
