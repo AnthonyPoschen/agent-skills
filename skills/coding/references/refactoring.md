@@ -16,9 +16,40 @@ rewrite work.
 - Keep the refactor scoped to touched code and directly related collaborators.
 - Prefer a sequence of understandable mechanical changes over a clever rewrite
   that is hard to verify.
-- Start by looking for subtraction: dead paths, pass-throughs, duplicated
-  decisions, unnecessary conversions, and state that can be derived instead of
-  synchronized.
+
+## Subtract Before You Rebuild
+
+Begin by removing what the selected area does not need. Deletion exposes the
+essential shape, reduces migration work, and keeps the redesign from preserving
+complexity just because it was already present.
+
+- Remove dead paths, pass-throughs, duplicated decisions, unnecessary
+  conversions, stale compatibility code, and state that can be derived instead
+  of synchronized.
+- Cut unused scope before improving names, structure, or polish. Build the
+  target on the minimum behavior the selected area must retain.
+- Do not retain unused options, validators, parsers, guards, or extension
+  points for hypothetical cases.
+- Keep subtraction within the selected boundary and verify its effect. Report
+  broader cleanup opportunities rather than widening the refactor without
+  approval.
+
+## Design The Target First
+
+For a meaningful refactor, design the selected area as though its current
+requirements had existed from the beginning. Use the existing code to learn
+about callers, contracts, and migration risk. Do not let its accidental shape
+dictate the target design.
+
+- State the smallest coherent target before making mechanical edits. Prefer the
+  shape that makes the affected callers and responsibilities simplest.
+- Carry that target through the selected boundary: directly affected callers,
+  types, tests, examples, documentation, and obsolete paths.
+- Do not retain an awkward intermediate API, compatibility wrapper, or
+  special-case adapter merely to make the refactor smaller.
+- Keep the work inside the area the user asked to refactor. Report a wider
+  redesign opportunity instead of silently turning the work into a repository
+  rewrite.
 
 ## Rewrite Rules
 

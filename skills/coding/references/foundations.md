@@ -28,8 +28,11 @@ Ask whether each later phase becomes simpler, safer, or more direct because
 the foundation exists. If not, keep the current change direct and add support
 only when evidence requires it.
 
-Remove dead paths, pass-throughs, and misleading state before adding new
-structure. Subtraction makes the real foundation easier to see.
+Before adding a foundation, remove dead paths, pass-throughs, misleading state,
+and redundant supporting machinery in the affected area. Then ask whether the
+smaller design still needs a shared type, scaffold, validator, or configuration
+point. Subtraction makes the real foundation easier to see and prevents a
+temporary workaround from becoming permanent structure.
 
 ## Give Concurrent State An Owner
 
