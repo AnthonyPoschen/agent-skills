@@ -5,14 +5,19 @@ and bug fixes.
 
 ## Debugging Process
 
-- Reproduce the failure or identify the closest available signal first.
+- Reproduce the failure through the real affected path, or identify the closest
+  reliable signal when that is not possible.
 - Read the failing output, stack trace, logs, or assertion before editing.
 - Trace from symptom to boundary: input, state, dependency, transformation,
   output, and side effects.
 - Make the smallest fix that addresses the root cause.
-- Add or update a regression test when the bug could plausibly return.
-- Run the narrowest relevant verification first, then broader checks if risk
-  justifies them.
+- Rerun the same scenario after the fix and observe the expected outcome.
+- Add an automated regression check only when it protects a stable, meaningful
+  contract and has a trustworthy oracle. Do not add a test merely because the
+  bug happened or the code could change again.
+- For persistence, framework wiring, or service behavior, prefer a real local
+  dependency and the normal application path over a stub that cannot prove the
+  failure or fix. Load `./verification.md` when choosing the evidence.
 
 ## Fix Rules
 
@@ -29,5 +34,8 @@ and bug fixes.
 
 - The observed failure is explained.
 - The fix targets the root cause, not just the symptom.
-- Regression coverage or a clear reason for no test is documented.
-- Relevant verification was run or any blocker is reported.
+- The original scenario was rerun and the fixed outcome was observed directly.
+- Any automated regression check protects a stable contract rather than an
+  incidental detail. If no such check is warranted, do not add one merely for
+  coverage.
+- Supporting verification was run or any blocker is reported.

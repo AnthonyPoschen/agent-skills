@@ -64,4 +64,9 @@ standards.
   deleting a pass-through, duplicated decision, awkward conversion, or needless
   state. Do not extract merely because code is textually similar.
 - Public contracts and operational behavior changed only where intended.
-- Relevant tests, formatters, linters, or builds were run when practical.
+- Identify the expected observable outcome and verify it directly before
+  declaring the work complete. A formatter, linter, build, or passing test is
+  supporting evidence unless it observes that outcome itself.
+- Add automated coverage only when it protects a stable, meaningful contract;
+  do not pin incidental implementation details or diagnostics. Report the
+  direct proof, supporting validation, and any real path that could not run.

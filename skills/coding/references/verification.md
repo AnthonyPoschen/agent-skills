@@ -26,6 +26,38 @@ Do not replace a dependency that is practical to run locally merely because a
 stub is easier. A passing mock proves the mock contract; it does not prove the
 application works with the real database, framework, or service.
 
+## Outcome Proof Is Required
+
+Before declaring a change complete, state its expected observable outcome and
+verify that outcome directly. The right proof depends on the artifact the
+request actually concerns:
+
+- When the changed source file is itself the delivered artifact, inspect the
+  resulting file or diff.
+- For a deterministic transformation, run it with representative input and
+  inspect the returned or rendered value.
+- For dynamic behavior, run the service, command, application, or UI and inspect
+  the result through its normal path.
+- For persistence or side effects, inspect the actual row, file, message, or
+  other state the operation produced.
+
+A formatter, linter, build, or passing test supports confidence but is not
+outcome proof unless it observes the requested behavior. Report the direct
+proof separately from supporting checks and any path that could not run.
+
+## Automated Tests Protect Stable Contracts
+
+Add an automated test only when it protects a stable, meaningful contract that
+must remain true as the implementation evolves: a product rule, public API,
+data or serialization guarantee, security property, or correctness invariant.
+The test needs a trustworthy oracle and should survive reasonable refactors.
+
+Do not add a test merely because code changed, a bug occurred, or the behavior
+may change again. Do not pin incidental diagnostic text, private call sequences,
+temporary data shape, or other implementation details. For example, assert an
+exact log message only when it is a deliberately stable operator or machine
+interface, not when it is ordinary diagnostic output.
+
 ## Real Dependency Checks
 
 When an integration is in scope and the project can run it locally:
@@ -48,7 +80,9 @@ closest useful executable check instead.
 
 Use the narrowest check that still provides meaningful evidence:
 
-- A changed pure transformation usually needs a unit test.
+- A changed pure transformation benefits from a unit test when its result is a
+  stable contract worth protecting; otherwise, directly running it may be
+  sufficient outcome proof.
 - A changed query, migration, repository, or serialization mapping needs a real
   integration check when available.
 - A changed user workflow needs a check that drives the workflow, not internal
@@ -56,6 +90,6 @@ Use the narrowest check that still provides meaningful evidence:
 - A small, low-risk internal change may need existing checks plus a direct local
   exercise rather than new test scaffolding.
 
-Tests should encode behavior and contracts, not mirror implementation details.
-Avoid tests that mostly validate mocks, depend on fragile timing, or require
-large unrelated fixture setup for little signal.
+Tests should encode stable behavior and contracts, not mirror implementation
+details. Avoid tests that mostly validate mocks, depend on fragile timing, or
+require large unrelated fixture setup for little signal.
