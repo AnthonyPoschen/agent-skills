@@ -18,6 +18,9 @@ Style-only comments are secondary unless they hide a real maintainability risk.
 - Check whether new boundaries reduce caller burden or merely add indirection.
   Keep cohesive local work direct; recommend a boundary only when it owns a
   coherent responsibility callers should not carry.
+- When a touched boundary causes conversions, sequencing knowledge, or
+  workarounds, inspect its direct consumers. Flag a special-case workaround when
+  a bounded redesign and consumer migration would make the whole path simpler.
 - Check edge cases, error paths, concurrency, data boundaries, and compatibility.
 - Identify the changed behavior's expected observable outcome and inspect the
   direct proof that it occurred. A build, linter, or mocked test is insufficient
@@ -28,6 +31,9 @@ Style-only comments are secondary unless they hide a real maintainability risk.
   or implementation details.
 - When an automated check is appropriate, it should protect a stable product,
   API, data, security, or correctness contract with a trustworthy oracle.
+- Treat a removed or changed test as a finding only when it abandons a stable
+  contract. Do not preserve tests that merely pin incidental diagnostics,
+  private mechanics, or stale mock behavior.
 
 ## Output Format
 

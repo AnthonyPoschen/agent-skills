@@ -50,6 +50,17 @@ rewrite work.
   standards.
 - If a local legacy pattern conflicts with standards, update only the path
   needed for the requested change unless the user asked for broader cleanup.
+- When a touched test fails or becomes awkward, evaluate the stable contract it
+  protects before updating it. Keep a meaningful contract check; remove or
+  replace a test that only pins incidental diagnostics, private mechanics, or
+  stale mock behavior. Never delete a test merely to conceal a real failure.
+- When a touched boundary creates the same conversion, sequencing, or workaround
+  burden for several direct consumers, assess those consumers together. Redesign
+  and migrate the bounded set when it lowers total reader work; otherwise keep
+  the current change direct and leave the larger redesign out of scope.
+- Do not solve one caller's friction by adding a special-case escape hatch,
+  compatibility layer, or new adapter when the underlying boundary is the real
+  problem.
 - Preserve names and shapes that are part of public API, serialization,
   migrations, config, CLI flags, env vars, URLs, or test fixtures unless the
   change explicitly includes them.

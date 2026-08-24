@@ -51,6 +51,28 @@ standards.
 - Update docs, comments, fixtures, generated inputs, or examples only when they
   are part of the changed behavior.
 
+## Improve The Touched Path
+
+When a change touches an existing test, API, module boundary, or abstraction,
+assess the directly involved path rather than preserving it by default.
+
+- For a touched test, identify the stable contract it protects. Keep or update
+  it when that contract remains meaningful; remove or replace it when it only
+  asserts incidental logs, private call order, stale implementation shape, or
+  mock choreography. Do not change or delete a test merely to hide a legitimate
+  failure.
+- When a caller needs conversions, sequencing knowledge, or a workaround just
+  to use an existing boundary, inspect that boundary's direct consumers. Decide
+  whether the friction is isolated or systemic before adding another escape
+  hatch.
+- If a revised boundary clearly makes its direct consumers simpler and they can
+  be migrated and verified within the task's natural scope, improve the boundary
+  and migrate them together. Do not leave a new hot-path workaround that
+  entrenches a known bad interface.
+- If the needed redesign reaches beyond the task's natural scope, keep the
+  current change direct and report the broader opportunity. Do not begin a
+  partial migration or add speculative compatibility machinery.
+
 ## Completion Check
 
 - Before finishing, review the completed diff as if it were a code review:

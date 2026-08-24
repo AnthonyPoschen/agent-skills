@@ -21,8 +21,9 @@ and bug fixes.
 
 ## Fix Rules
 
-- Do not silence errors, weaken assertions, or delete tests to make failures
-  disappear.
+- Do not silence errors, weaken assertions, or delete tests merely to make
+  failures disappear. A touched test may be removed or replaced only after
+  establishing that it does not protect a stable, meaningful contract.
 - Do not paper over races, nil/null cases, parse failures, or missing data with
   broad catch-all behavior unless that is the correct product behavior.
 - Preserve public contracts unless the bug is the contract itself and the user
