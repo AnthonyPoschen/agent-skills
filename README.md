@@ -7,7 +7,10 @@ format. This repository is arranged so skills can be installed with the
 ```bash
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill implement-tickets
@@ -23,7 +26,10 @@ npx skills add anthonyposchen/agent-skills --skill technical-writing
 | Skill | Description |
 | --- | --- |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
+| `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
 | `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
+| `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. |
+| `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
 | `implement-tickets` | Dependency-aware selected work-item orchestration with isolated workers, review feedback, and human-controlled merges. |
@@ -45,7 +51,10 @@ Install a specific skill:
 
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill implement-tickets
@@ -75,9 +84,15 @@ skills/
   coding/
     SKILL.md
     examples/
+  context-management/
+    SKILL.md
   dockerfile/
     SKILL.md
     references/
+  encode-lessons/
+    SKILL.md
+  experience-first/
+    SKILL.md
   flux-ghcr-image-automation/
     SKILL.md
     references/
