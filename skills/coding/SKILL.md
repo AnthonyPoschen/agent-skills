@@ -26,6 +26,11 @@ then load the smallest relevant reference set for the task.
   bug fixes, read `./references/debugging.md`.
 - For architecture, API design, module boundaries, dependency direction, or
   design-only discussion, read `./references/design.md`.
+- For a new application or subsystem, source file placement, package or module
+  placement, file moves, file splits, or layout discussion, read
+  `./references/file-organization.md`.
+- For Go application layout, package placement, or Go file organization, also
+  read `./references/go.md`.
 - For choosing tests or verification, especially for persistence, framework,
   service, CLI, or UI behavior, read `./references/verification.md`.
 - For shared code-quality rules, read `./references/standards.md` whenever
@@ -44,7 +49,10 @@ multiple phases, load the next reference when that phase starts.
   systemic local patterns take priority over this skill's default standards.
 - A local pattern is systemic when it appears across multiple nearby files, is
   enforced by tooling, or is part of a clear framework/application convention.
-  Do not copy one-off weak code just because it is adjacent.
+  For file and folder placement, it must also be coherent, discoverable, and
+  compatible with the language and framework. Repetition alone does not make a
+  dumping ground authoritative. Do not copy one-off weak code just because it is
+  adjacent.
 - When no systemic project pattern exists, use `./references/standards.md`.
 - Preserve public behavior, APIs, data contracts, migrations, and operational
   semantics unless the user explicitly asks to change them.

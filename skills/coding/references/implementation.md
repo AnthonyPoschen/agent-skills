@@ -8,6 +8,9 @@ Use this reference when writing new code or extending behavior.
 - Inspect nearby files for systemic project patterns before choosing a design.
 - Check project tooling and existing tests so the implementation fits the repo.
 - Identify the real caller and the knowledge it should not need to carry.
+- Before creating a source file, package, or module, identify the language and
+  framework convention and choose the path a reader is most likely to search.
+  Load `./file-organization.md` when placement is a real decision.
 - Prefer existing helpers, types, framework conventions, and composition roots
   when they make the caller's path clearer. Do not preserve an awkward local
   shape when the task is to improve a meaningful boundary.
@@ -30,6 +33,11 @@ standards.
 - Make the smallest coherent change that fully handles the request.
 - Design from existing boundaries: keep domain logic, adapters, UI state,
   persistence, and transport concerns where the project already places them.
+- Keep process entrypoints for startup, dependency wiring, shutdown, and top
+  level errors. Do not make them the default home for feature code.
+- Do not extend an incoherent local layout when new code has a clean home under
+  the language and framework convention. Do not move unrelated code merely to
+  make the tree look tidy.
 - Keep a cohesive local flow direct when its caller already owns the decisions
   and can understand the work in place.
 - Add or reshape a module, type, or helper when it gives its real callers a

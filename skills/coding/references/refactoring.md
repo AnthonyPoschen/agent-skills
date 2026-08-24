@@ -61,6 +61,12 @@ rewrite work.
 - Do not solve one caller's friction by adding a special-case escape hatch,
   compatibility layer, or new adapter when the underlying boundary is the real
   problem.
+- When moving or splitting code, use `./file-organization.md`. Split only when
+  a part has a clear name and is a place a reader would look for separately.
+  Do not split by line count, one type per file, or one method per file.
+- Do not move unrelated code to normalize the repository layout. If the current
+  task needs a clearer home, move the smallest coherent unit. Otherwise report
+  the broader layout issue without starting a migration.
 - Preserve names and shapes that are part of public API, serialization,
   migrations, config, CLI flags, env vars, URLs, or test fixtures unless the
   change explicitly includes them.

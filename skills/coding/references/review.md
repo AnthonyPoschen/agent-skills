@@ -18,6 +18,15 @@ Style-only comments are secondary unless they hide a real maintainability risk.
 - Check whether new boundaries reduce caller burden or merely add indirection.
   Keep cohesive local work direct; recommend a boundary only when it owns a
   coherent responsibility callers should not carry.
+- Check whether new paths and filenames make code easy to find. Flag feature or
+  infrastructure code that has accumulated in an entrypoint, or a patch that
+  extends a known dumping ground when a clean conventional path was available.
+- Do not flag a file for size alone. Flag it when it mixes parts with clear,
+  separate names that a reader would look for separately. Do not ask for one
+  file per type or method.
+- Flag repeated path names only when they add no meaning. A canonical entry
+  file, matching type and implementation pair, or role suffix can justify a
+  repeated name.
 - When a touched boundary causes conversions, sequencing knowledge, or
   workarounds, inspect its direct consumers. Flag a special-case workaround when
   a bounded redesign and consumer migration would make the whole path simpler.
