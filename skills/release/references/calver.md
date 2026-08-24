@@ -1,20 +1,7 @@
----
-name: calver-release
-description: >
-  Use when planning, naming, tagging, or documenting releases with Calendar
-  Versioning (CalVer), especially SemVer-compatible date-based Git tags such as
-  vYYYY.M.D or Go-module-safe tags such as v0.YYYYMMDD.N.
-  Also use when the user asks for a Git version tag, release tag, version tag,
-  tagging the current commit, or publishing a tagged release. Helps choose the
-  next release tag, handle multiple releases on the same day, and keep release
-  tags and package versions SemVer-compatible. Coordinates with changelog or
-  release-note conventions before tagging.
----
+# CalVer details
 
-# CalVer Release
-
-Use this skill when the user wants date-based release tags instead of semantic
-versions, or asks to prepare, tag, publish, or create a release.
+Read this reference only when the repository has no established versioning
+convention and the release skill selects CalVer as the default.
 
 ## Version Format
 
@@ -133,10 +120,9 @@ git log -1 --oneline
 find . -maxdepth 3 \( -iname 'CHANGELOG*' -o -path './docs/releases' -o -path './docs/changelog' -o -path './releases' -o -path './.github/releases' \)
 ```
 
-- If changelog/release-note evidence exists, require the `changelog` workflow
-  before tagging unless the user explicitly says to skip changelog/release-note
-  updates for this release. In-repo changelog/release-note updates must be
-  committed before tagging.
+- If changelog/release-note evidence exists, complete the required release
+  records before tagging unless the user explicitly says to skip them.
+  In-repository release-record updates must be committed before tagging.
 - If no changelog convention exists, do not invent one during release unless the
   user asks. Draft release notes text only when requested.
 - Create an annotated tag:
@@ -210,7 +196,8 @@ version:  2026.5.20+2
 
 ## Release Notes
 
-- Use the `changelog` skill when release notes or changelog updates are needed.
+- Use the release skill's release-record workflow when release notes or
+  changelog updates are needed.
 - Use the tag as the release title unless the project has a stronger convention.
 - Group notable changes by user impact:
   - features
