@@ -7,6 +7,7 @@ format. This repository is arranged so skills can be installed with the
 ```bash
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
@@ -25,6 +26,7 @@ npx skills add anthonyposchen/agent-skills --skill technical-writing
 
 | Skill | Description |
 | --- | --- |
+| `act-within-scope` | Make reversible progress within scope without waiting on ordinary execution decisions. |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
 | `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
 | `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
@@ -51,6 +53,7 @@ Install a specific skill:
 
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
@@ -81,6 +84,8 @@ npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 
 ```text
 skills/
+  act-within-scope/
+    SKILL.md
   coding/
     SKILL.md
     examples/
