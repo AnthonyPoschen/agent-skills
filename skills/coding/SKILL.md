@@ -26,6 +26,8 @@ then load the smallest relevant reference set for the task.
   bug fixes, read `./references/debugging.md`.
 - For architecture, API design, module boundaries, dependency direction, or
   design-only discussion, read `./references/design.md`.
+- For a consequential new data model, shared scaffold, or concurrent state,
+  also read `./references/foundations.md`.
 - For a new application or subsystem, source file placement, package or module
   placement, file moves, file splits, or layout discussion, read
   `./references/file-organization.md`.
