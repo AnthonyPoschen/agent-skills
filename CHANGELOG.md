@@ -2,6 +2,9 @@
 
 ## Recent Releases
 
+- `v2026.8.25` - Added foundational engineering skills and strengthened coding,
+  verification, Git, release, and file-organization guidance. See
+  `docs/releases/v2026.8.25.md`.
 - `v2026.8.17` - Added Grok-native ticket orchestration and hardened shared
   project contracts, feedback handling, and integration safeguards. See
   `docs/releases/v2026.8.17.md`.
