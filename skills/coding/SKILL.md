@@ -26,6 +26,8 @@ then load the smallest relevant reference set for the task.
   bug fixes, read `./references/debugging.md`.
 - For architecture, API design, module boundaries, dependency direction, or
   design-only discussion, read `./references/design.md`.
+- For choosing tests or verification, especially for persistence, framework,
+  service, CLI, or UI behavior, read `./references/verification.md`.
 - For shared code-quality rules, read `./references/standards.md` whenever
   writing or changing code, and as needed during review/design.
 - For assertion strategy (invariant checks, debug-vs-production assert

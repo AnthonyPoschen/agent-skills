@@ -16,6 +16,9 @@ rewrite work.
 - Keep the refactor scoped to touched code and directly related collaborators.
 - Prefer a sequence of understandable mechanical changes over a clever rewrite
   that is hard to verify.
+- Start by looking for subtraction: dead paths, pass-throughs, duplicated
+  decisions, unnecessary conversions, and state that can be derived instead of
+  synchronized.
 
 ## Rewrite Rules
 
@@ -24,30 +27,18 @@ rewrite work.
   equivalent exits.
 - Separate independent validation/failure checks unless combining them improves
   correctness or error reporting.
-- Split responsibilities when a function mixes unrelated decisions, effects, or
-  data transformations.
-- Keep short linear functions inline when extraction would only rename comments
-  or create one-helper-per-step choreography.
-- Extract substantial cohesive phases when they improve reasoning, reuse,
-  testability, or hide meaningful detail.
-- Extract small repeated loops or condition groups when multiple functions can
-  be combined around shared behavior: a common traversal protocol, lookup
-  policy, parsing rule, validation rule, dispatch path, or edge-handling
-  semantic. This is a behavioral decision, not a line-count decision.
-- Combine near-identical sibling function bodies when they differ only by small
-  substitutions such as expected states, fields, operators, enum cases, or
-  callbacks. Preserve the public method/function names when they are the right
-  API; refactor the repeated body behind them.
-- Hoist repeated sanitization, normalization, parsing, validation, lookup, or
-  derived-value calculation out of switch/conditional branches when many cases
-  need the same prepared values. The refactor should make each branch express
-  its choice, not repeat setup mechanics.
-- Move repeated external object mutation into methods or focused helpers when
-  multiple callers configure the same object state in the same way. Centralize
-  the named state transition so invariants, defaults, validation, and derived
-  fields change in one place. Keep fields public when that is part of the API,
-  but do not force common configuration patterns to stay open-coded.
-- Keep orchestration decisions in the parent; pass resolved values to helpers.
+- Keep short linear functions and cohesive flows inline when extraction would
+  only relocate the same thinking into another name or file.
+- Introduce a boundary when it gives callers a clearer operation or centralizes
+  an invariant, lifecycle, policy, representation conversion, or integration
+  detail that belongs elsewhere.
+- Do not extract solely to remove duplicate syntax. A small amount of explicit
+  repetition is preferable to a generic helper that obscures the work.
+- Consolidate repeated decisions or mutations when a named operation can own
+  their shared semantics and make callers simpler. Keep direct field access or
+  inline code when there is no invariant or meaningful operation to own.
+- Keep orchestration and caller-owned policy close to the caller; move only the
+  coherent work the new boundary owns.
 - Replace mutable global runtime state with startup construction and dependency
   injection when the touched area allows it.
 - Consolidate repeated literals at the narrowest useful scope.

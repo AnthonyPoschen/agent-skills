@@ -7,8 +7,10 @@ Use this reference when writing new code or extending behavior.
 - Identify the user-visible behavior, API contract, and success criteria.
 - Inspect nearby files for systemic project patterns before choosing a design.
 - Check project tooling and existing tests so the implementation fits the repo.
+- Identify the real caller and the knowledge it should not need to carry.
 - Prefer existing helpers, types, framework conventions, and composition roots
-  over new abstractions.
+  when they make the caller's path clearer. Do not preserve an awkward local
+  shape when the task is to improve a meaningful boundary.
 
 ## Pattern Priority
 
@@ -28,14 +30,24 @@ standards.
 - Make the smallest coherent change that fully handles the request.
 - Design from existing boundaries: keep domain logic, adapters, UI state,
   persistence, and transport concerns where the project already places them.
-- Add new modules only when they match the repo's organization or remove real
-  complexity.
-- Avoid broad wrappers around SDKs or APIs unless the wrapper adds policy,
-  validation, retries, translation, composition, or testability.
+- Keep a cohesive local flow direct when its caller already owns the decisions
+  and can understand the work in place.
+- Add or reshape a module, type, or helper when it gives its real callers a
+  simpler, self-contained way to do their job and owns knowledge they should
+  not carry: an invariant, lifecycle, policy, representation conversion, or
+  integration detail.
+- Do not add a boundary that only renames an underlying API, forwards the same
+  types and arguments, or moves the same reasoning into another file.
+- For a library or important module API, write or inspect a realistic usage
+  example before settling the shape. Let consumer workflows drive the internal
+  data structures when needed.
+- Prefer deletion, direct composition, and existing structures over speculative
+  layers, extension points, validators, or configuration.
 - Reuse existing cohesive structs, options, contexts, or config objects before
   creating new parameter containers.
-- Add tests in proportion to risk: broader tests for shared behavior, narrow
-  tests for isolated changes.
+- Choose verification based on the changed behavior; load
+  `./verification.md` when deciding between unit tests, real dependencies, and
+  mocks.
 - Update docs, comments, fixtures, generated inputs, or examples only when they
   are part of the changed behavior.
 
@@ -46,13 +58,10 @@ standards.
   object ownership, tests, docs, and whether the change stayed scoped.
 - The code follows systemic local patterns where they exist.
 - The code falls back to `./standards.md` where local guidance is absent.
-- Review the completed change for shared-behavior opportunities discovered
-  during implementation. If multiple new or touched functions now perform the
-  same traversal, lookup, parsing, validation, dispatch, or edge handling,
-  extract one named helper when the behavior can be combined cleanly.
-- Review object state changes before finishing. If multiple callers configure or
-  mutate the same object fields in the same way, add a method or focused helper
-  for that named state transition unless direct field access is clearer and has
-  no shared invariant, defaulting, validation, or future-change risk.
+- Review every new boundary: it should make the caller's job clearer or own a
+  coherent responsibility. Inline or remove any layer that does neither.
+- Make an opportunistic refactor only when it simplifies the touched path by
+  deleting a pass-through, duplicated decision, awkward conversion, or needless
+  state. Do not extract merely because code is textually similar.
 - Public contracts and operational behavior changed only where intended.
 - Relevant tests, formatters, linters, or builds were run when practical.

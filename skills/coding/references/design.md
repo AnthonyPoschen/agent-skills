@@ -5,60 +5,64 @@ direction, and design-only discussion.
 
 ## Design Process
 
-- Start from the existing system shape, not an abstract ideal.
+- Start from the caller's job and the existing system shape, not an abstract
+  ideal.
 - Identify constraints: public contracts, data model, deployment model,
   framework, performance, security, compatibility, and team conventions.
-- Design the public surface around consumer workflows before designing internal
-  machinery.
+- Design every meaningful boundary around consumer workflows before designing
+  its internal machinery. Consumers include external users and internal callers.
 - Prefer designs that reduce coupling at real boundaries: domain/persistence,
   transport/domain, UI/state/effects, external provider/application policy.
-- Avoid abstractions that only rename provider APIs or hide concrete technology
-  without adding policy.
+- Keep cohesive work direct when the caller already owns the decisions and can
+  understand the flow in place. Do not create boundaries just to divide code.
 - Name tradeoffs explicitly when more than one approach is viable.
 
-## Consumer Workflow First
+## Caller Workflow First
 
 - Start with the shortest realistic usage example. Make the common path read in
-  the user's language, not the implementation's language.
-- Public names should describe tasks the consumer wants to perform: poll,
+  the caller's language, not the implementation's language.
+- Names should describe tasks the caller wants to perform: poll,
   update, attach, configure, save, load, reset, find, query, render, parse.
 - If the usage example needs excessive setup, exposes internal concepts, or
-  hides the user's intent, redesign the public API before polishing internals.
+  forces conversions, adapters, or sequencing hacks, redesign the boundary
+  before polishing internals.
+- Let a meaningful boundary's real workflows drive its internal data structures
+  when necessary. Do not preserve an existing representation at the cost of an
+  awkward caller experience.
 - Keep common workflows ergonomic even when the internal implementation is more
-  generic.
+  generic, while retaining direct or lower-level access where callers have a
+  real need for it.
 
-## Public Surface Vs Internal Machinery
+## Boundaries That Earn Their Cost
 
-- Keep small public convenience methods when they form a clear, stable,
-  consumer-facing vocabulary.
-- Do not collapse good public names into one generic method just because the
+- A boundary earns its cost when it removes knowledge callers should not carry:
+  an invariant, lifecycle, policy, representation conversion, or integration
+  detail.
+- It must make the real caller's job shorter, clearer, or safer. A single caller
+  is enough when the boundary owns meaningful complexity; multiple callers are
+  not enough when it merely moves the same reasoning elsewhere.
+- Prefer one obvious, domain-specific path for each common task. Keep
+  lower-level escape hatches only when callers have a clear need.
+- Do not collapse clear operations into a generic method merely because the
   implementation can be parameterized.
-- Move repeated implementation mechanics behind the public API. Public methods
-  may delegate to shared helpers when their bodies differ only by small
-  parameters, states, fields, or enum cases.
-- Let the public surface stay domain-specific while internal helpers carry
-  generic traversal, state-transition, validation, or dispatch logic.
-- Prefer one obvious public path for each common task. Add lower-level escape
-  hatches only when consumers have a clear need.
+- Do not add a wrapper, interface, or module that only renames provider APIs,
+  passes through the same types and arguments, or exists for a hypothetical
+  future implementation.
 
-## Module-Local Public APIs
+## Internal Module APIs
 
-- Treat each module as having a public surface, even when the module is internal
-  to a larger application, engine, service, or tool.
-- Design that surface for the module's real consumers: sibling modules,
+- Treat a module as having an API when it owns a coherent responsibility that
+  callers should be able to use without understanding its internals. Do not
+  manufacture an API for every small private operation.
+- Design that API for its real consumers: sibling modules,
   application/gameplay code, tools, tests, or integration layers.
-- Keep the surface area intentionally limited where the module owns invariants,
-  state transitions, platform details, persistence shape, or performance
-  constraints.
-- Keep the surface simple and ergonomic where other modules need frequent,
-  repeated use.
-- Hide internal machinery behind the module boundary, but do not make consumers
-  fight the API just to keep the module small.
-- Prefer a small set of clear, domain-specific operations over exposing broad
-  internal state or generic plumbing.
-- Review module APIs from the caller's point of view. If a sibling module must
-  know too much about internal sequencing, state layout, or edge handling, the
-  boundary is too leaky.
+- Keep the surface intentionally limited where the module owns invariants, state
+  transitions, platform details, persistence shape, or performance constraints.
+- Hide internal machinery, but do not make callers fight the API merely to keep
+  the module small.
+- Prefer a small set of clear, domain-specific operations over broad internal
+  state or generic plumbing. If a sibling module must know internal sequencing,
+  state layout, or edge handling, the boundary is too leaky.
 
 ## Layering And Vocabulary
 
@@ -71,8 +75,9 @@ direction, and design-only discussion.
   part of the user's mental model.
 - Keep boundaries explicit: higher layers compose lower layers; lower layers do
   not know higher-level policy.
-- Prefer direct composition over broad abstraction when the boundary does not
-  need independent policy.
+- Prefer direct composition when the caller and implementation share the same
+  concepts. Create a boundary only when it reduces total reader work across the
+  system, rather than adding layers for their own sake.
 
 ## Plain Data Boundaries
 
@@ -109,12 +114,13 @@ direction, and design-only discussion.
 
 ## Design Review Checklist
 
-- The public API reads in consumer workflow terms.
+- Each meaningful boundary reads in its real callers' workflow terms.
 - The common path is short, predictable, and uses domain vocabulary.
-- Public convenience methods are preserved when they make the API clearer.
-- Internal module surfaces are intentionally limited but still ergonomic for
-  their real callers.
-- Repeated internals are centralized without flattening the public surface.
+- Cohesive local flows remain direct rather than being fragmented into layers.
+- Each abstraction removes more caller burden than it adds in concepts,
+  configuration, or indirection.
+- Internal module APIs are intentionally limited but ergonomic for their real
+  callers.
 - Related types use consistent names, return shapes, and edge-case behavior.
 - Plain data boundaries exist for persistence/configuration/editing when needed.
 - Lower-level implementation details do not leak into higher-level workflows.
@@ -125,7 +131,7 @@ direction, and design-only discussion.
 
 - State the recommended approach first.
 - Explain why it fits the existing codebase and consumer workflow.
-- Show the expected public usage shape when API ergonomics matter.
+- Show the expected caller usage shape when API ergonomics matter.
 - Call out which internals should be shared or hidden behind that surface.
 - Call out risks, migration steps, and testing strategy.
 - Keep speculative future extensibility out unless there is current evidence it

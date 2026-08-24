@@ -40,44 +40,24 @@ already settle the decision.
   type for a cohesive subset.
 - Do not bundle unrelated inputs into a catch-all wrapper just to reduce a
   parameter count.
-- Keep short linear functions inline unless extraction is needed for reuse,
-  substantial duplication, API boundaries, or testing.
-- Extract helpers only when they represent meaningful work: cohesive behavior,
-  reusable logic, independently testable detail, or a substantial phase.
-- Extract shared behavior when multiple functions reveal the same traversal,
-  lookup, parsing, validation, dispatch, or edge-handling policy. The decision
-  is not based on duplicate syntax alone; extract when the callers can be
-  combined around one named behavior and future drift would create bugs or
-  inconsistent semantics.
-- When sibling functions have near-identical bodies with small substitutions
-  such as expected states, fields, operators, enum cases, or callback behavior,
-  keep the public functions when they are the right consumer-facing API, but
-  combine their internals behind a helper or parameterized operation. This is
-  especially important when one small function could drift and become subtly
-  wrong.
-- When combining sibling functions that differ by current/previous state,
-  expected enum value, field, slice, or predicate input, prefer passing the
-  concrete varying data and expected value into the helper. Do not introduce a
-  mode enum, wrapper type, or helper name that bakes in one specific case when
-  callers can pass the resolved state directly. The helper should name the
-  shared relation, not one caller's outcome.
-- Hoist shared preparation out of branches when many switch/conditional cases
-  repeat the same sanitization, normalization, parsing, validation, lookup, or
-  derived-value calculation. Name the prepared values so the branch table is
-  about selection and policy, not repeated setup. Do not introduce temporaries
-  for one-off expressions that are clearer inline.
-- Parent functions should retain orchestration and policy decisions; child
-  helpers should execute resolved steps.
+- Keep short linear functions and cohesive flows inline when extraction would
+  only add a name, file, or call to learn.
+- Extract a helper or create a module only when it gives callers a clearer
+  operation or owns coherent work they should not need to understand: an
+  invariant, lifecycle, policy, representation conversion, or integration
+  detail.
+- Do not extract solely to remove repeated syntax. A few similar statements can
+  be clearer than a generic helper; consolidate only when a named operation can
+  own their shared semantics and reduce future caller burden.
+- Keep orchestration and caller-owned policy close to the caller. Helpers should
+  execute the coherent work the boundary owns.
 
 ## Object State And Ownership
 
-- When multiple callers heavily modify the same object fields in the same way,
-  prefer a method or focused helper that applies the named state transition or
-  configuration pattern.
-- Treat repeated external mutation as a sign that ownership may belong on the
-  object. This is especially important when future changes would require
-  updating several callers to keep invariants, defaults, derived fields, or
-  validation consistent.
+- When callers repeatedly assemble the same meaningful state transition or
+  configuration, give the owning object a method or focused helper. Do not add
+  one for simple assignment with no named behavior, invariant, default, or
+  validation to own.
 - Do not hide fields reflexively. Public fields may be part of the intended API,
   useful for literals, serialization, tests, or low-level data access. In those
   cases, keep the fields public if appropriate and still offer helpers for
@@ -88,12 +68,14 @@ already settle the decision.
 
 ## Abstraction Boundaries
 
-- Do not introduce pass-through wrappers that merely mirror SDK or API methods.
-- Add wrapper/helper layers only when they add policy, retries, validation,
-  translation, composition, or a meaningful test boundary.
+- Keep cohesive work direct when the caller already owns the decisions and can
+  understand the flow in place.
+- Add a boundary only when it reduces total reader work by giving callers a
+  simpler operation or hiding coherent knowledge they should not carry.
+- Do not introduce pass-through wrappers that merely mirror SDK or API methods,
+  or interfaces created only for a hypothetical second implementation.
 - Prefer direct SDK/API calls at integration edges when a wrapper adds no domain
-  semantics.
-- Do not create internal objects solely to hide provider names.
+  semantics, policy, translation, lifecycle, or other meaningful compression.
 
 ## State And Dependencies
 
