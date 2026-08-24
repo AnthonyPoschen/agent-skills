@@ -3,17 +3,17 @@ name: git-commit-workflow
 description: >
   Prepare or create Git commits for the user. Use whenever the user asks to
   commit changes, split work into commits, write commit messages, stage files,
-  or clean up a dirty worktree before committing. Enforces Conventional Commits,
-  logical commit boundaries, and an Assisted-by trailer for AI-authored or
-  AI-assisted changes.
+  or clean up a dirty worktree before committing. Creates descriptive commit
+  messages, logical commit boundaries, and an Assisted-by trailer for
+  AI-authored or AI-assisted changes.
 ---
 
 # Git Commit Workflow
 
 ## Goal
 
-Create small, reviewable commits with accurate Conventional Commit subjects and
-an explicit AI assistance trailer. Always separate independent logical units of
+Create small, reviewable commits with clear, descriptive subjects and an
+explicit AI assistance trailer. Always separate independent logical units of
 work into separate commits. Prefer preserving user changes over making a tidy
 history at the cost of mixing unrelated work.
 
@@ -35,10 +35,13 @@ history at the cost of mixing unrelated work.
 
 ## Commit Splitting
 
-Break work down into logical commits by default. If the staged area or worktree
-contains multiple features, bug fixes, refactors, docs changes, dependency
-updates, generated output, formatting, or infrastructure changes, create
-multiple commits instead of one combined commit.
+Split commits when their changes can be reviewed, validated, and reverted
+independently. Keep changes together when splitting would leave either commit
+incomplete or broken.
+
+If the staged area or worktree contains multiple independent features, bug
+fixes, refactors, documentation changes, dependency updates, generated output,
+formatting, or infrastructure changes, create separate commits.
 
 Each commit should represent one coherent unit of work that can be understood,
 reviewed, reverted, and tested on its own. Common split points:
@@ -61,46 +64,33 @@ When multiple logical units are already staged together:
 - Ask before mixing groups only when patch-level separation is impractical or
   when the correct boundary is genuinely ambiguous.
 
-## Conventional Commits
+## Commit Subject
 
-Use this subject format:
+Write one short, plain-English line that states the concrete behavior or
+structural change. A reader should understand what changed without decoding a
+type, scope, or local taxonomy.
 
-```text
-<type>(<scope>): <summary>
-```
-
-Omit the scope when it would be vague.
-
-Preferred types:
-
-- `feat`: user-visible feature or new capability
-- `fix`: bug fix or correctness repair
-- `refactor`: code restructuring without behavior change
-- `test`: test-only changes
-- `docs`: documentation-only changes
-- `build`: build system, package manager, or dependency changes
-- `ci`: CI workflow changes
-- `chore`: maintenance that does not fit the above
-- `style`: formatting-only changes with no semantic effect
-- `perf`: performance improvement
-- `revert`: revert a previous commit
-
-Subject rules:
-
-- Use imperative mood: `fix parser panic`, not `fixed parser panic`.
-- Keep the subject concise, ideally <= 72 characters.
-- Do not end the subject with a period.
-- Use `!` for breaking changes, e.g. `feat(api)!: rename token field`.
+- Prefer an imperative verb: `Add file organization guidance`, `Keep generated
+  wrappers quiet`, or `Split notification parsing from delivery`.
+- Name the affected thing when it helps the reader find the change: `Preserve
+  failed jobs during retry` is clearer than `Improve retries`.
+- Do not use Conventional Commit prefixes or invent broad labels such as
+  `chore`, `refactor`, or `cleanup` when they say less than the actual change.
+- Keep the subject concise, ideally 72 characters or fewer. Do not end it with
+  a period.
+- Follow a repository's explicit commit-message convention when it has one. In
+  the absence of one, use this format.
 
 ## Commit Body
 
-Add a body when the "why" is not obvious, the change is risky, or there are
-important validation notes. Keep it concise:
+Use a body only when it records a non-obvious reason, risk, migration,
+tradeoff, or useful validation evidence. Do not use it to repeat the subject.
+Keep it concise:
 
 ```text
-<type>(<scope>): <summary>
+Add file organization guidance
 
-Explain why this change is needed and call out important tradeoffs.
+Explain the reason and any important tradeoffs that the diff does not show.
 
 Validation:
 - go test ./...
@@ -109,8 +99,8 @@ Validation:
 Assisted-by: Codex/GPT-5
 ```
 
-For breaking changes, include a `BREAKING CHANGE:` footer before
-`Assisted-by:`.
+If the change breaks a public contract, state the affected readers and required
+migration plainly before `Assisted-by:`.
 
 ## Assisted-by Trailer
 
@@ -141,7 +131,7 @@ footers.
    regroup, not as final commit scope.
 3. Group changes into logical commits using the splitting rules above.
 4. For each commit, stage only that group.
-5. Write a Conventional Commit message with an `Assisted-by` trailer.
+5. Write a descriptive commit message with an `Assisted-by` trailer.
 6. Run targeted validation when practical before committing, especially for
    code changes.
 7. Commit with a multi-line message so the trailer is preserved exactly.
