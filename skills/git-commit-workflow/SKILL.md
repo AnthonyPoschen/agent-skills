@@ -3,8 +3,9 @@ name: git-commit-workflow
 description: >
   Prepare or create Git commits for the user. Use whenever the user asks to
   commit changes, split work into commits, write commit messages, stage files,
-  or clean up a dirty worktree before committing. Creates descriptive commit
-  messages, logical commit boundaries, and an Assisted-by trailer for
+  or clean up a dirty worktree before committing, and after each completed
+  phase of a sequenced coding or refactoring workflow. Creates descriptive
+  commit messages, logical commit boundaries, and an Assisted-by trailer for
   AI-authored or AI-assisted changes.
 ---
 
@@ -16,6 +17,14 @@ Create small, reviewable commits with clear, descriptive subjects and an
 explicit AI assistance trailer. Always separate independent logical units of
 work into separate commits. Prefer preserving user changes over making a tidy
 history at the cost of mixing unrelated work.
+
+## When To Commit
+
+- When the user asks to commit, stage, split commits, or push as part of
+  finishing work.
+- When a loaded skill or reference completes a phase of sequenced work and
+  the tree changed. Treat that as authorization. Commit the phase, then
+  continue the next phase without waiting for a separate commit prompt.
 
 ## Safety Rules
 

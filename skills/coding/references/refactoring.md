@@ -17,6 +17,22 @@ rewrite work.
 - Prefer a sequence of understandable mechanical changes over a clever rewrite
   that is hard to verify.
 
+## Sequence
+
+Run these phases in order until the completion check. Subtraction is the first
+phase, not the end of the refactor.
+
+1. Establish the test or check baseline.
+2. Subtract dead and accidental complexity in the selected area.
+3. Commit that phase if the tree changed.
+4. State the target design for the remaining shape.
+5. Rewrite toward that target, committing each coherent unit.
+6. Run the completion check.
+
+If the selected area is large, finish one coherent boundary through rewrite and
+commit, then take the next boundary. Do not leave the request on a subtract-only
+tree. Phase commits use `git-commit-workflow`.
+
 ## Subtract Before You Rebuild
 
 Begin by removing what the selected area does not need. Deletion exposes the
@@ -30,9 +46,9 @@ complexity just because it was already present.
   target on the minimum behavior the selected area must retain.
 - Do not retain unused options, validators, parsers, guards, or extension
   points for hypothetical cases.
-- Keep subtraction within the selected boundary and verify its effect. Report
-  broader cleanup opportunities rather than widening the refactor without
-  approval.
+- Keep subtraction within the selected boundary and verify its effect. Then
+  continue the Sequence in this file. Report cleanup outside the selected area
+  rather than widening the refactor without approval.
 
 ## Design The Target First
 

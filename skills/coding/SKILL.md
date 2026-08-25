@@ -41,8 +41,11 @@ then load the smallest relevant reference set for the task.
   decisions, and fail-fast contracts), read `./references/assertions.md` when
   writing or reviewing code that validates internal assumptions.
 
-Load only the references needed for the user's current request. If the task has
-multiple phases, load the next reference when that phase starts.
+Load only the references needed for the user's current request. If a loaded
+reference describes ordered phases, run every remaining phase until its
+completion check. Load the next reference when that phase starts. Do not stop
+after the first phase, including subtraction. After a phase that changes the
+tree, commit it with `git-commit-workflow`, then continue the next phase.
 
 ## Baseline Rules
 

@@ -25,6 +25,9 @@ it, or how much work it requires.
   reversible answer.
 - Once work begins, do not pause for a choice that the resulting diff,
   artifact, or direct verification can make easy to review and correct.
+- Remaining phases of a sequenced workflow already in progress are ordinary
+  execution. Finish them. Do not stop after the first phase to ask whether
+  to continue.
 
 ## Proceed With Ordinary Execution
 
