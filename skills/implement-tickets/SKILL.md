@@ -100,6 +100,19 @@ user-selected background model. Do not assume a provider, model, or cost tier.
 
 ## Manager Rules
 
+- Before claiming or dispatching any next-frontier item, run an integration
+  sweep for every earlier run-owned item: fetch the target, verify each merged
+  review's merge commit is an ancestor, and close any still-open tracker item
+  with an `AI-generated:` integration comment. Recompute readiness only after
+  this sweep is complete. Do not use a merged PR as a substitute for closing
+  its tracker item when the tracker did not auto-close it.
+- Treat a successful claim as an immediate dispatch obligation: before doing
+  further diagnosis, status reporting, or unrelated tracker work, launch one
+  isolated implementation worker for that item and record its task/session ID.
+  A claimed item with no active worker is an orchestration failure, not
+  "in progress". The only exceptions are an explicit user pause, a failed
+  preflight that makes worker launch impossible, or an already-running worker
+  that owns the same branch; state the exception immediately.
 - Build the dependency graph only from explicit blocker references. Do not infer
   dependencies from ticket order.
 - A work item is ready only when every declared blocker is integrated into the

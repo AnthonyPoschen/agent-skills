@@ -37,6 +37,16 @@ Build dependencies only from native tracker relationships or an explicit
 `Blocked by` section. Do not infer them from item numbers, roadmap order, shared
 files, or likely architecture.
 
+## Frontier Transition Gate
+
+Before dispatching a newly ready item, first reconcile all earlier run-owned
+items that have merged reviews. Fetch the target branch, prove every merge
+commit is an ancestor, and close any tracker item that remains open with a
+short `AI-generated:` integration comment. Only then recompute the frontier,
+claim, and launch the next worker. A merged review is not enough when a
+tracker issue remains open: leaving it open makes the dependency state lie and
+causes the manager to start successor work out of sequence.
+
 ## Supervisor State
 
 For unattended or OpenCode orchestration, run the bundled supervisor. It keeps
