@@ -93,3 +93,17 @@ Use the narrowest check that still provides meaningful evidence:
 Tests should encode stable behavior and contracts, not mirror implementation
 details. Avoid tests that mostly validate mocks, depend on fragile timing, or
 require large unrelated fixture setup for little signal.
+
+## Do Not Test Source Presence
+
+Do not write tests that read source files and assert that a particular string,
+selector, function name, route literal, CSS declaration, or block of markup
+exists. Those checks merely prove that the implementation presently resembles
+the implementation just written; they make routine refactors and copy edits
+expensive without proving a user-visible outcome.
+
+This includes regex assertions over HTML, CSS, JavaScript, Go, or configuration
+source. Delete existing tests of that form unless they validate a generated
+artifact or another deliberately stable text-based public contract. Replace
+them with an executable test at a public seam, such as a rendered UI flow, an
+HTTP request, a command invocation, or a deterministic exported operation.

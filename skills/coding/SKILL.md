@@ -63,6 +63,9 @@ tree, commit it with `git-commit-workflow`, then continue the next phase.
   semantics unless the user explicitly asks to change them.
 - Keep edits scoped to the task. Improve touched code enough for a coherent
   result, but do not normalize unrelated legacy code.
+- Do not write or retain source-inspection tests that assert the implementation
+  exists (for example, regex matching a component's markup, CSS, function
+  name, or route literal). Test behavior through an executable public seam.
 
 ## Example Lookup
 
