@@ -76,6 +76,28 @@ first, including the rendered page when a browser-use or computer-use tool is
 available. Preserve useful conventions and identify the few changes with the
 most impact on comprehension, efficiency, and confidence.
 
+## Design From Intent
+
+Start with the smallest visible control that can represent the user's intent.
+Put complexity behind interaction, not beside it. The interface should expose
+the decision a person is trying to make, not every field, state, or capability
+the system happens to contain.
+
+- Remove controls that duplicate the same decision or force users to translate
+  their goal into the data model.
+- Prefer progressive disclosure when advanced capability can remain available
+  without competing with the primary task.
+- Make power discoverable through natural actions, clear feedback, and familiar
+  conventions rather than by displaying every option at once.
+- Keep committed choices visible, understandable, and reversible. Hidden state
+  is acceptable; surprising state is not.
+- Treat simplicity as reduced cognitive work, not reduced capability.
+
+Before adding a control, ask: what user decision does this support, and can an
+existing control express that decision more directly? Before adding visual
+emphasis, ask: what state or relationship does it clarify, and what is the
+quietest treatment that still works?
+
 ## Establish A Clear Direction
 
 Choose a deliberate visual character appropriate to the product. A repeated-use
@@ -161,6 +183,12 @@ Design the reading order and interaction order together.
   comparison unit. Do not put every page section in a card.
 - Choose page width, grid, and density to fit the content. Empty space is useful
   only when it clarifies structure or focus.
+
+Design visual feedback without changing the shape of the content it explains.
+An indicator should not introduce artificial gaps, wrapping, reflow, or altered
+reading order into the text, labels, or values being indicated. Prefer the
+least disruptive signal that remains legible, and test it with long, repeated,
+multi-word, and edge-case content.
 
 For forms, put instructions next to the decision they support, make required
 actions apparent, give errors a specific recovery path, and avoid forcing users
@@ -301,6 +329,12 @@ Use familiar controls for familiar work, then make their state visible.
 - Design responsive behavior as a deliberate rearrangement of priority and
   controls, not just a desktop layout squeezed narrower.
 
+Completeness does not require exposing every capability in the normal state.
+Keep the default path calm, then make alternate, advanced, and recovery paths
+available at the moment they become relevant. A good interaction feels simple
+because the system carries the complexity, not because the complexity was
+removed from the product.
+
 ## Implement In Context
 
 Follow the project's existing framework, component library, CSS approach, and
@@ -336,6 +370,13 @@ UI, open the running interface with the available **browser-use** or
 - If the tool cannot connect (remote debugging, missing server), stop and get
   that unblocked rather than finishing from code alone.
 - Fix what the screenshots show, then inspect again.
+
+Use this as a design loop, not only as a final audit: implement the smallest
+complete interaction, exercise it with realistic content, inspect the rendered
+result, and correct the largest comprehension or continuity problem before
+adding polish. Source structure can suggest that an interface is correct while
+the rendered result reveals cramped hierarchy, accidental spacing, weak
+feedback, or a control that is technically present but mentally misplaced.
 
 Reading the DOM or describing the CSS is supporting evidence. It does not
 replace a screenshot of the rendered page.

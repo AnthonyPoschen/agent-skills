@@ -67,6 +67,21 @@ tree, commit it with `git-commit-workflow`, then continue the next phase.
   exists (for example, regex matching a component's markup, CSS, function
   name, or route literal). Test behavior through an executable public seam.
 
+## Preserve The User's Mental Model
+
+When code supports a user-facing workflow, model the implementation around the
+user's intent rather than mirroring every field, option, or state in the backing
+data model. Prefer one cohesive operation that expresses the user's decision
+over several controls or helpers that expose internal structure. Keep advanced
+state available behind the interaction that needs it, and make visible state
+reversible and consistent with the user's expectations.
+
+Before adding a control, state variable, or abstraction, identify the user
+decision it owns. If an existing operation can express that decision directly,
+extend it instead of creating a parallel path. Verify the resulting workflow at
+its public boundary, including realistic content and the states that change the
+user's next action.
+
 ## Example Lookup
 
 Use examples only when a rule decision is unclear.
