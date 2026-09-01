@@ -170,6 +170,27 @@ to remember information from another part of the page.
 
 Use typography and color as functional systems, not isolated decoration.
 
+### Decide palettes through a local comparison
+
+When a user is choosing or reconsidering a colour palette, let them compare
+real contenders on the existing product before promoting a set of tokens. A
+swatch sheet cannot reveal whether an accent overwhelms a dense dashboard, how
+states read beside each other, or whether a dark foundation changes the mood.
+
+- Build a temporary, local-only palette prototype on a representative existing
+  route. Offer a small number of named candidates through a shareable query
+  parameter and an obvious switcher; preserve the real data, density, and
+  states while changing only tokens.
+- Include the meaningful contrast cases: a primary action, inactive and active
+  status, selection, errors, and a settings/form surface. Keep production free
+  of the switcher and do not commit it as a product feature.
+- Once the user chooses a direction, promote only the winning token set, record
+  its semantic colour roles in the project design record, and remove the
+  prototype controls and losing candidates before committing.
+
+This makes the choice experiential and keeps colour reserved for meaningful
+state and action rather than decorating every surface.
+
 - Choose typefaces and a compact scale for readability, tone, and the content
   density. Use a small number of text roles, then differentiate them by a
   purposeful combination of size, weight, line height, case, color, and space.
