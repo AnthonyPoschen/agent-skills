@@ -75,6 +75,13 @@ adapter. If a selected Story has no executable children, the supervisor fails
 and requires an explicit confirmed direct Story selection rather than assuming
 container scope is safe to implement.
 
+For Jira Sub-tasks on the Entropy board, actively working on an item means Jira's
+`In Progress` status. Before dispatching a worker, transition the selected
+Sub-task to `In Progress` and read it back to verify the status. Do not use the
+Story status `In Build` for Sub-tasks. If the transition is unavailable, do not
+dispatch the worker; report the exact allowed transitions and preserve the item
+as blocked until the workflow is resolved.
+
 ## Adapter Contract
 
 The selected work-source adapter must provide a way to:

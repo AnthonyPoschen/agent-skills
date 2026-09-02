@@ -15,6 +15,13 @@ discover and record:
 - development integration linking Jira items to GitHub or GitLab reviews;
 - the explicit container or Sub-task keys selecting the run.
 
+For Entropy Jira Sub-tasks, use `In Build` as the active implementation status.
+Before dispatching each worker, transition its Sub-task to `In Build`, read the
+item back, and verify the status. Do not use Jira's generic `In Progress` status.
+If `In Build` is not an allowed transition, stop dispatch for that item and
+report the available transitions instead of launching a worker with a stale
+`Backlog` status.
+
 For a selected Story or higher container, recursively list child work until the
 configured executable child type is reached. A selected Sub-task is the single
 item run. The adapter reads native inward `Blocks` links only. If a Story has no

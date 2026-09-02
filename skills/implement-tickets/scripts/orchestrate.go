@@ -1351,7 +1351,9 @@ func jiraCandidateKeys(setup *JiraSetup, label string, selected []string, query 
 	if query != "" {
 		jql = "(" + query + ") AND labels = " + strconv.Quote(label)
 	}
-	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", jql, "--fields", "key", "--paginate", "--json")
+	// acli returns null rows when JSON output is restricted to only `key`.
+	// Its default result shape includes each top-level key reliably.
+	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", jql, "--paginate", "--json")
 	if err != nil {
 		return nil, err
 	}
@@ -1452,7 +1454,7 @@ func jiraView(key string) (*jiraWorkItem, error) {
 }
 
 func jiraChildren(parent string) ([]string, error) {
-	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", "parent = "+strconv.Quote(parent), "--fields", "key", "--paginate", "--json")
+	out, err := run("", nil, "acli", "jira", "workitem", "search", "--jql", "parent = "+strconv.Quote(parent), "--paginate", "--json")
 	if err != nil {
 		return nil, fmt.Errorf("query Jira children for %s: %w", parent, err)
 	}
