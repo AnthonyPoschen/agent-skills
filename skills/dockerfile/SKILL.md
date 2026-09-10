@@ -50,6 +50,8 @@ single-stage file.
   generated artifacts.
 - Add a test stage when the project has a clear test command. Examples:
   `go test ./...`, `cargo test --locked`, `npm test`, `pytest`.
+  Skip tests that need cluster or network from a container build. Keep cluster
+  tools such as `kubectl` out of the final image.
 - Make the default Docker build exercise tests when practical by having the
   production stage depend on the tested artifact path, or document:
   `docker build --target test .`.

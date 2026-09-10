@@ -1,6 +1,6 @@
 ---
 name: git-worktree
-description: Create, synchronize, and safely retire isolated Git worktrees for implementation work. Use whenever the user asks to work in a worktree, isolate a change on a branch, create a feature checkout, update a worktree after branch changes, or clean up merged worktrees. New worktrees mirror a source checkout below ~/git at ~/worktree/<provider>/<user>/<repo>/<branch-name>.
+description: Create, synchronize, and safely retire isolated Git worktrees for implementation work. Use whenever the user asks to work in a worktree, isolate a change on a branch, create a feature checkout, update a worktree after branch changes, or clean up merged worktrees, or says "make sure its in a worktree", "/implement in a worktree", or "in a new worktree / branch". Clone or fork into `~/git/<provider>/<user>/<repo>` (a normal `git clone` already follows `~/git/github.com/anthonyposchen/<repo>`); do not `gh repo fork --clone` into the current directory. New worktrees mirror a source checkout below ~/git at ~/worktree/<provider>/<user>/<repo>/<branch-name>.
 ---
 
 # Git Worktree

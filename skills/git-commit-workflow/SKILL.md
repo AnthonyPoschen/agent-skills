@@ -146,3 +146,4 @@ footers.
 7. Commit with a multi-line message so the trailer is preserved exactly.
 8. Repeat staging, validation, and commit for each remaining logical group.
 9. Show the resulting commit hashes and any remaining uncommitted changes.
+10. If the user asked to push, `git push` the current branch with an explicit refspec. If they asked for a PR, `gh pr create` and print the URL. Do not push until they said push.
