@@ -26,37 +26,10 @@ Do not replace a dependency that is practical to run locally merely because a
 stub is easier. A passing mock proves the mock contract; it does not prove the
 application works with the real database, framework, or service.
 
-## Outcome Proof Is Required
+## Outcome Proof And Test Admission
 
-Before declaring a change complete, state its expected observable outcome and
-verify that outcome directly. The right proof depends on the artifact the
-request actually concerns:
-
-- When the changed source file is itself the delivered artifact, inspect the
-  resulting file or diff.
-- For a deterministic transformation, run it with representative input and
-  inspect the returned or rendered value.
-- For dynamic behavior, run the service, command, application, or UI and inspect
-  the result through its normal path.
-- For persistence or side effects, inspect the actual row, file, message, or
-  other state the operation produced.
-
-A formatter, linter, build, or passing test supports confidence but is not
-outcome proof unless it observes the requested behavior. Report the direct
-proof separately from supporting checks and any path that could not run.
-
-## Automated Tests Protect Stable Contracts
-
-Add an automated test only when it protects a stable, meaningful contract that
-must remain true as the implementation evolves: a product rule, public API,
-data or serialization guarantee, security property, or correctness invariant.
-The test needs a trustworthy oracle and should survive reasonable refactors.
-
-Do not add a test merely because code changed, a bug occurred, or the behavior
-may change again. Do not pin incidental diagnostic text, private call sequences,
-temporary data shape, or other implementation details. For example, assert an
-exact log message only when it is a deliberately stable operator or machine
-interface, not when it is ordinary diagnostic output.
+Apply Prove the outcome and Tests in `./principles.md`. This file chooses the
+kind of check. It does not decide whether a test is worth keeping.
 
 ## Real Dependency Checks
 
@@ -90,20 +63,6 @@ Use the narrowest check that still provides meaningful evidence:
 - A small, low-risk internal change may need existing checks plus a direct local
   exercise rather than new test scaffolding.
 
-Tests should encode stable behavior and contracts, not mirror implementation
-details. Avoid tests that mostly validate mocks, depend on fragile timing, or
-require large unrelated fixture setup for little signal.
-
-## Do Not Test Source Presence
-
-Do not write tests that read source files and assert that a particular string,
-selector, function name, route literal, CSS declaration, or block of markup
-exists. Those checks merely prove that the implementation presently resembles
-the implementation just written; they make routine refactors and copy edits
-expensive without proving a user-visible outcome.
-
-This includes regex assertions over HTML, CSS, JavaScript, Go, or configuration
-source. Delete existing tests of that form unless they validate a generated
-artifact or another deliberately stable text-based public contract. Replace
-them with an executable test at a public seam, such as a rendered UI flow, an
-HTTP request, a command invocation, or a deterministic exported operation.
+Avoid tests that mostly validate mocks, depend on fragile timing, or require
+large unrelated fixture setup for little signal. Which tests to add or delete
+is Tests in `./principles.md`.

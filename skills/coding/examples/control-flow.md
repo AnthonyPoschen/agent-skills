@@ -1,6 +1,6 @@
 # Control Flow Examples
 
-[Back to rules](../SKILL.md#control-flow)
+[Back to rules](../references/standards.md#control-flow)
 
 ## Bad: Nested happy path
 
@@ -27,7 +27,7 @@ func process(user *User, req *Request) error {
     if req == nil {
         return ErrInvalidInput
     }
-    if !req.Valid() {
+    if req.Valid() == false {
         return ErrInvalidInput
     }
 

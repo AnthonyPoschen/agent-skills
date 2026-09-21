@@ -107,12 +107,15 @@ Keep as debug assertion when most are true:
   - Use build-tagged `DebugAssert` only for expensive checks.
 - **Zig:**
   - Keep `error` returns for expected operational failures.
-  - Use explicit always-on invariant checks (`if (!ok) @panic(...)`) for
+  - Use explicit always-on invariant checks (`if (ok == false) @panic(...)`) for
     critical contracts.
   - Use `std.debug.assert` for debug/release-safe diagnostics, understanding
     optimize-mode behavior in release-fast/release-small.
 
 ## Testing Strategy (TigerStyle-Aligned)
+
+Which tests to add still follows Tests in `./principles.md`. This section is
+which properties are worth asserting.
 
 Treat assertions as part of the behavior contract. Tests should intentionally
 surface invariant violations early, before production runtime paths depend on

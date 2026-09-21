@@ -1,6 +1,7 @@
 # Variables And Magic Values Examples
 
-[Back to rules](../SKILL.md#variables-and-state)
+[State and dependencies](../references/standards.md#state-and-dependencies)
+[Magic values](../references/standards.md#magic-values)
 
 ## Bad: Mutable global runtime state
 

@@ -42,15 +42,8 @@ already settle the decision.
   parameter count.
 - Keep short linear functions and cohesive flows inline when extraction would
   only add a name, file, or call to learn.
-- Extract a helper or create a module only when it gives callers a clearer
-  operation or owns coherent work they should not need to understand: an
-  invariant, lifecycle, policy, representation conversion, or integration
-  detail.
-- Do not extract solely to remove repeated syntax. A few similar statements can
-  be clearer than a generic helper; consolidate only when a named operation can
-  own their shared semantics and reduce future caller burden.
-- Keep orchestration and caller-owned policy close to the caller. Helpers should
-  execute the coherent work the boundary owns.
+- Extraction and new boundaries follow Boundaries earn their cost and Fix
+  duplication while the change is open in `./principles.md`.
 
 ## Object State And Ownership
 
@@ -68,14 +61,9 @@ already settle the decision.
 
 ## Abstraction Boundaries
 
-- Keep cohesive work direct when the caller already owns the decisions and can
-  understand the flow in place.
-- Add a boundary only when it reduces total reader work by giving callers a
-  simpler operation or hiding coherent knowledge they should not carry.
-- Do not introduce pass-through wrappers that merely mirror SDK or API methods,
-  or interfaces created only for a hypothetical second implementation.
-- Prefer direct SDK/API calls at integration edges when a wrapper adds no domain
-  semantics, policy, translation, lifecycle, or other meaningful compression.
+Apply Boundaries earn their cost in `./principles.md`. At an integration edge,
+call the SDK or API directly when a wrapper adds no domain semantics, policy,
+translation, lifecycle, or other meaningful compression.
 
 ## State And Dependencies
 

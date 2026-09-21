@@ -89,8 +89,8 @@ replacement package such as `app` just to empty the entrypoint.
 
 ## Improve Layout Without A Cleanup Project
 
-Do not move everything because the current layout is weak. Keep unrelated code
-where it is unless the user asks for a restructure.
+Apply Scope from `./principles.md`. Do not move everything because the current
+layout is weak.
 
 When a task needs a new file or a clearer home, use the language convention and
 move the smallest coherent unit needed for the task. Do not leave one

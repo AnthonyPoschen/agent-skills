@@ -14,10 +14,9 @@ Style-only comments are secondary unless they hide a real maintainability risk.
 - Understand the intended behavior before judging the implementation.
 - Inspect changed code, relevant callers/callees, tests, migrations, config, and
   generated artifacts when they affect risk.
-- Compare the change to systemic local patterns and `./standards.md`.
-- Check whether new boundaries reduce caller burden or merely add indirection.
-  Keep cohesive local work direct; recommend a boundary only when it owns a
-  coherent responsibility callers should not carry.
+- Compare the change to systemic local patterns, `./principles.md`, and
+  `./standards.md`.
+- Check new boundaries against Boundaries earn their cost in `./principles.md`.
 - Check whether new paths and filenames make code easy to find. Flag feature or
   infrastructure code that has accumulated in an entrypoint, or a patch that
   extends a known dumping ground when a clean conventional path was available.
@@ -28,21 +27,18 @@ Style-only comments are secondary unless they hide a real maintainability risk.
   file, matching type and implementation pair, or role suffix can justify a
   repeated name.
 - When a touched boundary causes conversions, sequencing knowledge, or
-  workarounds, inspect its direct consumers. Flag a special-case workaround when
-  a bounded redesign and consumer migration would make the whole path simpler.
+  workarounds, inspect its direct consumers. Flag a miss of Fix duplication
+  while the change is open in `./principles.md`.
 - Check edge cases, error paths, concurrency, data boundaries, and compatibility.
-- Identify the changed behavior's expected observable outcome and inspect the
-  direct proof that it occurred. A build, linter, or mocked test is insufficient
-  when it does not observe the affected behavior.
-- Raise a verification finding only when a meaningful changed behavior remains
-  unproven and there is a concrete practical proof path. Do not request generic
-  test coverage or tests that would pin incidental logs, private call sequences,
-  or implementation details.
-- When an automated check is appropriate, it should protect a stable product,
-  API, data, security, or correctness contract with a trustworthy oracle.
+- Apply Prove the outcome from `./principles.md`. A build, linter, or mocked
+  test is insufficient when it does not observe the affected behavior.
+- Raise a verification finding when a meaningful changed behavior remains
+  unproven and there is a concrete practical proof path. A bug fix that can
+  recur through a public seam without a regression test at that seam is a
+  finding. Test admission otherwise follows Tests in `./principles.md`. Do not
+  request coverage that the Tests principle excludes.
 - Treat a removed or changed test as a finding only when it abandons a stable
-  contract. Do not preserve tests that merely pin incidental diagnostics,
-  private mechanics, or stale mock behavior.
+  contract. Do not preserve a test that the Tests principle says to remove.
 
 ## Output Format
 

@@ -1,6 +1,10 @@
 # Comments And Docs Examples
 
-[Back to rules](../SKILL.md#comments-and-docs)
+[Back to rules](../references/standards.md#comments-and-docs)
+
+Amounts in both samples are integer cents. `saveOrder` is idempotent for
+`in.RequestID`, so a retry returns the existing order. The bad sample hides
+that contract under narration. The good sample states it once.
 
 ## Bad: Comment spam narrates each line
 
@@ -31,13 +35,13 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
         }
 
         // check price
-        if item.UnitPrice < 0 {
+        if item.UnitPriceCents < 0 {
             // return invalid price
             return nil, ErrInvalidPrice
         }
 
         // add line total
-        subtotal += item.Qty * item.UnitPrice
+        subtotal += item.Qty * item.UnitPriceCents
     }
 
     // make discount variable
@@ -62,29 +66,35 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
         return nil, err
     }
 
-    // call notifier
-    if err := sendConfirmation(ctx, in.CustomerID, orderID, total); err != nil {
-        // return notification error
-        return nil, err
-    }
-
-    // return receipt
-    return &Receipt{
+    // make receipt variable
+    receipt := &Receipt{
         OrderID:  orderID,
         Subtotal: subtotal,
         Discount: discount,
         Tax:      tax,
         Total:    total,
-    }, nil
+    }
+
+    // call notifier
+    if err := sendConfirmation(ctx, in.CustomerID, orderID, total); err != nil {
+        // return confirmation pending error
+        return receipt, ErrConfirmationPending
+    }
+
+    // return receipt
+    return receipt, nil
 }
 ```
 
-## Good: One comment per phase, skimmable story
+## Good: Comment the contract the code does not show
 
 ```go
-// processOrder validates input, prices order, persists it, and returns receipt.
+// processOrder prices an order in integer cents and stores it.
+// Loyalty discount and tax round down.
+// Confirmation mail is a separate step. If the order is saved and the mail
+// fails, the receipt is returned with ErrConfirmationPending. Retrying that
+// error with the same RequestID must not create a second order.
 func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
-    // Validate request and fail fast on invalid input.
     if in.CustomerID == "" {
         return nil, ErrInvalidCustomer
     }
@@ -92,19 +102,17 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
         return nil, ErrEmptyItems
     }
 
-    // Price line items and compute subtotal.
     subtotal := 0
     for _, item := range in.Items {
         if item.Qty <= 0 {
             return nil, ErrInvalidQty
         }
-        if item.UnitPrice < 0 {
+        if item.UnitPriceCents < 0 {
             return nil, ErrInvalidPrice
         }
-        subtotal += item.Qty * item.UnitPrice
+        subtotal += item.Qty * item.UnitPriceCents
     }
 
-    // Apply discount and tax to compute total.
     discount := 0
     if in.IsLoyalCustomer {
         discount = subtotal / 10
@@ -112,24 +120,27 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
     tax := (subtotal - discount) * 7 / 100
     total := subtotal - discount + tax
 
-    // Persist order and notify customer.
     orderID, err := saveOrder(ctx, in, subtotal, discount, tax, total)
     if err != nil {
         return nil, err
     }
-    if err := sendConfirmation(ctx, in.CustomerID, orderID, total); err != nil {
-        return nil, err
-    }
 
-    // Return receipt payload.
-    return &Receipt{
+    receipt := &Receipt{
         OrderID:  orderID,
         Subtotal: subtotal,
         Discount: discount,
         Tax:      tax,
         Total:    total,
-    }, nil
+    }
+    if err := sendConfirmation(ctx, in.CustomerID, orderID, total); err != nil {
+        return receipt, ErrConfirmationPending
+    }
+    return receipt, nil
 }
 ```
 
-[Back to rules](../SKILL.md#comments-and-docs)
+Returning a bare error after `saveOrder` succeeds tells the caller the order
+was not created. `ErrConfirmationPending` plus the receipt is the contract the
+comment exists to state.
+
+[Back to rules](../references/standards.md#comments-and-docs)

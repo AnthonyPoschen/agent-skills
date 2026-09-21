@@ -7,7 +7,7 @@ Use this index to load only the smallest example set needed for a rule decision.
 - `control-flow.md` - early returns, guard clauses, avoid nested `if` chains
 - `functions.md` - decomposition for long functions and orchestration pattern
 - `variables-magic-values.md` - dependency injection and literal consolidation
-- `comments.md` - phase comments, docs, and tagged comment usage
+- `comments.md` - a contract comment versus line-by-line narration
 
 ## Lookup Guidance
 

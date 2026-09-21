@@ -6,7 +6,8 @@ description: >
   package/build files, scripts, migrations, generated-code inputs,
   infrastructure-as-code, PR/diff discussion, and software architecture or
   design planning. Use this skill as the coding entrypoint router, then load
-  only the task-specific reference files needed for the current request.
+  principles.md and only the task-specific reference files needed for the
+  current request.
 ---
 
 # Coding
@@ -16,6 +17,9 @@ then load the smallest relevant reference set for the task.
 
 ## Routing
 
+- For any implementation, refactor, review, debug, or design task, read
+  `./references/principles.md`. It owns the shared decision rules. The other
+  references add task steps and point back there.
 - For writing new code or extending behavior, read
   `./references/implementation.md`.
 - For refactoring, cleanup, simplification, extraction, restructuring, or
@@ -31,8 +35,8 @@ then load the smallest relevant reference set for the task.
 - For a new application or subsystem, source file placement, package or module
   placement, file moves, file splits, or layout discussion, read
   `./references/file-organization.md`.
-- For Go application layout, package placement, or Go file organization, also
-  read `./references/go.md`.
+- For Go code, application layout, package placement, or Go file organization,
+  also read `./references/go.md`.
 - For choosing tests or verification, especially for persistence, framework,
   service, CLI, or UI behavior, read `./references/verification.md`.
 - For shared code-quality rules, read `./references/standards.md` whenever
@@ -41,31 +45,14 @@ then load the smallest relevant reference set for the task.
   decisions, and fail-fast contracts), read `./references/assertions.md` when
   writing or reviewing code that validates internal assumptions.
 
-Load only the references needed for the user's current request. If a loaded
-reference describes ordered phases, run every remaining phase until its
-completion check. Load the next reference when that phase starts. Do not stop
-after the first phase, including subtraction. After a phase that changes the
-tree, commit it with `git-commit-workflow`, then continue the next phase.
+If a loaded reference describes ordered phases, run every remaining phase until
+its completion check. Load the next reference when that phase starts. Do not
+stop after the first phase, including subtraction.
 
-## Baseline Rules
-
-- Correctness, safety, and user intent take priority over style preferences.
-- Project formatter, linter, tests, build system, framework conventions, and
-  systemic local patterns take priority over this skill's default standards.
-- A local pattern is systemic when it appears across multiple nearby files, is
-  enforced by tooling, or is part of a clear framework/application convention.
-  For file and folder placement, it must also be coherent, discoverable, and
-  compatible with the language and framework. Repetition alone does not make a
-  dumping ground authoritative. Do not copy one-off weak code just because it is
-  adjacent.
-- When no systemic project pattern exists, use `./references/standards.md`.
-- Preserve public behavior, APIs, data contracts, migrations, and operational
-  semantics unless the user explicitly asks to change them.
-- Keep edits scoped to the task. Improve touched code enough for a coherent
-  result, but do not normalize unrelated legacy code.
-- Do not write or retain source-inspection tests that assert the implementation
-  exists (for example, regex matching a component's markup, CSS, function
-  name, or route literal). Test behavior through an executable public seam.
+Do not commit between phases unless the user asked to land the work as
+separate commits. When they did, commit each coherent unit with
+`git-commit-workflow`, then continue. Otherwise finish the remaining phases in
+the working tree.
 
 ## Preserve The User's Mental Model
 

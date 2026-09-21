@@ -13,8 +13,7 @@ direction, and design-only discussion.
   its internal machinery. Consumers include external users and internal callers.
 - Prefer designs that reduce coupling at real boundaries: domain/persistence,
   transport/domain, UI/state/effects, external provider/application policy.
-- Keep cohesive work direct when the caller already owns the decisions and can
-  understand the flow in place. Do not create boundaries just to divide code.
+- Apply Boundaries earn their cost in `./principles.md` before adding a layer.
 - Name tradeoffs explicitly when more than one approach is viable.
 
 ## Caller Workflow First
@@ -35,19 +34,12 @@ direction, and design-only discussion.
 
 ## Boundaries That Earn Their Cost
 
-- A boundary earns its cost when it removes knowledge callers should not carry:
-  an invariant, lifecycle, policy, representation conversion, or integration
-  detail.
-- It must make the real caller's job shorter, clearer, or safer. A single caller
-  is enough when the boundary owns meaningful complexity; multiple callers are
-  not enough when it merely moves the same reasoning elsewhere.
+Apply Boundaries earn their cost in `./principles.md`.
+
 - Prefer one obvious, domain-specific path for each common task. Keep
   lower-level escape hatches only when callers have a clear need.
 - Do not collapse clear operations into a generic method merely because the
   implementation can be parameterized.
-- Do not add a wrapper, interface, or module that only renames provider APIs,
-  passes through the same types and arguments, or exists for a hypothetical
-  future implementation.
 
 ## Internal Module APIs
 
@@ -76,8 +68,7 @@ direction, and design-only discussion.
 - Keep boundaries explicit: higher layers compose lower layers; lower layers do
   not know higher-level policy.
 - Prefer direct composition when the caller and implementation share the same
-  concepts. Create a boundary only when it reduces total reader work across the
-  system, rather than adding layers for their own sake.
+  concepts.
 
 ## Plain Data Boundaries
 
@@ -114,11 +105,10 @@ direction, and design-only discussion.
 
 ## Design Review Checklist
 
+Apply `./principles.md`, then confirm:
+
 - Each meaningful boundary reads in its real callers' workflow terms.
 - The common path is short, predictable, and uses domain vocabulary.
-- Cohesive local flows remain direct rather than being fragmented into layers.
-- Each abstraction removes more caller burden than it adds in concepts,
-  configuration, or indirection.
 - Internal module APIs are intentionally limited but ergonomic for their real
   callers.
 - Related types use consistent names, return shapes, and edge-case behavior.

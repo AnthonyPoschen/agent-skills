@@ -1,6 +1,6 @@
 # Functions Examples
 
-[Back to rules](../SKILL.md#functions)
+[Back to rules](../references/standards.md#functions)
 
 ## Good: Short Linear Phases Stay Inline
 
