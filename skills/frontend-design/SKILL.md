@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, or making an existing web experience more usable and distinctive. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface in both dark and light themes with browser-use or computer-use tools.
+description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, or making an existing web experience more usable and distinctive. Also use for motion, elevation, accessibility, and design critique. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface in both dark and light themes with browser-use or computer-use tools.
 ---
 
 # Frontend Design
@@ -109,7 +109,8 @@ workbench", "warm local guide", or "precise technical console".
 Use that direction to constrain decisions:
 
 - Pick a small, purposeful type system, spacing scale, color system, radius
-  family, and elevation model.
+  family, and elevation model. Use those steps. A one-off gap, radius, or
+  weight means a different kind of thing.
 - Reuse tokens and component patterns. Variation should signal a meaningful
   difference, not indecision.
 - Use real-looking content, labels, data, and edge cases. Placeholder-only
@@ -183,6 +184,10 @@ Design the reading order and interaction order together.
   comparison unit. Do not put every page section in a card.
 - Choose page width, grid, and density to fit the content. Empty space is useful
   only when it clarifies structure or focus.
+- Align icons, play marks, and other asymmetric glyphs optically when geometric
+  centering looks off.
+- Give images and other media a reserved aspect ratio so loading does not shift
+  the content around them.
 
 Design visual feedback without changing the shape of the content it explains.
 An indicator should not introduce artificial gaps, wrapping, reflow, or altered
@@ -222,9 +227,9 @@ state and action rather than decorating every surface.
 - Choose typefaces and a compact scale for readability, tone, and the content
   density. Use a small number of text roles, then differentiate them by a
   purposeful combination of size, weight, line height, case, color, and space.
-- Keep long-form text at a comfortable measure and line height. Break up dense
-  copy with meaningful headings, lists, quotations, examples, or calls to
-  action instead of shrinking the type until it fits.
+- Keep line height comfortable for the role. Break up dense copy with
+  meaningful headings, lists, quotations, examples, or calls to action instead
+  of shrinking the type until it fits.
 - Treat labels, supporting copy, data, and headings as distinct roles. Make
   lower-priority information quieter without making it illegible.
 - Build a palette by roles: neutral surfaces and text; an accent for primary
@@ -237,26 +242,26 @@ state and action rather than decorating every surface.
   unless the project's `DESIGN.md` already forbids one of those schemes. A
   product theme button is not required when `prefers-color-scheme` is the
   switch.
-- Use the color system consistently: darker or stronger tones for emphasis and
-  interaction, lighter tones for backgrounds and selected states, and neutral
-  tones for the majority of the interface. A usable interface needs more than
-  a page background, a brand color, and one gray.
-- Keep contrast sufficient in every state, including muted text on tinted
-  surfaces and text over imagery.
-- Reinforce success, warning, error, selection, and status with text, icons,
-  shape, or position as well as color.
-- Use borders, shadows, background changes, and overlap to distinguish layers
-  and interactive surfaces. Keep lighting and elevation consistent across the
-  page.
+- Use stronger tones for emphasis and interaction. Keep most of the surface
+  neutral. A usable interface needs more than a page background, a brand
+  color, and one gray.
+- Meet the accessibility bar for contrast in every state.
+- Separate layers with one elevation model and one light direction.
+  - A border or a tonal surface change shows structure, selection, and focus.
+  - Lift uses a layered neutral shadow: several transparent layers, no colored
+    glow. On a dark theme a shadow disappears, so raise the surface and keep a
+    hairline border.
 
 ## Design Text-Heavy Screens
 
 For articles, documentation, guides, onboarding, and marketing pages, make the
 reading experience the interface.
 
-- Set a readable text column rather than allowing paragraphs to span the whole
-  viewport. On wide screens, use the surrounding space for navigation, related
-  content, or deliberate breathing room.
+- Set a readable text column of about 60–75 characters rather than allowing
+  paragraphs to span the whole viewport. On wide screens, use the surrounding
+  space for navigation, related content, or deliberate breathing room.
+- Keep multi-line headings from leaving one short line stranded. Leave body
+  text ragged.
 - Establish the headline, metadata, introduction, body, and calls to action as
   distinct text roles. Give each role a repeatable treatment rather than
   hand-tuning every block.
@@ -266,8 +271,8 @@ reading experience the interface.
   compete for attention; reserve each for a clear purpose.
 - Treat quotes, lists, examples, author information, and sign-up prompts as
   meaningful interruptions in the reading rhythm, not interchangeable cards.
-- Check the narrow-screen layout early. Reduce or relocate secondary content
-  while protecting line length, hierarchy, and tap targets.
+- On a narrow screen, protect the measure and the heading hierarchy, and
+  relocate secondary content using the narrow-screen rules.
 
 ## Design Complex Forms
 
@@ -282,14 +287,11 @@ user's decisions, not around the underlying data model.
 - Pair a label, input, help text, and validation message as one visual unit.
   Use spacing and surface contrast to distinguish inputs from their container.
 - Give selected plans, options, and payment methods a clear selected state that
-  combines text, control state, and visual treatment. Do not depend on color
-  alone.
+  combines text, control state, and visual treatment.
 - Place destructive actions away from the default save or continue path and
   label their consequence precisely. Make the normal next step visually
   dominant without making every button loud.
-- Keep workflow actions in a stable location across related screens. When a
-  narrow layout stacks controls, preserve their priority and their relationship
-  to the section they affect.
+- Keep workflow actions in a stable location across related screens.
 
 ## Design Data-Dense Screens
 
@@ -306,34 +308,95 @@ and comparison, not imitate a marketing page.
   scanning. Keep text labels readable and stable.
 - Make the interactive target clear. A card may be entirely clickable, but its
   affordance and primary destination should still be evident.
-- Use status color with text, icons, or badges, and reserve high-contrast
-  treatment for conditions that require attention. Do not turn every value into
-  a colored label.
+- Reserve high-contrast status treatment for conditions that need attention.
+  Do not turn every value into a colored label.
 - Use dividers and borders only where they improve row, column, or section
   separation. Repeated heavy boxes make dense information harder to scan.
-- On narrow screens, retain the columns and controls needed for the immediate
-  decision; move secondary detail into a disclosure, detail view, or deliberate
-  horizontal-scroll region rather than silently losing it.
+- On a narrow screen, keep the columns the immediate decision needs. Secondary
+  columns follow the narrow-screen rules.
 
 ## Build Complete Interactions
 
 Use familiar controls for familiar work, then make their state visible.
 
-- Provide keyboard access, visible focus, labels, and appropriate semantics.
 - Cover hover, focus, active, selected, disabled, loading, empty, error, and
-  success states when they can occur.
+  success when they can occur. Hover, focus, and selected stay visually
+  distinct from each other.
+- Put information the user needs in the resting state. Hover may add detail.
+  It cannot be the only place that detail exists.
 - Make primary and destructive actions easy to distinguish before an action is
-  taken.
-- Use motion to explain cause, effect, or continuity. Respect reduced-motion
-  preferences and avoid movement that distracts from repeated work.
-- Design responsive behavior as a deliberate rearrangement of priority and
-  controls, not just a desktop layout squeezed narrower.
+  taken. If an action is unavailable, show why beside it.
+- Follow the motion rules, the accessibility bar, and the narrow-screen rules.
 
 Completeness does not require exposing every capability in the normal state.
 Keep the default path calm, then make alternate, advanced, and recovery paths
 available at the moment they become relevant. A good interaction feels simple
 because the system carries the complexity, not because the complexity was
 removed from the product.
+
+## Motion
+
+Animate to show cause, effect, or continuity. Skip motion a person will see
+many times a day, and never animate a keyboard action.
+
+Before adding motion, decide in order whether it should animate, what job it
+does, which easing it uses, and how fast it is.
+
+- Entrances start fast, with `ease-out`. Movement already on screen uses
+  `ease-in-out`. Hover and color use `ease`. A constant loop may use `linear`.
+  `ease-in` delays the moment someone is watching, so it is the wrong curve
+  for interface motion.
+- Press feedback takes about 100–160ms. Tooltips and small popovers take
+  125–200ms. Dropdowns take 150–250ms. Ordinary interface motion stays under
+  300ms. A press can settle with a slight scale, around 0.97, unless the
+  product's tokens already define feedback.
+- An entering surface starts from about `scale(0.95)` plus opacity, never from
+  `scale(0)`. A popover scales from its trigger. A modal stays centered.
+- Use transitions for anything the user can interrupt. Keyframes restart from
+  zero.
+- Animate `transform` and `opacity`. Leave layout properties still.
+- Apply a hover effect only under
+  `@media (hover: hover) and (pointer: fine)`.
+- Under `prefers-reduced-motion: reduce`, keep opacity and color changes that
+  explain state, and drop movement.
+
+Match the motion to how often it appears and to the product's character. A
+repeated-use tool stays crisp. A rare first-run moment can take longer.
+
+## Accessibility Bar
+
+Meet this bar on every surface you build or change. The design record can
+raise it. It cannot waive it.
+
+- Text someone must read is at least 4.5:1, including secondary text and text
+  on images. Large text (about 24px, or about 19px bold) and non-text marks
+  that carry meaning stay at least 3:1 against their neighbor. Inactive
+  controls are the exception.
+- Every control has a visible name. An icon-only button includes an accessible
+  name. Placeholder text is an example, not the name of the field.
+- Focus is visible, follows the same order as the layout, and is not hidden
+  under sticky chrome. A dialog keeps focus inside until it closes, then
+  returns focus to what opened it.
+- A keyboard user can reach and operate every action, and can skip repeated
+  chrome.
+- Targets are at least 24px on a side, and about 44px for touch.
+- Status, selection, and errors use text, icon, shape, or position as well as
+  color.
+- Honor the reduced-motion rule in the motion section.
+
+## Narrow Screens
+
+A narrow layout is a new priority order, not the desktop page squeezed until
+it wraps.
+
+- Keep the decision, the primary action, and the values that decision needs in
+  the first view.
+- Move secondary detail into a disclosure, a detail view, or a clearly marked
+  horizontal region.
+- Collapse navigation on purpose. The current location and the way back stay
+  visible.
+- Stack form actions without separating them from the section they affect.
+- Use the touch target size from the accessibility bar.
 
 ## Implement In Context
 
@@ -343,8 +406,8 @@ surface without a speculative rewrite of unrelated areas.
 
 - Build the working interface, not a presentation describing the intended UI.
 - Use semantic structure and reusable variables or tokens for repeat values.
-- Make constraints explicit with grid tracks, widths, aspect ratios, wrapping,
-  truncation, and overflow handling where content demands them.
+- Make constraints explicit with grid tracks, widths, wrapping, truncation,
+  and overflow handling where content demands them.
 - Prefer the project’s established icon and asset strategy. Do not introduce
   assets or fonts whose licenses or loading behavior are unknown.
 - Keep content, state, and interaction logic realistic enough to verify the
@@ -386,6 +449,14 @@ replace a screenshot of the rendered page.
 After inspecting in the browser as above, correct the largest problems first,
 then make a detail pass.
 
+When the user asks for a critique, report the findings instead of only fixing
+them. Rank each finding as blocking, should-fix, or polish. Name who is
+affected, what you saw, and the smallest change that fixes it. Blocking means
+someone cannot complete the task, cannot tell the state, or cannot operate a
+control. One systemic fix outranks a list of repeated symptoms. When the task
+is to build or change the interface, fix the findings during the design loop
+rather than handing back a list.
+
 Check:
 
 - Can a first-time user identify the screen's purpose, primary action, and
@@ -399,12 +470,11 @@ Check:
   a generic template or one of the three AI-default clusters above?
 - Is the palette a role-based system (surfaces, ink, one accent, semantics)
   rather than a leftover placeholder or a second competing accent?
-- Do both the dark and light themes, driven by `prefers-color-scheme`, keep
-  readable contrast, and were both visually inspected?
+- Were both the dark and light themes visually inspected, and does each meet
+  the accessibility bar?
+- Does the motion follow the motion rules?
 - Is there one signature element, and has unused type, unused tokens, and
   leftover decoration been removed?
-- Is the result usable with keyboard navigation, reduced motion, and without
-  relying on color alone?
 
 In the final response, state what changed, which workflow or state was
 prioritized, and what visual verification was performed.
