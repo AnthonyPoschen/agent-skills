@@ -178,16 +178,20 @@ Design the reading order and interaction order together.
   Do not depend on font size alone.
 - Keep semantic HTML correct while styling according to visual importance. The
   document outline and the visual hierarchy have different jobs.
-- Give persistent or repeated information a stable position. Avoid layouts that
-  jump when data, labels, or feedback change.
+- Give persistent or repeated information a stable position.
+- A loading, empty, or refreshed state occupies the same box as the settled
+  state. Reserve that height and width before the data arrives. Render a
+  control that belongs in the settled layout in its final slot while loading,
+  disabled, instead of inserting it when the request returns. Paint a record
+  the screen already has immediately. Do not use a shorter placeholder, hide a
+  button, or let a row grow around late text when that moves anything the user
+  can select. Images and other media reserve their aspect ratio the same way.
 - Use cards sparingly: for repeated objects, a truly bounded tool, or a clear
   comparison unit. Do not put every page section in a card.
 - Choose page width, grid, and density to fit the content. Empty space is useful
   only when it clarifies structure or focus.
 - Align icons, play marks, and other asymmetric glyphs optically when geometric
   centering looks off.
-- Give images and other media a reserved aspect ratio so loading does not shift
-  the content around them.
 
 Design visual feedback without changing the shape of the content it explains.
 An indicator should not introduce artificial gaps, wrapping, reflow, or altered
@@ -463,8 +467,9 @@ Check:
   current state quickly?
 - Does the layout prioritize the workflow rather than the app chrome?
 - Are grouping, alignment, spacing, and text hierarchy unambiguous?
-- Do labels, long values, realistic data, and feedback fit without overlap or
-  unstable layout shifts?
+- Do labels, long values, realistic data, and feedback fit without overlap, and
+  does every loading state keep the settled box so a selectable control does
+  not move?
 - Are all relevant interactive, loading, empty, error, and focus states clear?
 - Does the visual direction fit the audience and product instead of resembling
   a generic template or one of the three AI-default clusters above?
