@@ -2,6 +2,9 @@
 
 ## Recent Releases
 
+- `v2026.9.25` - Added test admission, domain modeling, and worktree skills, and
+  updated coding, frontend design, and ticket orchestration. See
+  `docs/releases/v2026.9.25.md`.
 - `v2026.8.25` - Added foundational engineering skills and strengthened coding,
   verification, Git, release, and file-organization guidance. See
   `docs/releases/v2026.8.25.md`.
