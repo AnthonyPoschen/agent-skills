@@ -71,8 +71,9 @@ Apply these homes while rewriting. Do not restate them:
 
 - Apply Scope from `./principles.md`. If a local legacy pattern conflicts with
   standards, update the path needed for the requested change.
-- When a touched test fails or becomes awkward, apply the Tests principle in
-  `./principles.md`.
+- When a touched test fails or becomes awkward, what it protects and how it
+  proves that follow Tests in `./principles.md`. Whether it stays follows the
+  `test-audit` skill.
 - When moving or splitting code, use `./file-organization.md`.
 - Prefer tests or characterization checks before changing complex behavior.
 
@@ -84,5 +85,6 @@ Apply these homes while rewriting. Do not restate them:
   could not be established is documented.
 - Apply Review before done and Prove the outcome from `./principles.md`.
 - Tests cover the risk introduced by the rewrite and pass after the change,
-  except for pre-existing failures documented before editing. New and removed
-  tests follow the Tests principle in `./principles.md`.
+  except for pre-existing failures documented before editing. What a kept test
+  protects follows Tests in `./principles.md`. Whether a test is added or
+  removed follows the `test-audit` skill.

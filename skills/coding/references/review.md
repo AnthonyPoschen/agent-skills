@@ -34,11 +34,13 @@ Style-only comments are secondary unless they hide a real maintainability risk.
   test is insufficient when it does not observe the affected behavior.
 - Raise a verification finding when a meaningful changed behavior remains
   unproven and there is a concrete practical proof path. A bug fix that can
-  recur through a public seam without a regression test at that seam is a
-  finding. Test admission otherwise follows Tests in `./principles.md`. Do not
-  request coverage that the Tests principle excludes.
+  recur through a public seam without one regression at that seam is a
+  finding. What that test protects follows Tests in `./principles.md`. Whether
+  to request, keep, or remove a test follows the `test-audit` skill. Do not
+  request a test that skill rejects.
 - Treat a removed or changed test as a finding only when it abandons a stable
-  contract. Do not preserve a test that the Tests principle says to remove.
+  contract from Tests in `./principles.md`. Do not preserve a test that
+  `test-audit` says to remove.
 
 ## Output Format
 

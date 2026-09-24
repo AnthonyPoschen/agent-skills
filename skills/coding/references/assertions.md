@@ -114,8 +114,9 @@ Keep as debug assertion when most are true:
 
 ## Testing Strategy (TigerStyle-Aligned)
 
-Which tests to add still follows Tests in `./principles.md`. This section is
-which properties are worth asserting.
+What these checks protect follows Tests in `./principles.md`. Whether one of
+them should exist follows the `test-audit` skill. This section is which
+properties are worth asserting.
 
 Treat assertions as part of the behavior contract. Tests should intentionally
 surface invariant violations early, before production runtime paths depend on
@@ -123,14 +124,14 @@ undefined or corrupt state.
 
 ### What Changes In Test Design
 
-- Keep boundary tests that expect error returns for invalid input and
-  environment failures.
-- Add core-invariant tests that exercise internal state transitions and verify
+- Boundary checks expect error returns for invalid input and environment
+  failures.
+- Core-invariant checks exercise internal state transitions and verify
   invariant-preserving outcomes.
-- Add targeted assertion-surfacing tests around mutation-heavy paths,
-  edge-of-capacity scenarios, and state-machine transitions.
-- Prefer tests that prove correctness properties (conservation,
-  monotonicity/order, boundedness, idempotence) over only happy-path examples.
+- Assertion-surfacing checks sit on mutation-heavy paths, edge-of-capacity
+  scenarios, and state-machine transitions.
+- Property checks prove conservation, monotonicity, order, boundedness, or
+  idempotence across the cases that matter, rather than one happy path.
 
 ### Practical Patterns
 
@@ -146,9 +147,8 @@ undefined or corrupt state.
 4. **State-transition tests**
    - Cover legal transitions and at least one illegal/impossible transition
      attempt (through boundary API) that is rejected safely.
-5. **Regression tests for assertion failures**
-   - When an assertion bug is found, add a test that reproduces the path and
-     passes after the fix.
+5. **Regression checks for assertion failures**
+   - When an assertion bug is found, the check reproduces that path.
 
 ### Build/Mode Coverage
 

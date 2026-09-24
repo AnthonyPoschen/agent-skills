@@ -117,26 +117,23 @@ checks and any path that could not run.
 
 ## Tests
 
-Add an automated test when it protects a stable contract through a public seam:
-a product rule, public API, data or serialization guarantee, security property,
-or correctness invariant. The test needs a trustworthy oracle and should
-survive a reasonable refactor.
+A worthwhile test protects a stable contract through a public seam: a product
+rule, public API, data or serialization guarantee, security property, or
+correctness invariant. It needs a trustworthy oracle and should survive a
+reasonable refactor.
 
-A bug that can recur through a public seam gets a regression test at that seam.
-Watch it fail on the unfixed behavior, then confirm the fix makes it pass.
+Prove it at that seam. For a bug, watch the test fail on the unfixed behavior
+for the intended reason, then confirm the fix makes it pass. Exercise the
+contract with an executable check: a rendered flow, an HTTP request, a command,
+or a deterministic exported operation.
 
-Do not add a test that only pins incidental diagnostic text, private call
-order, temporary data shape, mock choreography, or source text. Source text
-means reading a source file to assert a string, selector, function name, route
+Reading a source file to assert a string, selector, function name, route
 literal, CSS declaration, or markup block, including a regex over HTML, CSS,
-JavaScript, Go, or configuration. Delete an existing test of that form unless
-it guards a generated artifact or another deliberately stable text contract.
-Replace it with an executable check at a public seam: a rendered flow, an HTTP
-request, a command, or a deterministic exported operation.
+JavaScript, Go, or configuration, is a source-text check. That proves behavior
+only when the text itself is the contract, such as a generated artifact or
+another deliberately stable text contract.
 
-A touched test that protects a stable contract stays, updated when that
-contract still holds. Remove or replace a test that protects no stable
-contract. Do not delete or weaken a test to hide a real failure.
+Whether to add, keep, or remove a test is the `test-audit` skill.
 
 ## Review before done
 

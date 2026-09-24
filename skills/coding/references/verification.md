@@ -26,10 +26,10 @@ Do not replace a dependency that is practical to run locally merely because a
 stub is easier. A passing mock proves the mock contract; it does not prove the
 application works with the real database, framework, or service.
 
-## Outcome Proof And Test Admission
+## Outcome Proof
 
 Apply Prove the outcome and Tests in `./principles.md`. This file chooses the
-kind of check. It does not decide whether a test is worth keeping.
+kind of check. Whether a test should exist is the `test-audit` skill.
 
 ## Real Dependency Checks
 
@@ -63,6 +63,6 @@ Use the narrowest check that still provides meaningful evidence:
 - A small, low-risk internal change may need existing checks plus a direct local
   exercise rather than new test scaffolding.
 
-Avoid tests that mostly validate mocks, depend on fragile timing, or require
-large unrelated fixture setup for little signal. Which tests to add or delete
-is Tests in `./principles.md`.
+Avoid a check that depends on fragile timing or needs a large unrelated
+fixture for little signal. Whether to add or delete a test is the
+`test-audit` skill.

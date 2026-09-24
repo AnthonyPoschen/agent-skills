@@ -37,8 +37,12 @@ then load the smallest relevant reference set for the task.
   `./references/file-organization.md`.
 - For Go code, application layout, package placement, or Go file organization,
   also read `./references/go.md`.
-- For choosing tests or verification, especially for persistence, framework,
+- For choosing the kind of check, especially for persistence, framework,
   service, CLI, or UI behavior, read `./references/verification.md`.
+- Whether to add, keep, or remove a test is the `test-audit` skill, including
+  a test this task is about to write. It runs with this skill. The Tests
+  section of `./references/principles.md` owns what a test protects and how it
+  proves that.
 - For shared code-quality rules, read `./references/standards.md` whenever
   writing or changing code, and as needed during review/design.
 - For assertion strategy (invariant checks, debug-vs-production assert

@@ -42,8 +42,9 @@ Apply Priority in `./principles.md`.
   it for a later refactor pass.
 - When a write can succeed and a later step can still fail, apply A write that
   stuck stays stuck in `./principles.md`.
-- Choose how to verify from `./verification.md`. Which tests to add or remove
-  is the Tests principle in `./principles.md`.
+- Choose the kind of check from `./verification.md`. What a test protects and
+  how it proves that is Tests in `./principles.md`. Whether to add or remove
+  it is the `test-audit` skill.
 - Update docs, comments, fixtures, generated inputs, or examples only when they
   are part of the changed behavior.
 
@@ -55,6 +56,7 @@ Apply Priority in `./principles.md`.
 - Public contracts and operational behavior changed only where intended.
 - The expected observable outcome was verified directly. See Prove the outcome
   in `./principles.md`.
-- Automated coverage follows the Tests principle in `./principles.md`.
+- What automated checks protect follows Tests in `./principles.md`. Whether
+  they are added follows the `test-audit` skill.
 - Report the direct proof, supporting validation, and any real path that could
   not run.

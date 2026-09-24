@@ -24,6 +24,7 @@ npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill technical-writing
+npx skills add anthonyposchen/agent-skills --skill test-audit
 ```
 
 ## Available Skills
@@ -48,6 +49,7 @@ npx skills add anthonyposchen/agent-skills --skill technical-writing
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
+| `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. |
 
 ## Install
 
@@ -78,6 +80,7 @@ npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill technical-writing
+npx skills add anthonyposchen/agent-skills --skill test-audit
 ```
 
 Install all skills:
@@ -138,6 +141,9 @@ skills/
     SKILL.md
   skill-evaluation/
     SKILL.md
+  test-audit/
+    SKILL.md
+    references/
 ```
 
 Each skill lives in `skills/<skill-name>/` and must include a `SKILL.md` file
