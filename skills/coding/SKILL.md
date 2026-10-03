@@ -39,6 +39,8 @@ then load the smallest relevant reference set for the task.
   also read `./references/go.md`.
 - For choosing the kind of check, especially for persistence, framework,
   service, CLI, or UI behavior, read `./references/verification.md`.
+- When the change is something a person sees or operates, load the `eyes-on`
+  skill before the completion check and finish its loop.
 - Whether to add, keep, or remove a test is the `test-audit` skill, including
   a test this task is about to write. It runs with this skill. The Tests
   section of `./references/principles.md` owns what a test protects and how it

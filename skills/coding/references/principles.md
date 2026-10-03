@@ -108,6 +108,8 @@ verify that outcome directly.
   inspect the returned or rendered value.
 - For dynamic behavior, run the service, command, application, or UI and
   inspect the result through its normal path.
+- When a person can see or operate the result, load the `eyes-on` skill and
+  finish its loop. A source read or a DOM query does not prove that look.
 - For persistence or side effects, inspect the actual row, file, message, or
   other state the operation produced.
 

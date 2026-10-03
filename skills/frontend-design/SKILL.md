@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, or making an existing web experience more usable and distinctive. Also use for motion, elevation, accessibility, and design critique. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface in both dark and light themes with browser-use or computer-use tools.
+description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, or making an existing web experience more usable and distinctive. Also use for motion, elevation, accessibility, and design critique. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface with the eyes-on skill, in both dark and light themes.
 ---
 
 # Frontend Design
@@ -72,9 +72,9 @@ workflows reveal whether the product needs a sidebar, top navigation, dense
 table, wizard, canvas, feed, or another structure.
 
 When improving existing UI, inspect the current behavior and visual language
-first, including the rendered page when a browser-use or computer-use tool is
-available. Preserve useful conventions and identify the few changes with the
-most impact on comprehension, efficiency, and confidence.
+first, including the rendered page through the `eyes-on` skill when a browser
+is available. Preserve useful conventions and identify the few changes with
+the most impact on comprehension, efficiency, and confidence.
 
 ## Design From Intent
 
@@ -417,40 +417,20 @@ surface without a speculative rewrite of unrelated areas.
 - Keep content, state, and interaction logic realistic enough to verify the
   visual result.
 
-## Inspect With Browser-Use Or Computer-Use
+## Inspect The Rendered Interface
 
-Markup and CSS are not visual proof. When designing, restyling, or reviewing a
-UI, open the running interface with the available **browser-use** or
-**computer-use** tools and look at pixels, not only source.
+Markup and CSS are not visual proof. Run the `eyes-on` skill on the running
+interface and judge those pictures. Use that look during the design loop, not
+only at the end: implement the smallest complete interaction, exercise it with
+realistic content, inspect the rendered result, and correct the largest
+comprehension or continuity problem before adding polish.
 
-- Run or attach to the local app when the project has a known start command.
-- Capture the first viewport and the full page at a desktop width and a narrow
-  phone width. Scroll through the whole surface you changed.
-- Inspect **both** the dark theme and the light theme on the rendered page.
-  Switch schemes with the browser or computer-use emulation of
-  `prefers-color-scheme` (or the user's OS setting). Screenshot each scheme.
-  Do not treat CSS or DOM inspection as proof that both themes look correct.
-- Interact the way a user would: primary actions, hover and focus where it
-  matters, empty or error states if they are in scope.
-- Compare comparable live products in the same tools when judging whether the
-  page sells, reads, or composes like its category.
-- If the tool cannot connect (remote debugging, missing server), stop and get
-  that unblocked rather than finishing from code alone.
-- Fix what the screenshots show, then inspect again.
-
-Use this as a design loop, not only as a final audit: implement the smallest
-complete interaction, exercise it with realistic content, inspect the rendered
-result, and correct the largest comprehension or continuity problem before
-adding polish. Source structure can suggest that an interface is correct while
-the rendered result reveals cramped hierarchy, accidental spacing, weak
-feedback, or a control that is technically present but mentally misplaced.
-
-Reading the DOM or describing the CSS is supporting evidence. It does not
-replace a screenshot of the rendered page.
+Reading the DOM or describing the CSS is supporting evidence. The eyes-on
+pictures are the proof.
 
 ## Review Before Handoff
 
-After inspecting in the browser as above, correct the largest problems first,
+After the eyes-on loop, correct the largest problems first,
 then make a detail pass.
 
 When the user asks for a critique, report the findings instead of only fixing

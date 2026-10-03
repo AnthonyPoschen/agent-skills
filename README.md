@@ -122,6 +122,9 @@ skills/
     SKILL.md
   experience-first/
     SKILL.md
+  eyes-on/
+    SKILL.md
+    scripts/
   flux-ghcr-image-automation/
     SKILL.md
     references/

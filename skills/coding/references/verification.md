@@ -26,6 +26,12 @@ Do not replace a dependency that is practical to run locally merely because a
 stub is easier. A passing mock proves the mock contract; it does not prove the
 application works with the real database, framework, or service.
 
+## Something A Person Sees
+
+When the change is a page, layout, style, component, or other interface a
+person sees or operates, the check is the `eyes-on` skill. This file still
+chooses unit versus integration tests. It does not replace that look.
+
 ## Outcome Proof
 
 Apply Prove the outcome and Tests in `./principles.md`. This file chooses the
