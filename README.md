@@ -49,7 +49,7 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
-| `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. |
+| `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. Delete tautologies that only restate the code. |
 
 ## Install
 
