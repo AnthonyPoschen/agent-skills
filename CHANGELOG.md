@@ -2,6 +2,8 @@
 
 ## Recent Releases
 
+- `v2026.10.4` - Added eyes-on, project verification skills, and Simplified
+  Technical English. See `docs/releases/v2026.10.4.md`.
 - `v2026.9.25` - Added test admission, domain modeling, and worktree skills, and
   updated coding, frontend design, and ticket orchestration. See
   `docs/releases/v2026.9.25.md`.
