@@ -124,6 +124,11 @@ rule, public API, data or serialization guarantee, security property, or
 correctness invariant. It needs a trustworthy oracle and should survive a
 reasonable refactor.
 
+A test that repeats the implementation is not that proof. If the expected
+value comes from copying the code under test, or from walking the same
+branches, the test only confirms the code was written. That is a tautology.
+Do not add one. Delete one that is already there.
+
 Prove it at that seam. For a bug, watch the test fail on the unfixed behavior
 for the intended reason, then confirm the fix makes it pass. Exercise the
 contract with an executable check: a rendered flow, an HTTP request, a command,

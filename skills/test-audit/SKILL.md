@@ -5,9 +5,11 @@ description: >
   the coding skill whenever writing, changing, reviewing, or removing tests,
   including a test an agent is about to add for a small edit. Gate new tests
   before they land. Audit low-value, duplicative, implementation-coupled, or
-  assertion-free tests and the test-only production seams they require. Also
-  use when asked to prune, sweep, delete, or cut tests, or to remove useless
-  tests while keeping real behavior covered.
+  assertion-free tests and the test-only production seams they require. This
+  skill rejects and deletes tautology tests: tests that restate the production
+  code and only confirm that the code which was written was written. Also use
+  when asked to prune, sweep, delete, or cut tests, or to remove useless tests
+  while keeping real behavior covered.
 ---
 
 # Test Audit
@@ -41,6 +43,11 @@ answer four questions. A missing answer means do not add it yet.
    export, flag, wrapper, or injection hook? If it does, test the real boundary
    instead.
 
+A tautology fails this gate. The test repeats the production code, or builds
+its expected value by the same steps, so a pass only confirms that the code
+which was written was written. It has no independent oracle. Do not add one.
+On an audit, delete it.
+
 Then match the test against every junk pattern. A match fails the gate unless
 retention names the contract it guards on its own.
 
@@ -60,6 +67,10 @@ the existing proof, if any.
 Reject a new test that matches one of these. On an audit, these are the
 candidates to inspect.
 
+- A tautology. The assertion restates the implementation: the test copies the
+  function, recomputes the result with the same steps, or checks that a branch
+  returns the constant written beside it. Passing means the two copies still
+  match. It does not show the code does the right thing.
 - An assertion-free coverage probe.
 - A self-comparison, or a copier that checks a value against itself.
 - A copied fixture, inventory, manifest, or export list.
