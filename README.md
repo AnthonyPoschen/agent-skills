@@ -95,6 +95,21 @@ Install globally for a specific agent:
 npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 ```
 
+## Shared MCP config
+
+Cross-machine MCP server definitions live in `config/mcp/`. Cua Driver is
+`config/mcp/cua-driver.json`: the `cua-driver` command with the `mcp` argument.
+
+After Cua Driver is installed on a machine, register it with the local agents:
+
+```bash
+npm run install-cua-mcp
+```
+
+The script resolves `cua-driver` on that machine and writes the user-level
+Grok, Codex, Claude Code, OpenCode, Cursor, and Gemini entries. Run it again
+after moving or upgrading the binary.
+
 ## Repository Layout
 
 ```text
