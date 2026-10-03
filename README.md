@@ -7,6 +7,7 @@ format. This repository is arranged so skills can be installed with the
 ```bash
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill asd-ste100
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
@@ -31,6 +32,7 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 
 | Skill | Description |
 | --- | --- |
+| `asd-ste100` | Write replies and documents in ASD-STE100 Simplified Technical English. |
 | `act-within-scope` | Make reversible progress within scope without waiting on ordinary execution decisions. |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
 | `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
@@ -63,6 +65,7 @@ Install a specific skill:
 
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
+npx skills add anthonyposchen/agent-skills --skill asd-ste100
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
@@ -99,6 +102,8 @@ npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 
 ```text
 skills/
+  asd-ste100/
+    SKILL.md
   act-within-scope/
     SKILL.md
   coding/
