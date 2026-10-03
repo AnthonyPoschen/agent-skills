@@ -106,6 +106,9 @@ skills/
     examples/
   context-management/
     SKILL.md
+  create-verification-skill/
+    SKILL.md
+    references/
   dockerfile/
     SKILL.md
     references/
@@ -136,6 +139,8 @@ skills/
     SKILL.md
     references/
   makefile/
+    SKILL.md
+  maintain-verification-skill/
     SKILL.md
   release/
     SKILL.md

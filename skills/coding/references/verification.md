@@ -37,6 +37,11 @@ chooses unit versus integration tests. It does not replace that look.
 Apply Prove the outcome and Tests in `./principles.md`. This file chooses the
 kind of check. Whether a test should exist is the `test-audit` skill.
 
+When agents will drive this app again and the repo has no scripted launch,
+drive, and evidence recipe, load `create-verification-skill`. Keeping an
+existing one honest is `maintain-verification-skill`. Proving a single change
+stays Prove the outcome, and a visible surface stays `eyes-on`.
+
 ## Real Dependency Checks
 
 When an integration is in scope and the project can run it locally:
