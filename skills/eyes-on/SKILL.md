@@ -30,9 +30,12 @@ They do not show whether the piece fits the page.
    that returns an image counts only after you judge that image in the eyes
    note. For a terminal or native window, save a PNG from the computer-use
    tool and open that file the same way.
-5. Write the eyes note from the pictures, then fix anything that fails the
+5. When the control loads, toggles, or changes its label, keep a picture from
+   before the action and a picture from after it. The note fails if the
+   control or a neighbor moves, resizes, or pushes something else.
+6. Write the eyes note from the pictures, then fix anything that fails the
    bar below. Shoot and look again after a visual fix.
-6. In the handoff, name the action, the pictures, and any problem you left.
+7. In the handoff, name the action, the pictures, and any problem you left.
 
 Stop before the pictures when the change has no surface a person sees or
 operates. Say that, and use the project's ordinary checks.
@@ -65,6 +68,16 @@ Answer these from the pictures, in concrete visual terms. "It looks fine" and
 
 - **Behavior.** The action changed the picture in the way the feature claims.
   Compare the before and after when the change is a response to input.
+- **Stillness.** Across those two pictures, the control and its neighbors keep
+  their box. A loading state, a new label, or a control that appears does not
+  shift the row, change a sibling's width, or push a neighbor off the screen.
+  A control that is not ready yet is disabled in its final slot.
+- **Siblings.** Actions in one group share size, placement, and motion. One
+  button animating while its pair does not, or one dropping onto its own
+  line, fails.
+- **Attachment.** The control and the thing it changes share a boundary.
+  Detail for a selection appears on that selection. Tabs read as the switch
+  for the panel under them. An empty status region is absent, not a blank strip.
 - **Fit.** Type, radius, border, elevation, and color roles match the
   neighbors and the project's design record. A one-off treatment looks pasted
   on, even when the new element is the one you added.
@@ -88,8 +101,8 @@ Write this before you claim the change is done:
 ```text
 Eyes
 - Action: what you did on the running surface
-- Pictures: the paths you opened
-- Saw: fit, alignment, hierarchy, and behavior, from the pixels
+- Pictures: the paths you opened, including before and after when the control changes
+- Saw: fit, alignment, hierarchy, stillness, siblings, attachment, and behavior
 - Widths and schemes: what held and what broke
 - Verdict: pass, or the fix you are making now
 ```
