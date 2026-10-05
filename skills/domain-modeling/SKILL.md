@@ -13,7 +13,7 @@ description: >
 Actively build and sharpen the project's domain model as you design. This is the
 *active* discipline — challenging terms, inventing edge-case scenarios, and
 writing the glossary and decisions down the moment they crystallise. (Merely
-*reading* `CONTEXT.md` for vocabulary is not this skill — that's a one-line habit
+*reading* `GLOSSARY.md` for vocabulary is not this skill — that's a one-line habit
 any skill can do. This skill is for when you're changing the model, not just
 consuming it.)
 
@@ -23,7 +23,7 @@ Most repos have a single context:
 
 ```text
 /
-├── CONTEXT.md
+├── GLOSSARY.md
 ├── docs/
 │   └── adr/
 │       ├── 0001-event-sourced-orders.md
@@ -31,24 +31,24 @@ Most repos have a single context:
 └── src/
 ```
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map
+If a `GLOSSARY-MAP.md` exists at the root, the repo has multiple contexts. The map
 points to where each one lives:
 
 ```text
 /
-├── CONTEXT-MAP.md
+├── GLOSSARY-MAP.md
 ├── docs/
 │   └── adr/                          ← system-wide decisions
 ├── src/
 │   ├── ordering/
-│   │   ├── CONTEXT.md
+│   │   ├── GLOSSARY.md
 │   │   └── docs/adr/
 │   └── billing/
-│       ├── CONTEXT.md
+│       ├── GLOSSARY.md
 │       └── docs/adr/
 ```
 
-Create files lazily — only when you have something to write. If no `CONTEXT.md`
+Create files lazily — only when you have something to write. If no `GLOSSARY.md`
 exists, create one when the first term is resolved. If no `docs/adr/` exists,
 create it when the first ADR is needed.
 
@@ -57,7 +57,7 @@ create it when the first ADR is needed.
 ### Challenge against the glossary
 
 When the user uses a term that conflicts with the existing language in
-`CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as
+`GLOSSARY.md`, call it out immediately. "Your glossary defines 'cancellation' as
 X, but you seem to mean Y — which is it?"
 
 ### Sharpen fuzzy language
@@ -77,14 +77,14 @@ boundaries between concepts.
 When the user states how something works, check whether the code agrees. If you
 find a contradiction, surface it.
 
-### Update CONTEXT.md inline
+### Update GLOSSARY.md inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up —
+When a term is resolved, update `GLOSSARY.md` right there. Don't batch these up —
 capture them as they happen. Use the format in
-[CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+[GLOSSARY-FORMAT.md](./GLOSSARY-FORMAT.md).
 
-`CONTEXT.md` should be totally devoid of implementation details. Do not treat
-`CONTEXT.md` as a spec, a scratch pad, or a repository for implementation
+`GLOSSARY.md` should be totally devoid of implementation details. Do not treat
+`GLOSSARY.md` as a spec, a scratch pad, or a repository for implementation
 decisions. It is a glossary and nothing else.
 
 ### Offer ADRs sparingly
@@ -108,10 +108,10 @@ not rediscover the same facts every session.
 
 1. Read `docs/agents/domain.md` if it exists (or another repo-local domain index).
 2. If that file names paths for short living docs, create or update those files
-   when the relevant fact crystallises — same discipline as CONTEXT/ADR: short
+   when the relevant fact crystallises — same discipline as GLOSSARY/ADR: short
    bullets, one screen when possible, no essay piles.
 3. If the repo does not declare those paths, do **not** invent a new docs tree.
-   Stick to `CONTEXT.md` and `docs/adr/`.
+   Stick to `GLOSSARY.md` and `docs/adr/`.
 
 Examples of living-short content (only when the repo asks for them):
 

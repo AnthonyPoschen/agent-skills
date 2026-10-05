@@ -2,7 +2,7 @@
 name: grill-with-docs
 description: >
   Run a relentless interview to sharpen a plan or design while creating and
-  updating domain docs (CONTEXT glossary, ADRs) as decisions crystallise. Use
+  updating domain docs (GLOSSARY.md, ADRs) as decisions crystallise. Use
   when starting or refining a feature/design and the project should leave
   durable terminology and decisions behind — not only a chat transcript.
 disable-model-invocation: true
@@ -21,7 +21,7 @@ domain docs current as you go.
    code and existing glossary entries, force concrete scenarios, and refuse to
    leave ambiguous decisions hanging.
 3. As terms and decisions crystallise, update docs *inline* via domain-modeling:
-   - `CONTEXT.md` (glossary only)
+   - `GLOSSARY.md` (glossary only)
    - `docs/adr/*` when the ADR criteria are met
    - Optional short living alignment files **only if** the repo declares them
      (see domain-modeling "Living short alignment docs")
