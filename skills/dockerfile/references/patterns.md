@@ -118,6 +118,13 @@ ENTRYPOINT ["/app/app"]
 
 Keep workflow logic thin and let the Dockerfile own build/test behavior.
 
+For `AnthonyPoschen/genos`, `AnthonyPoschen/genos-controller`, and
+`AnthonyPoschen/k8s`, use `runs-on: house` (self-hosted runners
+`genos-house` / `genos-controller-house` / `k8s-house`). Do not use
+`ubuntu-latest` in those repos.
+
+`AnthonyPoschen/k8s` promote-genos reads private genos/genos-controller via repo secret `GENOS_READ_TOKEN` (fine-grained, read-only Contents on those two repos); the k8s push uses default `GITHUB_TOKEN`.
+
 ```yaml
 name: ci
 
