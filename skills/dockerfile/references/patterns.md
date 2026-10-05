@@ -123,6 +123,8 @@ For `AnthonyPoschen/genos`, `AnthonyPoschen/genos-controller`, and
 `genos-house` / `genos-controller-house` / `k8s-house`). Do not use
 `ubuntu-latest` in those repos.
 
+`AnthonyPoschen/k8s` promote-genos reads private genos/genos-controller via repo secret `GENOS_READ_TOKEN` (fine-grained, read-only Contents on those two repos); the k8s push uses default `GITHUB_TOKEN`.
+
 ```yaml
 name: ci
 
