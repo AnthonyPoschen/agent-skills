@@ -118,6 +118,10 @@ ENTRYPOINT ["/app/app"]
 
 Keep workflow logic thin and let the Dockerfile own build/test behavior.
 
+For `AnthonyPoschen/genos` and `AnthonyPoschen/genos-controller`, use
+`runs-on: house` (self-hosted runners `genos-house` /
+`genos-controller-house`). Do not use `ubuntu-latest` in those repos.
+
 ```yaml
 name: ci
 
