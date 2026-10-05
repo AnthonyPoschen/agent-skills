@@ -44,7 +44,7 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
-| `grill-with-docs` | Relentless design interview that drives domain-modeling so CONTEXT/ADRs (and declared living shorts) stay current. |
+| `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
 | `implement-tickets` | Dependency-aware selected work-item orchestration with isolated workers, review feedback, and human-controlled merges. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
@@ -119,7 +119,7 @@ skills/
     references/
   domain-modeling/
     SKILL.md
-    CONTEXT-FORMAT.md
+    GLOSSARY-FORMAT.md
     ADR-FORMAT.md
   frontend-design/
     SKILL.md
