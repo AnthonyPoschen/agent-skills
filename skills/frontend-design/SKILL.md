@@ -1,465 +1,244 @@
 ---
 name: frontend-design
-description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, or making an existing web experience more usable and distinctive. Also use for motion, elevation, accessibility, and design critique. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface with the eyes-on skill, in both dark and light themes.
+description: Design, build, restyle, or review polished frontend interfaces for web apps, dashboards, tools, landing pages, components, and responsive workflows. Use whenever a request involves frontend visual design, layout, styling, UI hierarchy, interface polish, design systems, color palettes, typography, color schemes, prefers-color-scheme, dark and light themes, responsive behavior, navigation and wayfinding, or making an existing web experience more usable and distinctive. Also use for motion, elevation, accessibility, and design critique. Apply it to both new screens and focused UI improvements, even when the user asks only for code. Avoid templated AI aesthetics. When designing or reviewing UI, visually inspect the running interface with the eyes-on skill, in both dark and light themes.
 ---
 
 # Frontend Design
 
-Create interfaces that make a real task easy to understand and complete. Make
-visual choices serve the product and its users; do not treat a collection of
-components as a finished design.
+You already know how to design. These are reminders for the places where
+agent-built interfaces most often fall short. The brief and the project's
+`DESIGN.md` win over anything here. Make each visual choice serve the person
+using the page and the page's one job.
 
-## Design Consultation
+## Before You Build
 
-When consulted before implementation, establish the few decisions that coding
-cannot safely infer. Do not block a small, reversible change for a full brief;
-use repository evidence and state reasonable assumptions. Ask only when an
-unknown would materially change the workflow, content priority, or visual
-direction.
+- Name the user, the outcome they need, and the page's single job. Design the
+  smallest complete workflow first, including its empty, loading, error and
+  success states, before you choose a shell or navigation.
+- When improving existing UI, look at it running first (`eyes-on`). Keep the
+  conventions that work and change the few things with the most impact.
+- Ask only when an unknown would change the workflow, content priority, or
+  visual direction. Otherwise state the assumption and proceed.
+- Write a short plan before a new screen or redesign: the direction in a few
+  concrete words, the structural system, the type voices and their jobs, the
+  colour roles, and the one signature element you will spend boldness on.
+- Choose the direction from the subject and the brief, not from habit. When
+  the brief pins a direction, execute it fully and precisely. When an axis is
+  free, ask whether your choice would appear unchanged for an unrelated
+  product; if it would, find a reason in this subject or change it.
 
-Treat `DESIGN.md` in the target project as the durable record of design
-knowledge. Look for it before making a material design decision. At the first
-substantive design consultation, create it if it does not exist. Update it when
-user feedback, repository evidence, testing, or a design review changes an
-assumption, constraint, priority, or decision. Record the decision and its
-reason, not a transcript of the conversation.
+## Keep A Design Record
 
-Capture these decisions when the work is substantial, likely to span multiple
-sessions, or needs handoff to another implementer:
+`DESIGN.md` in the target project is the durable record of design decisions.
+Read it before a material decision. Create it at the first substantial design
+consultation, and update it when feedback, testing or review changes a
+decision. Record the decision and its reason, not the conversation. Use
+[the `DESIGN.md` template](references/design-brief.md) for a substantial flow
+or redesign. Project palettes, typefaces and signature elements belong there,
+not in this skill.
 
-- **Outcome and success:** the user outcome, the primary action or decision,
-  and how the team will know the design worked.
-- **Audience and context:** who uses it, their familiarity and urgency, the
-  device or environment, and any access needs that shape the interaction.
-- **Primary workflow:** entry point, happy path, key alternatives, and the
-  feedback or recovery needed after success, failure, or interruption.
-- **Content and data:** the real information, its relative importance, expected
-  density, long or empty values, and any content that must remain visible.
-- **States and rules:** permissions, validation, loading, empty, error,
-  destructive, selected, and time-sensitive states that change what a person
-  can see or do.
-- **Constraints:** existing design system or product conventions, technical
-  limits, supported viewports and input methods, accessibility requirements,
-  brand constraints, and licensed assets or fonts.
-- **Visual direction:** a few concrete adjectives, comparable product
-  references, and anti-references that clarify the desired character without
-  copying another product.
-- **Scope and tradeoffs:** what is deliberately out of scope, what can be a
-  sensible default, and which unresolved questions need a prototype or user
-  decision.
+When someone is choosing a palette, let them compare a few named candidates on
+a real screen of the product (a local-only switcher), then keep only the
+winner's tokens.
 
-Use [the `DESIGN.md` template](references/design-brief.md) to add a brief for
-each substantial flow or redesign. Keep multiple related designs in the root
-`DESIGN.md` while it remains easy to scan. Once it grows beyond about 1,000
-lines or develops independently navigable areas, make `DESIGN.md` a concise
-router and move individual briefs to `design/<topic>.md`. Keep shared design
-principles and the linked index in the root file. Do not turn the record into a
-retrospective diary.
+## Structure
 
-## Start With The Product
+- Give the content a structural system to sit in: a column, a grid, rules or
+  a spacing rhythm, and make every section obey it, with the same spacing
+  between sections and no stray empty bands. Visible structure can carry a
+  page with very little decoration. Hold one shape language (corner radius,
+  border weight) across every component, chips, tags and badges included.
+- When items repeat (cards, rows, plans), every item shows the same fields in
+  the same order, so people compare instead of re-reading.
+- The primary action matches the page's job and leads to the thing the page
+  is about. On a long page, repeat it at the end. Keep the first view lean:
+  the page's job, the primary action and the key overview stay above the
+  fold; anything else (contact, sharing, social, extra facts) goes lower.
+- Give persistent information (navigation, current location, status) a
+  stable position, and keep sticky or fixed chrome from covering content,
+  headings or focused elements. Offset in-page targets for it.
+- Keep text at a readable measure. On wide screens, use the spare width for
+  navigation or deliberate space, not longer lines.
+- A loading, empty or refreshed state keeps the settled state's box. Nothing
+  the user can select moves when data arrives. Media reserves its aspect
+  ratio.
+- Feedback and indicators never reflow the text they describe.
 
-Before choosing an app shell or a visual style, establish:
+## Type
 
-- the user and the outcome they need;
-- the smallest complete workflow or feature being designed;
-- the information needed to act, decide, or verify success;
-- the important content states: normal, empty, loading, validation, error, and
-  success; and
-- the device, viewport, input method, and accessibility constraints that matter.
+- Use a small number of type voices, each with one job (for example display,
+  reading, and a utility voice for labels, data and controls). Give each text
+  role one repeatable treatment. When the brief or design record assigns a
+  voice to a role (navigation, tags, buttons), apply it, casing included,
+  everywhere that role appears: side navigation, tags, secondary controls and
+  narrow layouts.
+- Small labels that carry meaning still pass contrast. Make them quieter with
+  size, weight or case, not faint grey. Keep the faintest tones for rules,
+  ticks and decoration.
+- When a label does not fit, shorten the words. Do not truncate meaning.
+- Headings add information beyond a section's number or label rather than
+  repeating it. Keep multi-line headings from stranding one short word.
 
-Start with a useful feature or state, not a navigation layout. Let repeated
-workflows reveal whether the product needs a sidebar, top navigation, dense
-table, wizard, canvas, feed, or another structure.
+## Colour
 
-When improving existing UI, inspect the current behavior and visual language
-first, including the rendered page through the `eyes-on` skill when a browser
-is available. Preserve useful conventions and identify the few changes with
-the most impact on comprehension, efficiency, and confidence.
+- Keep most of the surface neutral and give colour a job: action, state, or
+  identity. One family per job.
+- State colours mean state and stay the same on every item. Identity colours
+  identify. Never let an identity colour read as a warning or error, and never
+  colour state by identity.
+- When sibling items each get an identity colour, choose the set together and
+  check it side by side in both themes. Every pair should read as clearly
+  different at a glance (aim for roughly ΔE 25), apart from the state colours,
+  and saturated enough to read as a colour, not as ink. Neighbours in a
+  spectrum (blue, indigo, violet) read as one family. When hue separation runs
+  out, separate by lightness, shape, label or placement rather than forcing
+  more hues. An item's identity (colour, type voice) carries everywhere the
+  item appears: overview strips, navigation and its own card. Where it colours
+  text, darken the light-theme variant until that text passes.
+- Colour is never the only signal for status, selection or errors. When
+  colour, shape or size encodes something that isn't self-evident, say what it
+  means on the page with a short key or legend.
+- Build both a light and a dark theme and follow `prefers-color-scheme`. If
+  there is a theme toggle, remember the choice and switch without a flash.
+- Design the dark theme rather than inverting it: lift accents so they hold
+  contrast on dark, flip the primary emphasis, keep hairlines dim but
+  visible, raise surfaces instead of relying on shadows, then recheck every
+  label against the accessibility bar.
 
-## Design From Intent
+## Wayfinding
 
-Start with the smallest visible control that can represent the user's intent.
-Put complexity behind interaction, not beside it. The interface should expose
-the decision a person is trying to make, not every field, state, or capability
-the system happens to contain.
+- On a long page or flow, help people answer: how far am I, where am I, and
+  what comes next. One element can carry progress, contents and navigation
+  together.
+- Navigation aids carry real information and are operable. Section names in
+  them are real links whose labels match the headings, the current one is
+  marked (`aria-current`), and they sit early in the tab order. Any control
+  that moves the reader (a progress scale, a minimap) also has a keyboard
+  path. Do not draw an indicator that looks interactive and is not.
+- When you build a section rail or contents list, make sure it includes:
+  previous and next placed around the list, as links like the section items;
+  the state of each section shown with words ("here", "next", "read") or
+  proportion, not only a paler tone; every label at 4.5:1 or better; and after
+  a jump, focus moved into the target section so keyboard and screen-reader
+  users land where they asked to go.
+- Keep numbering and names consistent between headings, navigation and
+  progress.
+- On narrow screens, collapse wayfinding into a compact, stable bar that keeps
+  the current position, previous and next links, and a menu of every section.
+  Keep progress clearly visible (a bar people can see, not a faint hairline)
+  and the bar short enough not to crowd the content.
 
-- Remove controls that duplicate the same decision or force users to translate
-  their goal into the data model.
-- Prefer progressive disclosure when advanced capability can remain available
-  without competing with the primary task.
-- Make power discoverable through natural actions, clear feedback, and familiar
-  conventions rather than by displaying every option at once.
-- Keep committed choices visible, understandable, and reversible. Hidden state
-  is acceptable; surprising state is not.
-- Treat simplicity as reduced cognitive work, not reduced capability.
+## Interaction And Motion
 
-Before adding a control, ask: what user decision does this support, and can an
-existing control express that decision more directly? Before adding visual
-emphasis, ask: what state or relationship does it clarify, and what is the
-quietest treatment that still works?
+- Cover the states that can occur: hover, focus, active, selected, disabled,
+  loading, empty, error, success. Hover, focus and selected look distinct.
+  Information the user needs is in the resting state, not only on hover.
+- Expose the decision the person is making, not every capability the system
+  has. Put advanced options behind interaction, and keep committed choices
+  visible and reversible.
+- Make primary and destructive actions easy to tell apart before they are
+  taken. If an action is unavailable, say why beside it.
+- Motion shows cause, effect, continuity or reading order. Keep it short and
+  interruptible, animate `transform` and `opacity`, and put hover effects
+  under `@media (hover: hover)`. Skip motion people will see many times a
+  day.
+- Motion never makes the current state unreadable, not even mid-transition.
+- Prefer native scrolling. Under `prefers-reduced-motion: reduce`, drop
+  movement and keep the state changes.
 
-## Establish A Clear Direction
+## Copy
 
-Choose a deliberate visual character appropriate to the product. A repeated-use
-tool should usually be calm, dense, and quick to scan; an editorial or
-brand-focused experience can be more expressive. State the intended direction
-in a few concrete terms before implementation, such as "quiet financial
-workbench", "warm local guide", or "precise technical console".
-
-Use that direction to constrain decisions:
-
-- Pick a small, purposeful type system, spacing scale, color system, radius
-  family, and elevation model. Use those steps. A one-off gap, radius, or
-  weight means a different kind of thing.
-- Reuse tokens and component patterns. Variation should signal a meaningful
-  difference, not indecision.
-- Use real-looking content, labels, data, and edge cases. Placeholder-only
-  layouts hide the density and hierarchy problems users will actually face.
-- Make decoration earn its place by reinforcing the product, a state, or the
-  reading order.
-
-Avoid generic visual filler: unmotivated gradients, floating glass panels,
-oversized rounded cards, decorative glow, or ornamental motion that does not
-help the task.
-
-## Make It Distinctive, Not Default
-
-Treat visual identity as a product decision. A usable layout that could belong
-to any SaaS is unfinished. Ground choices in the subject's world: materials,
-instruments, vernacular, and the page's single job.
-
-Before coding a new screen or a visual redesign, write a compact plan:
-
-- **Color:** 4–6 named hex values with roles (page, surface, ink, accent,
-  semantic). Do not invent extra accents while implementing.
-- **Type:** a characterful display face used with restraint, a complementary
-  body face, and a utility face for captions or data if needed. Do not load
-  families that never appear in the UI.
-- **Layout:** one-sentence concept plus a small ASCII wireframe when comparing
-  options.
-- **Signature:** the one memorable element this surface should be remembered
-  by. Spend boldness there; keep the rest quiet.
-
-Current AI-generated work clusters around three looks: (1) warm cream
-(`#F4F1EA`) with a high-contrast serif and terracotta; (2) near-black with a
-single acid-green or vermilion accent; (3) broadsheet hairline rules, zero
-radius, dense newspaper columns. All three are legitimate for some briefs,
-but they are defaults rather than choices. Where the brief pins a direction,
-follow it. Where an axis is free, do not spend that freedom on one of these
-clusters.
-
-If a palette is "dark gray plus one mint/teal/green accent", or "cream plus
-terracotta", name the subject-specific reason it belongs here or replace it.
-Project-specific palettes, typefaces, and signature elements belong in that
-project's `DESIGN.md`, not in this skill.
-
-Review the plan against the brief before building. If any part would appear
-for an unrelated product, revise that part and say why.
-
-## Write Copy As Design Material
-
-Words exist to make the interface easier to understand. Name things by what
-people control and recognize, never by how the system is built. Use active
-voice. Keep action names consistent through the flow ("Save changes" →
-"Saved"). Failure and empty states explain what happened and what to do next;
-they do not apologize or sell. Keep register conversational, sentence case,
-and matched to the audience. A label labels; an example demonstrates; nothing
-quietly does two jobs.
-
-## Compose The Interface
-
-Design the reading order and interaction order together.
-
-- Establish the primary action, the current state, and the most important
-  information before styling secondary detail.
-- Group related controls and information through proximity, alignment, shared
-  containers, and repeated rhythm. Separate unrelated groups decisively.
-- Use size, weight, contrast, placement, and whitespace to create hierarchy.
-  Do not depend on font size alone.
-- Keep semantic HTML correct while styling according to visual importance. The
-  document outline and the visual hierarchy have different jobs.
-- Give persistent or repeated information a stable position.
-- A loading, empty, or refreshed state occupies the same box as the settled
-  state. Reserve that height and width before the data arrives. Render a
-  control that belongs in the settled layout in its final slot while loading,
-  disabled, instead of inserting it when the request returns. Paint a record
-  the screen already has immediately. Do not use a shorter placeholder, hide a
-  button, or let a row grow around late text when that moves anything the user
-  can select. Images and other media reserve their aspect ratio the same way.
-- Use cards sparingly: for repeated objects, a truly bounded tool, or a clear
-  comparison unit. Do not put every page section in a card.
-- Choose page width, grid, and density to fit the content. Empty space is useful
-  only when it clarifies structure or focus.
-- Align icons, play marks, and other asymmetric glyphs optically when geometric
-  centering looks off.
-
-Design visual feedback without changing the shape of the content it explains.
-An indicator should not introduce artificial gaps, wrapping, reflow, or altered
-reading order into the text, labels, or values being indicated. Prefer the
-least disruptive signal that remains legible, and test it with long, repeated,
-multi-word, and edge-case content.
-
-For forms, put instructions next to the decision they support, make required
-actions apparent, give errors a specific recovery path, and avoid forcing users
-to remember information from another part of the page.
-
-## Type, Color, And Depth
-
-Use typography and color as functional systems, not isolated decoration.
-
-### Decide palettes through a local comparison
-
-When a user is choosing or reconsidering a colour palette, let them compare
-real contenders on the existing product before promoting a set of tokens. A
-swatch sheet cannot reveal whether an accent overwhelms a dense dashboard, how
-states read beside each other, or whether a dark foundation changes the mood.
-
-- Build a temporary, local-only palette prototype on a representative existing
-  route. Offer a small number of named candidates through a shareable query
-  parameter and an obvious switcher; preserve the real data, density, and
-  states while changing only tokens.
-- Include the meaningful contrast cases: a primary action, inactive and active
-  status, selection, errors, and a settings/form surface. Keep production free
-  of the switcher and do not commit it as a product feature.
-- Once the user chooses a direction, promote only the winning token set, record
-  its semantic colour roles in the project design record, and remove the
-  prototype controls and losing candidates before committing.
-
-This makes the choice experiential and keeps colour reserved for meaningful
-state and action rather than decorating every surface.
-
-- Choose typefaces and a compact scale for readability, tone, and the content
-  density. Use a small number of text roles, then differentiate them by a
-  purposeful combination of size, weight, line height, case, color, and space.
-- Keep line height comfortable for the role. Break up dense copy with
-  meaningful headings, lists, quotations, examples, or calls to action instead
-  of shrinking the type until it fits.
-- Treat labels, supporting copy, data, and headings as distinct roles. Make
-  lower-priority information quieter without making it illegible.
-- Build a palette by roles: neutral surfaces and text; an accent for primary
-  interaction; and restrained semantic colors for success, warning, and error.
-  Define tonal steps for each role before styling individual components.
-- Implement both a dark color theme and a light color theme. Wire them with the
-  CSS media query `prefers-color-scheme` (`@media (prefers-color-scheme: dark)`
-  and `@media (prefers-color-scheme: light)`) so the interface follows the
-  user's browser or OS preference. Do not ship a dark-only or light-only design
-  unless the project's `DESIGN.md` already forbids one of those schemes. A
-  product theme button is not required when `prefers-color-scheme` is the
-  switch.
-- Use stronger tones for emphasis and interaction. Keep most of the surface
-  neutral. A usable interface needs more than a page background, a brand
-  color, and one gray.
-- Meet the accessibility bar for contrast in every state.
-- Separate layers with one elevation model and one light direction.
-  - A border or a tonal surface change shows structure, selection, and focus.
-  - Lift uses a layered neutral shadow: several transparent layers, no colored
-    glow. On a dark theme a shadow disappears, so raise the surface and keep a
-    hairline border.
-
-## Design Text-Heavy Screens
-
-For articles, documentation, guides, onboarding, and marketing pages, make the
-reading experience the interface.
-
-- Set a readable text column of about 60–75 characters rather than allowing
-  paragraphs to span the whole viewport. On wide screens, use the surrounding
-  space for navigation, related content, or deliberate breathing room.
-- Keep multi-line headings from leaving one short line stranded. Leave body
-  text ragged.
-- Establish the headline, metadata, introduction, body, and calls to action as
-  distinct text roles. Give each role a repeatable treatment rather than
-  hand-tuning every block.
-- Use headings to reveal the argument or sequence. Keep a heading visually and
-  spatially attached to the content it introduces.
-- Use emphasis sparingly. Bold, links, colored text, and highlighted panels all
-  compete for attention; reserve each for a clear purpose.
-- Treat quotes, lists, examples, author information, and sign-up prompts as
-  meaningful interruptions in the reading rhythm, not interchangeable cards.
-- On a narrow screen, protect the measure and the heading hierarchy, and
-  relocate secondary content using the narrow-screen rules.
-
-## Design Complex Forms
-
-Organize long settings, account, checkout, and configuration forms around the
-user's decisions, not around the underlying data model.
-
-- Divide the form into named sections and make the section boundaries obvious.
-  Put closely related fields together; do not make users infer the grouping from
-  a long uninterrupted column.
-- Keep the form at a readable working width. Use a second column only when the
-  relationship remains clear and the screen has enough room.
-- Pair a label, input, help text, and validation message as one visual unit.
-  Use spacing and surface contrast to distinguish inputs from their container.
-- Give selected plans, options, and payment methods a clear selected state that
-  combines text, control state, and visual treatment.
-- Place destructive actions away from the default save or continue path and
-  label their consequence precisely. Make the normal next step visually
-  dominant without making every button loud.
-- Keep workflow actions in a stable location across related screens.
-
-## Design Data-Dense Screens
-
-Dashboards, lists, reports, and operational tools should optimize recognition
-and comparison, not imitate a marketing page.
-
-- Decide what a user must understand at a glance, then dedicate the strongest
-  hierarchy to those values, trends, alerts, or next actions.
-- Separate summary, recent activity, detail, and navigation through layout and
-  tonal structure. Avoid giving every metric, card, and table row equal visual
-  weight.
-- Align values so comparisons are easy: use consistent units, tabular number
-  alignment where available, and right alignment for magnitudes when it helps
-  scanning. Keep text labels readable and stable.
-- Make the interactive target clear. A card may be entirely clickable, but its
-  affordance and primary destination should still be evident.
-- Reserve high-contrast status treatment for conditions that need attention.
-  Do not turn every value into a colored label.
-- Use dividers and borders only where they improve row, column, or section
-  separation. Repeated heavy boxes make dense information harder to scan.
-- On a narrow screen, keep the columns the immediate decision needs. Secondary
-  columns follow the narrow-screen rules.
-
-## Build Complete Interactions
-
-Use familiar controls for familiar work, then make their state visible.
-
-- Cover hover, focus, active, selected, disabled, loading, empty, error, and
-  success when they can occur. Hover, focus, and selected stay visually
-  distinct from each other.
-- Put information the user needs in the resting state. Hover may add detail.
-  It cannot be the only place that detail exists.
-- Make primary and destructive actions easy to distinguish before an action is
-  taken. If an action is unavailable, show why beside it.
-- Follow the motion rules, the accessibility bar, and the narrow-screen rules.
-
-Completeness does not require exposing every capability in the normal state.
-Keep the default path calm, then make alternate, advanced, and recovery paths
-available at the moment they become relevant. A good interaction feels simple
-because the system carries the complexity, not because the complexity was
-removed from the product.
-
-## Motion
-
-Animate to show cause, effect, or continuity. Skip motion a person will see
-many times a day, and never animate a keyboard action.
-
-Before adding motion, decide in order whether it should animate, what job it
-does, which easing it uses, and how fast it is.
-
-- Entrances start fast, with `ease-out`. Movement already on screen uses
-  `ease-in-out`. Hover and color use `ease`. A constant loop may use `linear`.
-  `ease-in` delays the moment someone is watching, so it is the wrong curve
-  for interface motion.
-- Press feedback takes about 100–160ms. Tooltips and small popovers take
-  125–200ms. Dropdowns take 150–250ms. Ordinary interface motion stays under
-  300ms. A press can settle with a slight scale, around 0.97, unless the
-  product's tokens already define feedback.
-- An entering surface starts from about `scale(0.95)` plus opacity, never from
-  `scale(0)`. A popover scales from its trigger. A modal stays centered.
-- Use transitions for anything the user can interrupt. Keyframes restart from
-  zero.
-- Animate `transform` and `opacity`. Leave layout properties still.
-- Apply a hover effect only under
-  `@media (hover: hover) and (pointer: fine)`.
-- Under `prefers-reduced-motion: reduce`, keep opacity and color changes that
-  explain state, and drop movement.
-
-Match the motion to how often it appears and to the product's character. A
-repeated-use tool stays crisp. A rare first-run moment can take longer.
+Words are design material. Name things by what people control and recognise,
+not by how the system is built. Keep action names consistent through a flow.
+Empty and error states say what happened and what to do next. A label labels;
+an example demonstrates.
 
 ## Accessibility Bar
 
-Meet this bar on every surface you build or change. The design record can
-raise it. It cannot waive it.
+Meet this on every surface you build or change. `DESIGN.md` can raise it, not
+waive it.
 
-- Text someone must read is at least 4.5:1, including secondary text and text
-  on images. Large text (about 24px, or about 19px bold) and non-text marks
-  that carry meaning stay at least 3:1 against their neighbor. Inactive
-  controls are the exception.
-- Every control has a visible name. An icon-only button includes an accessible
-  name. Placeholder text is an example, not the name of the field.
-- Focus is visible, follows the same order as the layout, and is not hidden
-  under sticky chrome. A dialog keeps focus inside until it closes, then
-  returns focus to what opened it.
-- A keyboard user can reach and operate every action, and can skip repeated
-  chrome.
-- Targets are at least 24px on a side, and about 44px for touch.
-- Status, selection, and errors use text, icon, shape, or position as well as
-  color.
-- Honor the reduced-motion rule in the motion section.
+- Text someone must read is at least 4.5:1, including small labels, numerals
+  and secondary text. Only text of 24px or more, or about 19px or more at
+  weight 700+, counts as large and may drop to 3:1; 19px semibold is normal
+  text. Judge size from the computed style at each width, since narrow layouts
+  often shrink text below the large threshold. Coloured text on light
+  backgrounds fails most often: compute its ratio in both themes at the narrow
+  width. Meaningful non-text marks are at least 3:1.
+- Every link and button keeps an accessible name at every width. When
+  responsive CSS hides a control's text (a wordmark, a button label), give it
+  an `aria-label`. Placeholder text is not a name.
+- Focus is visible, follows the layout order, and is never hidden under
+  sticky chrome. A keyboard user can reach every action and skip repeated
+  chrome. Dialogs hold and return focus.
+- Every interactive element is at least 24px, and about 44px on touch
+  screens: buttons, toggles, navigation, chips, and stacked link lists such as
+  footers.
+- Toggles and segmented controls expose their state (`aria-pressed` or
+  `aria-checked`), not only a visual change.
+- Reduced motion is honoured.
+- Before handoff, run an automated scan (axe or similar) at a narrow and a wide
+  width in both themes, and fix every contrast and naming failure it reports.
+  A clean scan is not proof; it skips text it cannot measure, so check its
+  needs-review items and coloured text yourself.
 
 ## Narrow Screens
 
 A narrow layout is a new priority order, not the desktop page squeezed until
-it wraps.
+it wraps. Keep the page's job, the primary action and the values a decision
+needs in the first view. Move secondary detail into disclosures or later
+sections. Collapse navigation on purpose, keeping the current location and the
+way back visible. No horizontal scrolling of the page.
 
-- Keep the decision, the primary action, and the values that decision needs in
-  the first view.
-- Move secondary detail into a disclosure, a detail view, or a clearly marked
-  horizontal region.
-- Collapse navigation on purpose. The current location and the way back stay
-  visible.
-- Stack form actions without separating them from the section they affect.
-- Use the touch target size from the accessibility bar.
+## Particular Screens
+
+- **Reading pages** (articles, docs, marketing): the reading experience is the
+  interface. Headings reveal the argument; quotes, examples and calls to
+  action are meaningful interruptions, not interchangeable cards.
+- **Forms:** group fields by the user's decisions, pair label, input, help and
+  error as one unit, keep actions in a stable place, and separate destructive
+  actions from the default path.
+- **Data-dense screens:** give the strongest hierarchy to what must be
+  understood at a glance; align values for comparison; reserve loud status
+  treatment for conditions that need attention.
 
 ## Implement In Context
 
-Follow the project's existing framework, component library, CSS approach, and
-design tokens when they are coherent. When they are not, improve the touched
-surface without a speculative rewrite of unrelated areas.
+Follow the project's framework, components, CSS approach and tokens when they
+are coherent. Use semantic HTML and tokens for repeated values. Do not add
+fonts or assets whose licence or loading is unknown, and do not load families
+the page never uses. Build the working interface with realistic content.
 
-- Build the working interface, not a presentation describing the intended UI.
-- Use semantic structure and reusable variables or tokens for repeat values.
-- Make constraints explicit with grid tracks, widths, wrapping, truncation,
-  and overflow handling where content demands them.
-- Prefer the project’s established icon and asset strategy. Do not introduce
-  assets or fonts whose licenses or loading behavior are unknown.
-- Keep content, state, and interaction logic realistic enough to verify the
-  visual result.
+## Look At It
 
-## Inspect The Rendered Interface
-
-Markup and CSS are not visual proof. Run the `eyes-on` skill on the running
-interface and judge those pictures. Use that look during the design loop, not
-only at the end: implement the smallest complete interaction, exercise it with
-realistic content, inspect the rendered result, and correct the largest
-comprehension or continuity problem before adding polish.
-
-Reading the DOM or describing the CSS is supporting evidence. The eyes-on
-pictures are the proof.
+Markup is not visual proof. Use the `eyes-on` skill during the design loop,
+not only at the end: build the smallest complete piece, look at it at desktop
+and narrow widths in both themes, exercise the navigation and states, and fix
+the largest problem before polishing. Look at scrolled states as well as the
+top of the page, and look at repeated items and their colours side by side.
 
 ## Review Before Handoff
 
-After the eyes-on loop, correct the largest problems first,
-then make a detail pass.
+Fix the largest problems first, then make a detail pass. Check:
 
-When the user asks for a critique, report the findings instead of only fixing
-them. Rank each finding as blocking, should-fix, or polish. Name who is
-affected, what you saw, and the smallest change that fixes it. Blocking means
-someone cannot complete the task, cannot tell the state, or cannot operate a
-control. One systemic fix outranks a list of repeated symptoms. When the task
-is to build or change the interface, fix the findings during the design loop
-rather than handing back a list.
+- Can a first-time visitor tell the page's purpose, primary action and
+  current state at a glance?
+- Does the content sit in one structural system and one shape language, and
+  do repeated items share one order?
+- Does every colour have one job, with state and identity kept apart, and do
+  sibling identity colours stay distinct in both themes?
+- Do navigation aids show real information, navigate, move focus to the
+  target, and keep current, previous and next visible at every width?
+- Did the automated scan pass at both widths in both themes, and does every
+  control keep its name when text is hidden?
+- Were both themes and both widths inspected, and does each meet the
+  accessibility bar?
+- Has unused type, tokens and decoration been removed?
 
-Check:
-
-- Can a first-time user identify the screen's purpose, primary action, and
-  current state quickly?
-- Does the layout prioritize the workflow rather than the app chrome?
-- Are grouping, alignment, spacing, and text hierarchy unambiguous?
-- Do labels, long values, realistic data, and feedback fit without overlap, and
-  does every loading state keep the settled box so a selectable control does
-  not move?
-- Are all relevant interactive, loading, empty, error, and focus states clear?
-- Does the visual direction fit the audience and product instead of resembling
-  a generic template or one of the three AI-default clusters above?
-- Is the palette a role-based system (surfaces, ink, one accent, semantics)
-  rather than a leftover placeholder or a second competing accent?
-- Were both the dark and light themes visually inspected, and does each meet
-  the accessibility bar?
-- Does the motion follow the motion rules?
-- Is there one signature element, and has unused type, unused tokens, and
-  leftover decoration been removed?
+When asked for a critique, report findings instead of fixing them. Rank each
+as blocking, should-fix or polish; name who is affected, what you saw, and the
+smallest fix. Blocking means someone cannot complete the task, tell the state,
+or operate a control.
 
 In the final response, state what changed, which workflow or state was
-prioritized, and what visual verification was performed.
+prioritised, and what visual verification was performed.
