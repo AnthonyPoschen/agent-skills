@@ -192,6 +192,35 @@ npm run install-git-hooks
 This installs `post-merge` and `post-rewrite` hooks so both merge-based pulls
 and rebase-based pulls refresh local links.
 
+## Two-Way Skills Sync With The Bot Box
+
+**Intent.** The skills in `skills/` and the shared bot skills on the box
+(`/home/box/agent-data/workflows`) should stay one set. An edit on either
+side, whether from a bot, a person or a cloud agent, should reach the other. This
+repo's `master` is canonical, so box edits arrive here as PRs for review and are
+never pushed straight to `master`.
+
+**How it decides.** `scripts/sync-skills.sh` compares each skill on both sides
+against the last synced version, recorded in a state file on the box (outside
+this repo). If only the repo changed, the change is copied to the box. If only
+the box changed, the sync opens or updates a `skills-sync/<skill>` PR. Deletions
+follow the same rule. Skills listed in `sync-exclude.txt` are bot-only and are
+never touched. A PR does not count as synced until it is merged, so the sync
+never triggers itself.
+
+**Run it.** `scripts/sync-skills.sh --help` lists the options and defaults. Add
+`--dry-run` to print the plan without changing anything. Tests run offline with
+`bash tests/sync-skills-test.sh`.
+
+**Conflicts.** If both sides changed the same skill, or one side deleted it
+while the other edited it, the sync prints a `FLAG conflict` line, opens a PR
+carrying the box version with the conflict noted in its body, and leaves both
+sides as they are. Resolve it in that PR, or close the PR and fix one side. The
+skill settles once both sides match.
+
+**Routine (add after merge).** Run the script every 15 minutes on the box as a
+Grok Bot routine. Surface `FLAG` lines to Anthony.
+
 ## License
 
 MIT, unless a skill directory includes its own `LICENSE.txt`.
