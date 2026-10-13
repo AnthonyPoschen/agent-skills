@@ -19,6 +19,7 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
@@ -44,6 +45,7 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 | `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so CONTEXT/ADRs (and declared living shorts) stay current. |
+| `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
@@ -75,6 +77,7 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
@@ -136,6 +139,8 @@ skills/
   flux-kustomize-layout/
     SKILL.md
   grill-with-docs/
+    SKILL.md
+  in-your-own-words/
     SKILL.md
   makefile/
     SKILL.md
