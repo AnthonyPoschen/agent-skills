@@ -1,0 +1,10 @@
+{
+  "name": "agent-skills",
+  "description": "Anthony Poschen's reusable agent skills: coding, frontend design, context management, git, release, writing and more.",
+  "version": "0.1.0",
+  "author": { "name": "Anthony Poschen" },
+  "repository": "https://github.com/AnthonyPoschen/agent-skills",
+  "license": "MIT",
+  "keywords": ["skills", "coding", "agents"],
+  "skills": "./skills/"
+}

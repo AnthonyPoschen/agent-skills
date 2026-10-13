@@ -98,6 +98,19 @@ Install globally for a specific agent:
 npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 ```
 
+## Cursor plugin
+
+This repository is also a Cursor plugin named `agent-skills`. The plugin's
+skills are the existing `skills/` folder, so `npx skills add` is unchanged.
+
+1. In Cursor, open **Customize** in the sidebar.
+2. Import this repository with **From GitHub Repository**:
+   `https://github.com/AnthonyPoschen/agent-skills`.
+3. Find the `agent-skills` plugin, select **Install**, and choose user scope.
+
+Installed plugin skills are available to Cloud Agents. To check, start a
+Cloud Agent and ask it to list its skills.
+
 ## Repository Layout
 
 ```text
