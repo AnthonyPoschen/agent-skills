@@ -35,6 +35,10 @@ Edit only the verification skill directory: its `SKILL.md`, `features/`, and har
 
 4. **Live pass.** Drive even when the source looks clean. Follow that skill's Launch section: one long-lived instance driven in series, or a fresh isolated session per drive for a short-lived CLI.
 
+   For terminal drives, use the [terminal lifecycle contract](../create-verification-skill/references/terminal-lifecycle.md).
+   Reclassify mistaken finite-CLI assumptions as verifier defects. Invalidate
+   normal-exit evidence that required user cancellation or leaked owned windows.
+
    Hold these for the whole pass:
 
    - Doctor before the first drive, on each fresh session, and after any failed drive. When doctor cannot see a wedged UI on a healthy process, reset or relaunch.
