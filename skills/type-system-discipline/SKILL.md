@@ -5,8 +5,6 @@ description: "Apply when designing types, reviewing a function signature, or wri
 
 # Type System Discipline
 
-Adapted from poteto's pstack `principle-type-system-discipline` skill (https://github.com/poteto).
-
 Make the compiler reject impossible states, mismatched primitives, and unhandled variants. Prefer defining errors and special cases out of existence over proliferating handlers.
 
 - **Make illegal states unrepresentable.** Model variants as sum types (discriminated unions, enums with payloads, sealed classes), not as a bag of optional fields where contradictory combinations compile. `{ completed: boolean; completedAt?: Date }` admits `completed: true` with no date. Derive the boolean from `completedAt`, or model `{ kind: 'open' } | { kind: 'done'; at: Date }`. If you can write a comment explaining when a combination of fields is valid, split it into a sum type.
@@ -17,3 +15,10 @@ Make the compiler reject impossible states, mismatched primitives, and unhandled
 - **Exhaustive matching is the compiler's job.** A match on a sum type must fail compilation when a new variant is added without handling, so the compiler tells the next agent where to add a case. Use your language's idiom: a `never`-typed binding in TypeScript, an unannotated `match` in Rust, the `exhaustive` linter in Go.
 - **Derive types from authoritative schemas.** When a protocol buffer, OpenAPI spec, GraphQL schema, database migration, design-token file, or another file owns a shape, derive from it instead of hand-rolling a parallel type. See the `encode-lessons` skill.
 - **Strengthen a type only where partiality appears.** A runtime assertion, null check, or "this should never happen" throw marks the place a type is too weak. Push that check up into the type. Then stop. Prefer total functions. `sum` of an empty list is 0, so it takes the plain list. `head` of an empty list has no answer, so it demands the non-empty one. If nothing would otherwise panic, keep the plain type.
+
+## Source
+
+Adapted rewrite of Pstack's
+[`principle-type-system-discipline` skill](https://github.com/cursor/plugins/blob/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack/skills/principle-type-system-discipline/SKILL.md)
+(cursor/plugins commit `1e5c90a`), by poteto. The upstream licence is
+unconfirmed. Anthony approved adopting this adaptation on 2026-10-14.

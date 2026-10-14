@@ -5,8 +5,6 @@ description: "Use when auditing a diff or files for comments. Delete comments by
 
 # No Comments
 
-Adapted from poteto's pstack `no-comments` skill (https://github.com/poteto).
-
 Treat every comment as guilty unless it describes something we cannot change.
 
 ## Scope
@@ -21,3 +19,10 @@ Use the caller's files or diff. Otherwise use the current diff against the base 
 4. Implement the smallest root-cause fix in scope. Remove every named workaround. If the root cause is out of scope, land the smallest in-scope fix and report the rest open. Never bolt on symptom guards.
 5. Constraint comments say `do not remove`, `do not change wording`, or `talk to X before changing`. Offer the cheapest in-scope type, runtime check, test, or CI lint (see the `encode-lessons` skill). Wait for approval unless the caller pre-approved. If approved, encode then delete. Otherwise delete and report the constraint open.
 6. Report the deletion count, kept comments with their proof, fixes, encodings, unenforced constraints, and other open work.
+
+## Source
+
+Adapted rewrite of Pstack's
+[`no-comments` skill](https://github.com/cursor/plugins/blob/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack/skills/no-comments/SKILL.md)
+(cursor/plugins commit `1e5c90a`), by poteto. The upstream licence is
+unconfirmed. Anthony approved adopting this adaptation on 2026-10-14.
