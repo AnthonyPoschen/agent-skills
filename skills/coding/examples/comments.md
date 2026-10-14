@@ -174,4 +174,16 @@ idempotency key. The test proves a retry after `ErrConfirmationPending` reuses
 the order. If someone breaks that, the test fails. A comment would just go
 stale.
 
+## Good: The one comment that stays
+
+```go
+// Stripe rejects idempotency keys longer than 255 characters.
+// https://docs.stripe.com/api/idempotent_requests
+const maxIdempotencyKeyLen = 255
+```
+
+The limit belongs to an API we don't control, so no type or test in this repo
+can own it. The comment names the constraint and links its source. Public API
+doc comments that state a caller's contract also stay.
+
 [Back to rules](../references/standards.md#comments-and-docs)
