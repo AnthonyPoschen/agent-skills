@@ -86,8 +86,12 @@ translation, lifecycle, or other meaningful compression.
 
 ## Comments And Docs
 
-- No comments by default. Keep one only for a constraint we can't change (an
-  external API quirk, a spec reference), and link it.
+- No comments by default. Two kinds stay:
+  - Doc comments on public or exported APIs, stating the contract callers rely
+    on (Go doc comments, Rust `///`, JSDoc on exports). Keep them short and in
+    sync with the code.
+  - A constraint we can't change (an external API quirk, a spec reference),
+    with a link to the source.
 - Express contracts with types, names and tests. See the
   `type-system-discipline` and `test-behavior-not-implementation` skills.
 - A `HACK:` or `FIXME:` needs a linked issue, and lint rejects the bare ones.

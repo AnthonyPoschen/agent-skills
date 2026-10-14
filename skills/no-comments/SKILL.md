@@ -5,7 +5,7 @@ description: "Use when auditing a diff or files for comments. Delete comments by
 
 # No Comments
 
-Treat every comment as guilty unless it describes something we cannot change.
+Treat every comment as guilty unless it describes something we cannot change or is a doc comment on a public or exported API. Keep those doc comments short and accurate; delete narration inside them.
 
 ## Scope
 
@@ -13,7 +13,7 @@ Use the caller's files or diff. Otherwise use the current diff against the base 
 
 ## Steps
 
-1. Review each comment in scope with fresh eyes. Delete narration, restated names, stale notes and contracts the code can express. A keep survives only with proof it is about something we cannot change (an external API quirk, a spec), and it links the source.
+1. Review each comment in scope with fresh eyes. Delete narration, restated names, stale notes and contracts the code can express. Keep public and exported API doc comments that state a contract. Any other keep survives only with proof it is about something we cannot change (an external API quirk, a spec), and it links the source.
 2. Audit scoped lint and type suppressions. Correctness or safety suppressions must be fixed, not kept.
 3. Fix trivial findings directly by deleting a dead path, dropping a parameter, or using the real API. If a fix needs a new shape, sketch it first, then implement.
 4. Implement the smallest root-cause fix in scope. Remove every named workaround. If the root cause is out of scope, land the smallest in-scope fix and report the rest open. Never bolt on symptom guards.
