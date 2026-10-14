@@ -82,6 +82,11 @@ the current decision and choose the smallest next read or delegated task that
 can resolve it. If the context is already crowded, make a compact handoff
 record before continuing.
 
+## Repeated Checks
+
+When agents judge the same kind of result more than once, script the check
+instead. See `scripted-verification`.
+
 ## Sources
 
 - [Pstack guard the context window](https://github.com/cursor/plugins/blob/main/pstack/skills/principle-guard-the-context-window/SKILL.md)

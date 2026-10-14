@@ -73,3 +73,4 @@ Adapted from Pstack's
 
 - A comment that states a contract is a lesson waiting for a guard. The
   `coding` skill's comment rules and the `no-comments` skill send those here.
+- `scripted-verification` when the repeated work is judging results.
