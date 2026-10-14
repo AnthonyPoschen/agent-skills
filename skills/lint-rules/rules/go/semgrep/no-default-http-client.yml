@@ -1,0 +1,18 @@
+rules:
+  - id: no-default-http-client
+    languages: [go]
+    severity: ERROR
+    message: >-
+      http.DefaultClient and the http.Get/Post/Head helpers have no timeout, so a
+      server that accepts the connection and stalls hangs the caller forever.
+      Use an *http.Client with Timeout (or a request context with a deadline).
+    pattern-either:
+      - pattern: http.DefaultClient
+      - pattern: http.Get(...)
+      - pattern: http.Post(...)
+      - pattern: http.PostForm(...)
+      - pattern: http.Head(...)
+      - pattern: '&http.Client{}'
+      - pattern: 'http.Client{}'
+    paths:
+      exclude: ["*_test.go"]

@@ -86,16 +86,18 @@ translation, lifecycle, or other meaningful compression.
 
 ## Comments And Docs
 
-- Public/exported APIs, non-obvious behavior, domain policy, edge cases, and
-  complex helpers should have short comments that explain purpose, contract, or
-  consequence.
-- Private obvious helpers and small local functions usually do not need
-  comments.
-- Do not narrate obvious syntax or line-by-line operations.
-- Use phase comments only when they materially improve skimming of a non-trivial
-  block.
-- Keep comments synchronized with changed code.
-- Use exact uppercase tagged prefixes: `TODO:`, `FIXME:`, `NOTE:`, `HACK:`,
-  `WARNING:`.
-- `FIXME:`, `HACK:`, and `WARNING:` should include the consequence if ignored.
-- `HACK:` should include a removal condition when one is known.
+- No comments by default. Two kinds stay:
+  - Doc comments on public or exported APIs, stating the contract callers rely
+    on (Go doc comments, Rust `///`, JSDoc on exports). Keep them short and in
+    sync with the code.
+  - A constraint we can't change (an external API quirk, a spec reference),
+    with a link to the source.
+- Express contracts with types, names and tests. See the
+  `type-system-discipline` and `test-behavior-not-implementation` skills.
+- A `HACK:` or `FIXME:` needs a linked issue, and lint rejects the bare ones.
+- When you'd write a comment, turn it into a type, test or lint rule instead.
+  Use the `encode-lessons` skill to pick the smallest guard, and the
+  `no-comments` skill to audit a diff.
+- Stock linters are only the baseline. Turn recurring patterns into custom
+  lint rules with the `lint-rules` skill.
+- [Examples](../examples/comments.md)

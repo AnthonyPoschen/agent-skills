@@ -46,12 +46,16 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
+| `lint-rules` | Shared custom lint rules for Go, Rust and Kubernetes, each with a failing example, plus how to write and contribute new ones. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
+| `no-comments` | Audit a diff for comments: delete by default, keep public API docs and linked external constraints, encode the rest as types, tests or lint. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
+| `test-behavior-not-implementation` | Call code as its users do and assert the exact result they see; reject loose or call-only assertions. |
 | `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. Delete tautologies that only restate the code. |
+| `type-system-discipline` | Make illegal states unrepresentable, brand primitives, parse at boundaries and keep matches exhaustive. |
 
 ## Install
 

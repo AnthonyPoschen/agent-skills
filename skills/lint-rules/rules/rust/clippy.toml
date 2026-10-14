@@ -1,0 +1,18 @@
+# Merge into clippy.toml. Tests may unwrap.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-print-in-tests = true
+allow-dbg-in-tests = true
+
+disallowed-methods = [
+  # Library code reading the environment hides inputs from callers and tests.
+  # Parse env/flags once in main and pass a config struct down. Platform
+  # discovery (HOME, XDG_*, WAYLAND_DISPLAY) may stay with an item-level allow
+  # and a reason.
+  { path = "std::env::var", reason = "read env in main and pass config down" },
+  { path = "std::env::var_os", reason = "read env in main and pass config down" },
+  # Fixed sleeps are ad-hoc polling: they waste time when fast and flake when
+  # slow. Wait on a channel, condvar, or a deadline-bounded poll instead.
+  { path = "std::thread::sleep", reason = "wait on an event or a bounded deadline, not a fixed sleep" },
+]

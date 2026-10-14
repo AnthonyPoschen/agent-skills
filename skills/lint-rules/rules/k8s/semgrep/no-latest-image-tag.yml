@@ -1,0 +1,19 @@
+rules:
+  - id: no-latest-image-tag
+    languages: [yaml]
+    severity: ERROR
+    message: Pin an image tag or digest instead of latest or no tag.
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              containers: [...]
+          - pattern-inside: |
+              initContainers: [...]
+          - pattern-inside: |
+              ephemeralContainers: [...]
+      - pattern: |
+          image: $IMG
+      - metavariable-regex:
+          metavariable: $IMG
+          # A tag is a ":" after the last "/", so "registry:5000/app" is untagged.
+          regex: '^["'']?(?:[^\s@/"'']+/)*[^\s@/:"'']+(?::latest)?["'']?$'

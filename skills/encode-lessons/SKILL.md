@@ -68,3 +68,8 @@ repository-wide migration without approval.
 
 Adapted from Pstack's
 [Encode Lessons in Structure principle](https://github.com/cursor/plugins/blob/main/pstack/skills/principle-encode-lessons-in-structure/SKILL.md).
+
+## Related
+
+- A comment that states a contract is a lesson waiting for a guard. The
+  `coding` skill's comment rules and the `no-comments` skill send those here.

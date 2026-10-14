@@ -1,0 +1,16 @@
+rules:
+  - id: bufio-scanner-set-buffer
+    languages: [go]
+    severity: WARNING
+    message: >-
+      bufio.Scanner stops with ErrTooLong on a line over 64 KiB and the rest of
+      the stream is lost. Call Buffer() with an explicit max, or use
+      bufio.Reader.ReadString for unbounded input.
+    patterns:
+      - pattern: $S := bufio.NewScanner($R)
+      - pattern-not-inside: |
+          $S := bufio.NewScanner($R)
+          ...
+          $S.Buffer(...)
+    paths:
+      exclude: ["*_test.go"]

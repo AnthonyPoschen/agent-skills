@@ -1,0 +1,10 @@
+rules:
+  - id: no-ignored-unmarshal-error
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Discarding a decode error leaves a zero-value struct that looks valid.
+      Handle the error, or return it.
+    pattern-either:
+      - pattern: _ = $PKG.Unmarshal(...)
+      - pattern: _ = $DEC.Decode(...)

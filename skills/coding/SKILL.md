@@ -79,6 +79,18 @@ extend it instead of creating a parallel path. Verify the resulting workflow at
 its public boundary, including realistic content and the states that change the
 user's next action.
 
+## Comments Become Structure
+
+Write no comments by default. Turn a would-be comment into a type, test or
+lint rule. Use the `encode-lessons` skill to choose the guard, and see
+[standards](./references/standards.md#comments-and-docs).
+
+## Custom Lint Rules
+
+Stock linters are the baseline. When a bad pattern recurs, especially in
+review, turn it into a custom rule with a failing example and a catalog entry.
+Use the `lint-rules` skill for the shared rules and how to write new ones.
+
 ## Example Lookup
 
 Use examples only when a rule decision is unclear.

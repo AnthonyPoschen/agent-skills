@@ -4,7 +4,7 @@
 
 Amounts in both samples are integer cents. `saveOrder` is idempotent for
 `in.RequestID`, so a retry returns the existing order. The bad sample hides
-that contract under narration. The good sample states it once.
+that contract under narration. The good sample moves it into a type and a test.
 
 ## Bad: Comment spam narrates each line
 
@@ -86,14 +86,15 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
 }
 ```
 
-## Good: Comment the contract the code does not show
+## Good: Types and tests carry the contract
 
 ```go
-// processOrder prices an order in integer cents and stores it.
-// Loyalty discount and tax round down.
-// Confirmation mail is a separate step. If the order is saved and the mail
-// fails, the receipt is returned with ErrConfirmationPending. Retrying that
-// error with the same RequestID must not create a second order.
+type Cents int64
+
+func (c Cents) Percent(p int64) Cents { return c * Cents(p) / 100 }
+
+type RequestID string
+
 func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
     if in.CustomerID == "" {
         return nil, ErrInvalidCustomer
@@ -102,45 +103,87 @@ func processOrder(ctx context.Context, in OrderInput) (*Receipt, error) {
         return nil, ErrEmptyItems
     }
 
-    subtotal := 0
+    var subtotal Cents
     for _, item := range in.Items {
         if item.Qty <= 0 {
             return nil, ErrInvalidQty
         }
-        if item.UnitPriceCents < 0 {
+        if item.UnitPrice < 0 {
             return nil, ErrInvalidPrice
         }
-        subtotal += item.Qty * item.UnitPriceCents
+        subtotal += Cents(item.Qty) * item.UnitPrice
     }
 
-    discount := 0
+    var loyaltyDiscount Cents
     if in.IsLoyalCustomer {
-        discount = subtotal / 10
+        loyaltyDiscount = subtotal.Percent(10)
     }
-    tax := (subtotal - discount) * 7 / 100
-    total := subtotal - discount + tax
+    tax := (subtotal - loyaltyDiscount).Percent(7)
+    receipt := &Receipt{
+        Subtotal: subtotal,
+        Discount: loyaltyDiscount,
+        Tax:      tax,
+        Total:    subtotal - loyaltyDiscount + tax,
+    }
 
-    orderID, err := saveOrder(ctx, in, subtotal, discount, tax, total)
+    orderID, err := saveOrderOnce(ctx, in.RequestID, in, receipt)
     if err != nil {
         return nil, err
     }
+    receipt.OrderID = orderID
 
-    receipt := &Receipt{
-        OrderID:  orderID,
-        Subtotal: subtotal,
-        Discount: discount,
-        Tax:      tax,
-        Total:    total,
-    }
-    if err := sendConfirmation(ctx, in.CustomerID, orderID, total); err != nil {
+    if err := sendConfirmation(ctx, in.CustomerID, orderID, receipt.Total); err != nil {
         return receipt, ErrConfirmationPending
     }
     return receipt, nil
 }
 ```
 
-Returning a bare error after `saveOrder` succeeds tells the caller the order
-was not created. `ErrConfirmationPending` plus the receipt is the contract the
-comment exists to state.
+```go
+func TestProcessOrderRetryAfterConfirmationFailureReusesOrder(t *testing.T) {
+    store := newMemoryOrderStore()
+    mail := &failingMailer{}
+    svc := newOrderService(store, mail)
+    in := OrderInput{
+        RequestID:  "req-1",
+        CustomerID: "cust-1",
+        Items:      []Item{{Qty: 2, UnitPrice: Cents(1050)}},
+    }
+
+    first, err := svc.processOrder(context.Background(), in)
+    if !errors.Is(err, ErrConfirmationPending) {
+        t.Fatalf("first call err = %v, want ErrConfirmationPending", err)
+    }
+    second, _ := svc.processOrder(context.Background(), in)
+
+    if second.OrderID != first.OrderID {
+        t.Fatalf("retry created order %q, want %q", second.OrderID, first.OrderID)
+    }
+    if got := store.Count(); got != 1 {
+        t.Fatalf("stored %d orders, want 1", got)
+    }
+    if first.Total != Cents(2247) {
+        t.Fatalf("total = %d, want 2247", first.Total)
+    }
+}
+```
+
+`Cents` makes integer money a type the compiler checks, so no comment has to
+say "amounts are cents". `saveOrderOnce` and the `RequestID` type name the
+idempotency key. The test proves a retry after `ErrConfirmationPending` reuses
+the order. If someone breaks that, the test fails. A comment would just go
+stale.
+
+## Good: The one comment that stays
+
+```go
+// Stripe rejects idempotency keys longer than 255 characters.
+// https://docs.stripe.com/api/idempotent_requests
+const maxIdempotencyKeyLen = 255
+```
+
+The limit belongs to an API we don't control, so no type or test in this repo
+can own it. The comment names the constraint and links its source. Public API
+doc comments that state a caller's contract also stay.
 
 [Back to rules](../references/standards.md#comments-and-docs)

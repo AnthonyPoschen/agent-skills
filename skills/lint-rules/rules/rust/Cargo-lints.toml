@@ -1,0 +1,24 @@
+# Library crates only. Put this under [workspace.lints.clippy] and add
+# `[lints] workspace = true` to library crates; binary, example and check
+# crates don't opt in. In a library package, build.rs and tests/*.rs inherit
+# the lints: start them with
+#   #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic,
+#            clippy::print_stdout, clippy::print_stderr, clippy::disallowed_methods)]
+# Library code may opt out per item only, with #[allow(..., reason = "...")].
+[lints.clippy]
+# Panics in library code crash the host process.
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+# Libraries report through return values or a logger, never stdout/stderr.
+print_stdout = "deny"
+print_stderr = "deny"
+dbg_macro = "deny"
+# `as` silently truncates, wraps or drops the sign. Use From/TryFrom.
+cast_possible_truncation = "warn"
+cast_possible_wrap = "warn"
+cast_sign_loss = "warn"
+# Enforces the disallowed-methods list in clippy.toml.
+disallowed_methods = "deny"

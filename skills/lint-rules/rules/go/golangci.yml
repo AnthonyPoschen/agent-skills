@@ -1,0 +1,31 @@
+# Merge into .golangci.yml (golangci-lint v2).
+version: "2"
+linters:
+  enable:
+    - nolintlint
+    - errcheck
+    - govet
+    - staticcheck
+    - exhaustive
+    - errorlint    # errors.Is/As and %w; backs no-error-string-match
+    - bodyclose    # unclosed http response bodies leak connections
+    - noctx        # http requests and exec without a context
+    - contextcheck # functions that drop the caller's context
+  settings:
+    errorlint:
+      # errorf-wrap-with-w (semgrep) owns %w checks and allows "%w: %v" with a
+      # sentinel. errorlint flagged 60 Errorf calls: 46 were that idiom, the
+      # rest duplicated errorf-wrap-with-w.
+      errorf: false
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    errcheck:
+      # `_ = f()` is visible in review; bare unchecked calls are not.
+      check-blank: false
+      check-type-assertions: true
+  exclusions:
+    rules:
+      # Tests build requests without a context on purpose (908 hits in tests).
+      - path: _test\.go
+        linters: [noctx]
