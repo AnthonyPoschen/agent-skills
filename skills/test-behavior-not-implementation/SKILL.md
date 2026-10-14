@@ -5,13 +5,17 @@ description: "Apply when you write, change, or keep a test. Call the code as its
 
 # Test Behavior, Not Implementation
 
+This skill covers how a test asserts. Whether a test should exist at all, and
+tautology tests that copy the code under test, belong to the `test-audit` skill
+and the coding skill's [Tests principle](../coding/references/principles.md#tests).
+Apply those; this skill does not restate them.
+
 A test calls the code as its users do and asserts the exact result they see. Rewrite or delete any test that would still pass if every imported function returned `undefined` or a wrong value.
 
 These shapes fail that check:
 
 - Loose or no assertion: `toBeDefined`, `toBeTruthy`, `not.toThrow`, `toBeGreaterThan(0)`.
 - Call or absence only: `toHaveBeenCalled`, `not.toHaveBeenCalled`, `toBeUndefined`, `toEqual([])`.
-- Expected value computed by the code under test: `expect(f(a)).toBe(f(a))`.
 - Restated constant, config default, table row, or prompt string.
 - Assertions on data the test built, with no call to the subject.
 
