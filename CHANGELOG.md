@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `scripted-verification`: turn checks that run more than once into
+  scripts with a PASS, FAIL, or NEEDS-HUMAN verdict, exit codes, and evidence
+  on disk; measure noise before thresholds; pre-check and watch events instead
+  of launching or polling agents.
 - Added `in-your-own-words`: before ambiguous or multi-step work, restate the
   goal, problem, constraints, and done check in plain words; flag assumptions
   and open questions; wait for a correction if anything looks off. Inspired by
