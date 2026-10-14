@@ -1,0 +1,7 @@
+# Skills that sync-skills.sh never syncs in either direction and never deletes.
+# One skill folder name per line. Lines starting with # are comments.
+# Cursor-managed box skills never live in /home/box/agent-data/workflows anyway,
+# so they need no entry here; list only bot-only skills that do live there.
+factorio-house-prod-soak
+steam-playtest-shell
+cloud-agent-model-tiers

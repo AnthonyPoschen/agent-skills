@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added `in-your-own-words`: before ambiguous or multi-step work, restate the
+  goal, problem, constraints, and done check in plain words; flag assumptions
+  and open questions; wait for a correction if anything looks off. Inspired by
+  poteto's `/in-your-own-words` prompt.
+
 ## Recent Releases
 
 - `v2026.10.4` - Added eyes-on, project verification skills, and Simplified
