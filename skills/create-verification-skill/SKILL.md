@@ -24,12 +24,15 @@ Answer these from the codebase. Ask the user only what the repo cannot show.
 
 - **Surface.** What a person or caller actually touches. Note secondary surfaces.
 - **Run.** The repo's own local start command, the ready signal, ports, env, seed data, and auth.
+- **Lifetime.** Whether the entry program is finite or interactive. Identify the normal exit action separately from interruption.
 - **Drive.** An existing harness first. Otherwise browser control for a web UI, a PTY or tmux session for a CLI or TUI, HTTP for a service.
 - **Observe.** Screenshots, transcripts, response bodies, logs, exit codes, stored rows or files.
 - **Isolate.** Whether two instances can run at once. When they cannot, the generated skill refuses to drive a second copy of that shared instance.
 - **Home.** The directory where this repo keeps skills. When it has none, use `.agents/skills/`.
 
 When a verification skill already exists, extend it. One skill per app.
+
+For terminal or native-window drives, follow [terminal lifecycle](references/terminal-lifecycle.md).
 
 When the checkout does not start, fix that or report the exact failure before writing the skill. A skill written against a broken start teaches the wrong steps.
 
@@ -53,6 +56,10 @@ Create the map index and one file per user-facing feature. Start with the top 3 
 ## 4. Prove it
 
 Run the new skill once: launch, doctor, drive one mapped feature, capture evidence, clean up. After cleanup, the evidence is still at the named path. Fix what fails. Run cleanup after a failed attempt so ports and processes do not stay behind.
+
+An interactive shell does not finish after launch. Drive its normal exit and
+verify termination without human intervention. User cancellation, a timeout,
+or leaked verification windows invalidates normal-exit and cleanup proof.
 
 A skill you have not executed is a draft. Say that when you could not run this step.
 

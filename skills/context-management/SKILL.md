@@ -49,6 +49,26 @@ summary.
 - Keep small, tightly coupled reads in the main thread. Do not create agents
   merely to avoid reading a few relevant files.
 
+### Write The Handoff
+
+State the intent and the check for done. The delegate chooses the steps.
+
+- State the goal and a done check that can pass or fail. "Make it better" is
+  not a check.
+- Name the proof it must show: real command output or a before-and-after
+  number.
+- Say what is already known, such as a symptom, repro, log, or link, and the
+  real constraints, such as "repro first" or "zero behavior change".
+- Leave out the how and any hand-ordered list of steps. A fixed order drops or
+  reorders steps and blocks a better route.
+
+Before an unattended run, also:
+
+- Write done as checks the delegate can run itself.
+- Answer in advance the questions it would stop to ask.
+- Ask for a decision log to audit later.
+- Give it a way out: what to do or report if it cannot finish.
+
 ## Load Instructions Progressively
 
 Keep rules used on nearly every invocation in the active skill. Keep variants,
@@ -65,4 +85,5 @@ record before continuing.
 ## Sources
 
 - [Pstack guard the context window](https://github.com/cursor/plugins/blob/main/pstack/skills/principle-guard-the-context-window/SKILL.md)
+- [Pstack poteto-help prompting](https://github.com/cursor/plugins/blob/main/pstack/skills/poteto-help/references/prompting.md)
 - [OpenAI skill authoring guidance](https://github.com/openai/skills/blob/main/skills/.system/skill-creator/SKILL.md)

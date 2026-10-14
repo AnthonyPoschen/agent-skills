@@ -1,0 +1,5 @@
+{
+  "name": "cua-driver",
+  "command": "cua-driver",
+  "args": ["mcp"]
+}

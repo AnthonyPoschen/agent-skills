@@ -42,6 +42,11 @@ operates. Say that, and use the project's ordinary checks.
 
 If the app or the browser will not open, say so. Do not finish from source.
 
+For terminal or native-window drives, follow
+[terminal lifecycle](../create-verification-skill/references/terminal-lifecycle.md).
+Record and close only windows or tabs created by the drive. A screenshot does
+not prove termination; user cancellation cannot substitute for normal exit.
+
 ## Capture
 
 ```sh
