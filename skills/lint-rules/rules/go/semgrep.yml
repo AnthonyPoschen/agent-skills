@@ -1,0 +1,6 @@
+rules:
+  - id: no-bare-todo
+    languages: [go]
+    severity: ERROR
+    message: TODO/FIXME/HACK needs a linked issue, e.g. "TODO(#123):" or a URL.
+    pattern-regex: //\s*(TODO|FIXME|HACK|XXX)\b(?!\s*\((#\d+|https?://[^)]+)\))(?!.*https?://)

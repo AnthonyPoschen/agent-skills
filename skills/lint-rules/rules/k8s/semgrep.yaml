@@ -1,0 +1,6 @@
+spec:
+  containers:
+    # ruleid: no-latest-image-tag
+    - image: nginx:latest
+    # ok: no-latest-image-tag
+    - image: nginx:1.27.2

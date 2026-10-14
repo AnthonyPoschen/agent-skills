@@ -1,0 +1,13 @@
+# Merge into .golangci.yml (golangci-lint v2).
+version: "2"
+linters:
+  enable:
+    - nolintlint
+    - errcheck
+    - govet
+    - staticcheck
+    - exhaustive
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true

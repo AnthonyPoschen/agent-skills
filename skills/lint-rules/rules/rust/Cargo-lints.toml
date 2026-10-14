@@ -1,0 +1,4 @@
+# Merge into Cargo.toml ([lints.clippy]) or [workspace.lints.clippy].
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"

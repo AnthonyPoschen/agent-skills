@@ -1,0 +1,3 @@
+# Merge into clippy.toml. Tests may unwrap.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

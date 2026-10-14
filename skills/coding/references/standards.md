@@ -94,11 +94,6 @@ translation, lifecycle, or other meaningful compression.
 - When you'd write a comment, turn it into a type, test or lint rule instead.
   Use the `encode-lessons` skill to pick the smallest guard, and the
   `no-comments` skill to audit a diff.
-- Stock linters (golangci-lint, Clippy, kubeconform) are only the baseline.
-  Look for repeated bad patterns, especially ones caught in review, and write
-  custom lint rules for them: ruleguard or semgrep for Go, Clippy
-  `disallowed_methods`/`disallowed_types` or dylint for Rust. Each rule ships
-  with a failing example as its test.
-- Each repo keeps a rules catalog (for example `docs/lint-rules.md`) listing
-  each custom rule, why it exists, a bad example and the date added.
+- Stock linters are only the baseline. Turn recurring patterns into custom
+  lint rules with the `lint-rules` skill.
 - [Examples](../examples/comments.md)
