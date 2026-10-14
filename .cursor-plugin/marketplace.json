@@ -1,0 +1,14 @@
+{
+  "name": "anthonyposchen-agent-skills",
+  "owner": { "name": "Anthony Poschen" },
+  "metadata": {
+    "description": "Marketplace for Anthony Poschen's agent-skills plugin."
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "source": ".",
+      "description": "Anthony Poschen's reusable agent skills."
+    }
+  ]
+}
