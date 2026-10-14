@@ -1,8 +1,11 @@
 ---
 name: lint-rules
 description: >
-  Use when setting up or tightening linting in any repo, when a review comment
-  or bug pattern recurs, or when contributing a lint rule back. Detects the
+  Use when an agent hits a mistake or gotcha in a repo, or is about to write a
+  "don't do X" or "always do Y" rule into AGENTS.md, docs, a skill or a
+  comment: the default answer is a repo-local lint rule. Also use when setting
+  up or tightening linting, when a review comment or bug pattern recurs, or
+  when contributing a lint rule back. Detects the
   repo's languages, wires the shared rule files into the linter config and CI,
   and turns recurring patterns into custom rules with failing examples.
 ---
@@ -11,6 +14,26 @@ description: >
 
 Stock linters are the baseline. Custom rules catch the patterns that keep
 coming back. Every rule ships with a failing example and a catalog entry.
+
+If a linter can check it, it is a lint rule, not prose. Prose (AGENTS.md,
+docs, skills, comments) holds only the why and what no linter can check.
+Rules break the build; prose gets skipped.
+
+## Rules Explain Themselves
+
+Every message states the problem, why it matters (one line, or a link to the
+catalog row or decision note) and the fix, so an agent hitting it can act
+without reading anything else.
+
+```yaml
+message: >-
+  Do not branch on error text. Messages change and wrapping breaks the match.
+  Compare with errors.Is against a sentinel, or errors.As into a typed error.
+```
+
+```toml
+{ path = "std::thread::sleep", reason = "fixed sleeps waste time when fast and flake when slow; wait on an event or a bounded deadline" },
+```
 
 ## Apply The Rules To A Repo
 
@@ -39,8 +62,9 @@ coming back. Every rule ships with a failing example and a catalog entry.
 
 ## Write A New Rule
 
-1. Spot the pattern: the same review comment twice, a bug class that shipped
-   twice, or a comment that says "don't do X".
+1. A problem happens: a bug, a gotcha, a review comment, or a "don't do X"
+   you were about to write down. One occurrence is enough for a repo-local
+   rule when a linter can catch it.
 2. Pick the cheapest tool that can express it: a linter setting, then semgrep
    or ruleguard for Go, Clippy `disallowed_methods`/`disallowed_types` or a
    dylint lint for Rust, semgrep for YAML.
@@ -49,11 +73,18 @@ coming back. Every rule ships with a failing example and a catalog entry.
    file: `<id>.yml` plus `<id>.go`, `<id>.test.yaml`, or `<id>.gomod`. Clippy
    rules get a line in [rules/rust/fixture](rules/rust/fixture/src/lib.rs)
    and in the `want` list in `rules/test.sh`.
-4. Measure before adding: run the rule over every repo you can reach, count
-   hits, and read a sample. Keep it only if most hits are real.
-5. Add the rule and a row in the repo's rules catalog: rule, why, bad example,
-   date added, origin, hit counts.
-6. Delete any comment or skill text the rule now enforces.
+4. Measure: run it over the repo (every repo you can reach for a global
+   rule), count hits and read a sample. Keep it only if most hits are real.
+5. Add the rule, its failing example and a catalog row (rule, why, bad
+   example, date, origin, hits) in the same PR as the fix. If the repo has no
+   `lint/` yet, scaffold the minimum: `lint/semgrep/` plus one CI step running
+   `semgrep --test lint/semgrep && semgrep --error --config lint/semgrep`, or
+   a `[lints.clippy]` table plus `clippy.toml`.
+6. Wire it into CI so a violation fails the build.
+7. Delete any AGENTS.md, doc, skill or comment text the rule now enforces.
+8. When you later hit a rule, read its message and fix the code. Propose
+   loosening the rule only if it is wrong, with the hits that show it.
+9. When the same rule recurs across repos, promote it here (see below).
 
 ## Global Versus Repo-Local
 
