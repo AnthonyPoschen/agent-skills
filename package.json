@@ -1,6 +1,6 @@
 {
   "name": "@anthonyposchen/agent-skills",
-  "version": "0.1.0",
+  "version": "2026.10.15",
   "description": "Reusable Agent Skills installable with npx skills.",
   "license": "MIT",
   "type": "module",

@@ -1,18 +1,11 @@
 # Changelog
 
-## Unreleased
-
-- Added `scripted-verification`: turn checks that run more than once into
-  scripts with a PASS, FAIL, or UNSURE verdict, exit codes, and evidence
-  on disk; measure noise before thresholds; pre-check and watch events instead
-  of launching or polling agents.
-- Added `in-your-own-words`: before ambiguous or multi-step work, restate the
-  goal, problem, constraints, and done check in plain words; flag assumptions
-  and open questions; wait for a correction if anything looks off. Inspired by
-  poteto's `/in-your-own-words` prompt.
-
 ## Recent Releases
 
+- `v2026.10.15` - Added scripted-verification, in-your-own-words, lint-rules,
+  and three pstack-adapted skills; Cursor plugin packaging and two-way sync;
+  rewrote frontend-design; removed implement-tickets. See
+  `docs/releases/v2026.10.15.md`.
 - `v2026.10.4` - Added eyes-on, project verification skills, and Simplified
   Technical English. See `docs/releases/v2026.10.4.md`.
 - `v2026.9.25` - Added test admission, domain modeling, and worktree skills, and
