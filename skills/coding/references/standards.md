@@ -86,16 +86,19 @@ translation, lifecycle, or other meaningful compression.
 
 ## Comments And Docs
 
-- Public/exported APIs, non-obvious behavior, domain policy, edge cases, and
-  complex helpers should have short comments that explain purpose, contract, or
-  consequence.
-- Private obvious helpers and small local functions usually do not need
-  comments.
-- Do not narrate obvious syntax or line-by-line operations.
-- Use phase comments only when they materially improve skimming of a non-trivial
-  block.
-- Keep comments synchronized with changed code.
-- Use exact uppercase tagged prefixes: `TODO:`, `FIXME:`, `NOTE:`, `HACK:`,
-  `WARNING:`.
-- `FIXME:`, `HACK:`, and `WARNING:` should include the consequence if ignored.
-- `HACK:` should include a removal condition when one is known.
+- No comments by default. Keep one only for a constraint we can't change (an
+  external API quirk, a spec reference), and link it.
+- Express contracts with types, names and tests. See the
+  `type-system-discipline` and `test-behavior-not-implementation` skills.
+- A `HACK:` or `FIXME:` needs a linked issue, and lint rejects the bare ones.
+- When you'd write a comment, turn it into a type, test or lint rule instead.
+  Use the `encode-lessons` skill to pick the smallest guard, and the
+  `no-comments` skill to audit a diff.
+- Stock linters (golangci-lint, Clippy, kubeconform) are only the baseline.
+  Look for repeated bad patterns, especially ones caught in review, and write
+  custom lint rules for them: ruleguard or semgrep for Go, Clippy
+  `disallowed_methods`/`disallowed_types` or dylint for Rust. Each rule ships
+  with a failing example as its test.
+- Each repo keeps a rules catalog (for example `docs/lint-rules.md`) listing
+  each custom rule, why it exists, a bad example and the date added.
+- [Examples](../examples/comments.md)
