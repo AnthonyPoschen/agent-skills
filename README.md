@@ -52,7 +52,7 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `no-comments` | Audit a diff for comments: delete by default, keep public API docs and linked external constraints, encode the rest as types, tests or lint. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
-| `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or NEEDS-HUMAN scripts with exit codes and evidence on disk. |
+| `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
 | `test-behavior-not-implementation` | Call code as its users do and assert the exact result they see; reject loose or call-only assertions. |

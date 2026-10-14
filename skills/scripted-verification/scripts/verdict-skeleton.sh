@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Verdict script skeleton. Replace measure() and the thresholds.
-# Exit codes: 0 PASS, 1 FAIL, 2 NEEDS-HUMAN, 3 check error.
+# Exit codes: 0 PASS, 1 FAIL, 2 UNSURE (agent reviews evidence first), 3 check error.
 set -euo pipefail
 
 out="${TMPDIR:-/tmp}/verify-$(date +%Y%m%d-%H%M%S)"
@@ -31,5 +31,5 @@ if awk "BEGIN{exit !($score <= $pass_max)}"; then
 elif awk "BEGIN{exit !($score >= $fail_min)}"; then
   verdict FAIL "score=$score" 1
 else
-  verdict NEEDS-HUMAN "score=$score in borderline band" 2
+  verdict UNSURE "score=$score in borderline band" 2
 fi

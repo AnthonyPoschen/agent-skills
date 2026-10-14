@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added `scripted-verification`: turn checks that run more than once into
-  scripts with a PASS, FAIL, or NEEDS-HUMAN verdict, exit codes, and evidence
+  scripts with a PASS, FAIL, or UNSURE verdict, exit codes, and evidence
   on disk; measure noise before thresholds; pre-check and watch events instead
   of launching or polling agents.
 - Added `in-your-own-words`: before ambiguous or multi-step work, restate the
