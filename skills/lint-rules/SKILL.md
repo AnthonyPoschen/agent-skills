@@ -21,9 +21,12 @@ coming back. Every rule ships with a failing example and a catalog entry.
    [rules/go/semgrep/](rules/go/semgrep/) to `lint/semgrep/` and run
    `semgrep --config lint/semgrep --exclude vendor`.
 3. Rust: merge [rules/rust/Cargo-lints.toml](rules/rust/Cargo-lints.toml) into
-   `Cargo.toml` (or `[workspace.lints]`) and
-   [rules/rust/clippy.toml](rules/rust/clippy.toml) into `clippy.toml`. Run
-   `cargo clippy --all-targets -- -D warnings`.
+   `[workspace.lints]` and opt in library crates only, as its header says, and
+   merge [rules/rust/clippy.toml](rules/rust/clippy.toml) into `clippy.toml`.
+   Run `cargo clippy --all-targets -- -D warnings`. On an existing crate, gate
+   new code first: the cast lints alone hit hundreds of existing `as` casts.
+   Land the config with the current hits allowed at crate level, block new
+   ones in CI, then remove the allows as you burn them down.
 4. Kubernetes: run kubeconform as in [rules/k8s/README.md](rules/k8s/README.md)
    and copy the `*.yml` files in [rules/k8s/semgrep/](rules/k8s/semgrep/).
    Run them on rendered output (`kustomize build`), so placeholder image names

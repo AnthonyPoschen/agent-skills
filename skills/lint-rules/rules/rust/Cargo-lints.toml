@@ -1,6 +1,10 @@
-# Merge into Cargo.toml ([lints.clippy]) or [workspace.lints.clippy].
-# Binaries, build.rs, tests and examples may opt out per crate or per item with
-# #[allow(...)] plus a reason; library code may not.
+# Library crates only. Put this under [workspace.lints.clippy] and add
+# `[lints] workspace = true` to library crates; binary, example and check
+# crates don't opt in. In a library package, build.rs and tests/*.rs inherit
+# the lints: start them with
+#   #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic,
+#            clippy::print_stdout, clippy::print_stderr, clippy::disallowed_methods)]
+# Library code may opt out per item only, with #[allow(..., reason = "...")].
 [lints.clippy]
 # Panics in library code crash the host process.
 unwrap_used = "deny"
