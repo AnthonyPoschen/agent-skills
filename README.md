@@ -19,6 +19,7 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
@@ -43,13 +44,14 @@ npx skills add anthonyposchen/agent-skills --skill test-audit
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
 | `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
-| `grill-with-docs` | Relentless design interview that drives domain-modeling so CONTEXT/ADRs (and declared living shorts) stay current. |
+| `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
+| `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
-| `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. |
+| `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. Delete tautologies that only restate the code. |
 
 ## Install
 
@@ -75,6 +77,7 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
 npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill release
@@ -94,6 +97,19 @@ Install globally for a specific agent:
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 ```
+
+## Cursor plugin
+
+This repository is also a Cursor plugin named `agent-skills`. The plugin's
+skills are the existing `skills/` folder, so `npx skills add` is unchanged.
+
+1. In Cursor, open **Customize** in the sidebar.
+2. Import this repository with **From GitHub Repository**:
+   `https://github.com/AnthonyPoschen/agent-skills`.
+3. Find the `agent-skills` plugin, select **Install**, and choose user scope.
+
+Installed plugin skills are available to Cloud Agents. To check, start a
+Cloud Agent and ask it to list its skills.
 
 ## Shared MCP config
 
@@ -131,7 +147,7 @@ skills/
     references/
   domain-modeling/
     SKILL.md
-    CONTEXT-FORMAT.md
+    GLOSSARY-FORMAT.md
     ADR-FORMAT.md
   frontend-design/
     SKILL.md
@@ -151,6 +167,8 @@ skills/
   flux-kustomize-layout/
     SKILL.md
   grill-with-docs/
+    SKILL.md
+  in-your-own-words/
     SKILL.md
   makefile/
     SKILL.md
@@ -206,6 +224,35 @@ npm run install-git-hooks
 
 This installs `post-merge` and `post-rewrite` hooks so both merge-based pulls
 and rebase-based pulls refresh local links.
+
+## Two-Way Skills Sync With The Bot Box
+
+**Intent.** The skills in `skills/` and the shared bot skills on the box
+(`/home/box/agent-data/workflows`) should stay one set. An edit on either
+side, whether from a bot, a person or a cloud agent, should reach the other. This
+repo's `master` is canonical, so box edits arrive here as PRs for review and are
+never pushed straight to `master`.
+
+**How it decides.** `scripts/sync-skills.sh` compares each skill on both sides
+against the last synced version, recorded in a state file on the box (outside
+this repo). If only the repo changed, the change is copied to the box. If only
+the box changed, the sync opens or updates a `skills-sync/<skill>` PR. Deletions
+follow the same rule. Skills listed in `sync-exclude.txt` are bot-only and are
+never touched. A PR does not count as synced until it is merged, so the sync
+never triggers itself.
+
+**Run it.** `scripts/sync-skills.sh --help` lists the options and defaults. Add
+`--dry-run` to print the plan without changing anything. Tests run offline with
+`bash tests/sync-skills-test.sh`.
+
+**Conflicts.** If both sides changed the same skill, or one side deleted it
+while the other edited it, the sync prints a `FLAG conflict` line, opens a PR
+carrying the box version with the conflict noted in its body, and leaves both
+sides as they are. Resolve it in that PR, or close the PR and fix one side. The
+skill settles once both sides match.
+
+**Routine (add after merge).** Run the script every 15 minutes on the box as a
+Grok Bot routine. Surface `FLAG` lines to Anthony.
 
 ## License
 
