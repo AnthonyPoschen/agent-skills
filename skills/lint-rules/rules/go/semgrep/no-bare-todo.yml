@@ -2,5 +2,7 @@ rules:
   - id: no-bare-todo
     languages: [go]
     severity: ERROR
-    message: TODO/FIXME/HACK needs a linked issue, e.g. "TODO(#123):" or a URL.
+    message: >-
+      An untracked TODO/FIXME/HACK has no owner or exit, so it rots. Link an
+      issue, e.g. "TODO(#123):" or a URL, or do the work now.
     pattern-regex: //\s*(TODO|FIXME|HACK|XXX)\b(?!\s*\((#\d+|https?://[^)]+)\))(?!.*https?://)

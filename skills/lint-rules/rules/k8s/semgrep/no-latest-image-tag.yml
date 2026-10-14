@@ -2,7 +2,9 @@ rules:
   - id: no-latest-image-tag
     languages: [yaml]
     severity: ERROR
-    message: Pin an image tag or digest instead of latest or no tag.
+    message: >-
+      An image with latest or no tag is not reproducible and defeats rollbacks.
+      Pin a tag or digest.
     patterns:
       - pattern-either:
           - pattern-inside: |
