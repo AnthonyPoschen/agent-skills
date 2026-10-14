@@ -1,11 +1,14 @@
 ---
 name: scripted-verification
 description: >
-  Use when an agent judges the same kind of result more than once (test runs,
-  screenshots, benchmarks, PR checks), when verification is burning tokens or
-  time, or before launching or polling agents to check results. Turn the check
-  into a deterministic script that prints PASS, FAIL, or UNSURE with exit
-  codes and keeps the full evidence on disk for review.
+  Use when you are about to read logs, screenshots, diffs, timings, or
+  benchmark numbers to decide whether something passed; when writing a
+  "check", "verify", "retest", or "looks right" brief for another agent; when
+  a manual check sits in AGENTS.md, a PR template, or a review comment; when
+  about to sleep, wait, or poll for a result; or when re-checking a commit or
+  re-running an A/B that was already judged. Turn the check into a
+  deterministic script that prints PASS, FAIL, or UNSURE with exit codes and
+  keeps the full evidence on disk for review.
 ---
 
 # Scripted Verification
@@ -15,6 +18,23 @@ that re-reads results in prose pays for that context on every step. One audit
 found the largest cost was agents re-judging the same kind of result: about 29
 runs in a day, some for 25 to 40 minutes at high effort, at 110K to 134K tokens
 per step. A script makes that judgement once, for free, every time.
+
+## When To Reach For This
+
+Stop and script the check when you notice yourself:
+
+- about to read logs, screenshots, diffs, or numbers to decide pass or fail,
+  especially the same comparison against the same baseline as last time;
+- writing a "check X", "verify X", "retest", or "make it look right" brief
+  for another agent;
+- following a manual check from AGENTS.md, a PR template, or a review comment;
+- about to sleep, wait, or poll until a run, build, or resource finishes;
+- re-checking a commit, or a commit whose inputs did not change, that already
+  has a verdict;
+- launching a costly check that fails for a cheap reason: merge conflicts, a
+  busy shared resource, or missing arguments;
+- arguing whether a borderline number is noise. Measure the noise floor
+  instead.
 
 ## Script Any Check That Runs More Than Once
 
