@@ -1,0 +1,23 @@
+rules:
+  - id: container-resource-limits
+    languages: [yaml]
+    severity: WARNING
+    message: >-
+      Container has no resources.limits.memory. Without it one leaking pod can
+      OOM the whole node. Set requests and a memory limit.
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              containers: [...]
+          - pattern-inside: |
+              initContainers: [...]
+      - pattern: |
+          image: $I
+      - pattern-not-inside: |
+          image: $I
+          ...
+          resources:
+            ...
+            limits:
+              ...
+              memory: $M

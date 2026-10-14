@@ -1,0 +1,17 @@
+rules:
+  - id: no-sleep-poll-loop
+    languages: [go]
+    severity: WARNING
+    message: >-
+      time.Sleep in a loop is an ad-hoc poll or retry: it ignores cancellation and
+      has no bound or backoff. Use a time.Ticker or time.After in a select with
+      ctx.Done(), or a backoff helper (e.g. k8s.io/apimachinery/pkg/util/wait).
+    patterns:
+      - pattern: time.Sleep(...)
+      - pattern-either:
+          - pattern-inside: for { ... }
+          - pattern-inside: for $C { ... }
+          - pattern-inside: for $I := $X; $C; $P { ... }
+          - pattern-inside: for ... := range $X { ... }
+    paths:
+      exclude: ["*_test.go"]

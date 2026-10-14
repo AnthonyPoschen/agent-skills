@@ -17,19 +17,22 @@ coming back. Every rule ships with a failing example and a catalog entry.
 1. Detect languages: `go.mod` (Go), `Cargo.toml` (Rust), Kubernetes YAML
    (`kind:` + `apiVersion:`, kustomize or Helm output).
 2. Go: enable golangci-lint with the settings in
-   [rules/go/golangci.yml](rules/go/golangci.yml). Copy
-   [rules/go/semgrep.yml](rules/go/semgrep.yml) to `lint/semgrep/go.yml`.
+   [rules/go/golangci.yml](rules/go/golangci.yml). Copy the `*.yml` files in
+   [rules/go/semgrep/](rules/go/semgrep/) to `lint/semgrep/` and run
+   `semgrep --config lint/semgrep --exclude vendor`.
 3. Rust: merge [rules/rust/Cargo-lints.toml](rules/rust/Cargo-lints.toml) into
    `Cargo.toml` (or `[workspace.lints]`) and
    [rules/rust/clippy.toml](rules/rust/clippy.toml) into `clippy.toml`. Run
    `cargo clippy --all-targets -- -D warnings`.
 4. Kubernetes: run kubeconform as in [rules/k8s/README.md](rules/k8s/README.md)
-   and copy [rules/k8s/semgrep.yml](rules/k8s/semgrep.yml).
+   and copy the `*.yml` files in [rules/k8s/semgrep/](rules/k8s/semgrep/).
+   Run them on rendered output (`kustomize build`), so placeholder image names
+   are already replaced.
 5. Wire each linter into CI so a failure blocks merge. On an existing codebase,
    gate only new code first (golangci-lint `new-from-rev`, semgrep
    `--baseline-commit`), then burn down the backlog.
-6. Run `semgrep --test` on the rule directory so every rule's failing example
-   still fails.
+6. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
+   rule directory) so every rule's failing example still fails.
 
 ## Write A New Rule
 
@@ -39,10 +42,15 @@ coming back. Every rule ships with a failing example and a catalog entry.
    or ruleguard for Go, Clippy `disallowed_methods`/`disallowed_types` or a
    dylint lint for Rust, semgrep for YAML.
 3. Write the failing example first (`// ruleid: <id>` lines for semgrep, a
-   fixture for others) and one passing example (`// ok: <id>`).
-4. Add the rule and a row in the repo's rules catalog: rule, why, bad example,
-   date added, origin.
-5. Delete any comment or skill text the rule now enforces.
+   fixture for others) and one passing example (`// ok: <id>`). One rule per
+   file: `<id>.yml` plus `<id>.go`, `<id>.test.yaml`, or `<id>.gomod`. Clippy
+   rules get a line in [rules/rust/fixture](rules/rust/fixture/src/lib.rs)
+   and in the `want` list in `rules/test.sh`.
+4. Measure before adding: run the rule over every repo you can reach, count
+   hits, and read a sample. Keep it only if most hits are real.
+5. Add the rule and a row in the repo's rules catalog: rule, why, bad example,
+   date added, origin, hit counts.
+6. Delete any comment or skill text the rule now enforces.
 
 ## Global Versus Repo-Local
 

@@ -8,4 +8,4 @@ kustomize build overlays/prod | kubeconform -strict -summary \
   -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 ```
 
-Run `semgrep --config semgrep.yml` for the custom rules.
+Run `semgrep --config semgrep/` on the rendered manifests for the custom rules.

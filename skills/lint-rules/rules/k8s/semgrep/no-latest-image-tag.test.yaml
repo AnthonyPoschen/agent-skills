@@ -1,0 +1,24 @@
+spec:
+  containers:
+    # ruleid: no-latest-image-tag
+    - image: nginx:latest
+    # ruleid: no-latest-image-tag
+    - image: nginx
+    # ruleid: no-latest-image-tag
+    - image: registry.local:5000/team/app
+    # ruleid: no-latest-image-tag
+    - image: registry.local:5000/team/app:latest
+    # ok: no-latest-image-tag
+    - image: nginx:1.27.2
+    # ok: no-latest-image-tag
+    - image: registry.local:5000/team/app:1.4.0
+    # ok: no-latest-image-tag
+    - image: ghcr.io/org/app@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+  initContainers:
+    # ruleid: no-latest-image-tag
+    - image: "busybox:latest"
+---
+# An image-automation repository names a repo, not a container image.
+spec:
+  # ok: no-latest-image-tag
+  image: ghcr.io/org/app

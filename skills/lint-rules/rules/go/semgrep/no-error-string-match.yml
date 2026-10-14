@@ -1,0 +1,15 @@
+rules:
+  - id: no-error-string-match
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Do not branch on error text. Messages change and wrapping breaks the match.
+      Compare with errors.Is against a sentinel, or errors.As into a typed error.
+    pattern-either:
+      - pattern: strings.Contains($E.Error(), $S)
+      - pattern: strings.HasPrefix($E.Error(), $S)
+      - pattern: strings.HasSuffix($E.Error(), $S)
+      - pattern: $E.Error() == $S
+      - pattern: $E.Error() != $S
+    paths:
+      exclude: ["*_test.go"]

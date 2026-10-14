@@ -1,0 +1,15 @@
+module example.com/app
+
+go 1.23
+
+require example.com/lib v1.2.0
+
+// ruleid: no-local-replace
+replace example.com/lib => ../lib
+
+replace (
+	// ruleid: no-local-replace
+	example.com/other v0.1.0 => /home/dev/other
+	// ok: no-local-replace
+	example.com/fork => github.com/me/fork v1.2.1
+)

@@ -1,0 +1,11 @@
+rules:
+  - id: no-local-replace
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      A replace directive pointing at a local path builds only on this machine
+      and breaks CI and everyone else. Use a go.work file locally (not
+      committed) or a pushed pseudo-version.
+    pattern-regex: '(?m)^\s*(replace\s+)?\S+(\s+v\S+)?\s+=>\s+\.{0,2}/\S*\s*$'
+    paths:
+      include: ["go.mod", "*.gomod"]

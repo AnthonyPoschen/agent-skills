@@ -1,8 +1,0 @@
-rules:
-  - id: no-latest-image-tag
-    languages: [yaml]
-    severity: ERROR
-    message: Pin an image tag or digest instead of latest or no tag.
-    pattern-regex: 'image:\s*["'']?[^\s"''@:]+(:latest)?["'']?\s*$'
-    paths:
-      include: ["*.yaml", "*.yml"]

@@ -1,0 +1,16 @@
+rules:
+  - id: errorf-wrap-with-w
+    languages: [go]
+    severity: WARNING
+    message: >-
+      fmt.Errorf formats the error with %v or %s and wraps nothing, so callers
+      cannot errors.Is/As it. Use %w. ("%w: %v" with a sentinel is allowed: it
+      deliberately exposes only the sentinel.)
+    patterns:
+      - pattern: fmt.Errorf($FMT, ..., $ERR)
+      - metavariable-regex:
+          metavariable: $FMT
+          regex: '^"(?!.*%w).*%[vs][^%]*"$'
+      - metavariable-regex:
+          metavariable: $ERR
+          regex: '^(err|\w+Err|\w+Error|\w+\.Err)$'

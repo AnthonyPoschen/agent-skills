@@ -7,7 +7,15 @@ linters:
     - govet
     - staticcheck
     - exhaustive
+    - errorlint    # errors.Is/As and %w; backs no-error-string-match
+    - bodyclose    # unclosed http response bodies leak connections
+    - noctx        # http requests and exec without a context
+    - contextcheck # functions that drop the caller's context
   settings:
     nolintlint:
       require-explanation: true
       require-specific: true
+    errcheck:
+      # `_ = f()` is visible in review; bare unchecked calls are not.
+      check-blank: false
+      check-type-assertions: true
