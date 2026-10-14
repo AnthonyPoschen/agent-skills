@@ -13,5 +13,9 @@ rules:
           - pattern-inside: for $C { ... }
           - pattern-inside: for $I := $X; $C; $P { ... }
           - pattern-inside: for ... := range $X { ... }
+      # A loop bounded by a deadline is a deliberate short wait, not an
+      # unbounded poll.
+      - pattern-not-inside: for time.Now().Before($D) { ... }
+      - pattern-not-inside: for time.Until($D) > 0 { ... }
     paths:
       exclude: ["*_test.go"]

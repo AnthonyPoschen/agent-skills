@@ -25,3 +25,15 @@ func waitReadyCtx(ctx context.Context, ready func() bool) error {
 	}
 	return nil
 }
+
+func waitSocket(exists func() bool) bool {
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		if exists() {
+			return true
+		}
+		// ok: no-sleep-poll-loop
+		time.Sleep(50 * time.Millisecond)
+	}
+	return false
+}
