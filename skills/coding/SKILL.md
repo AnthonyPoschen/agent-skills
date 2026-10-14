@@ -85,6 +85,15 @@ Write no comments by default. Turn a would-be comment into a type, test or
 lint rule. Use the `encode-lessons` skill to choose the guard, and see
 [standards](./references/standards.md#comments-and-docs).
 
+## Custom Lint Rules
+
+Stock linters are the baseline. When a bad pattern recurs, especially in
+review, write a custom rule for it (ruleguard or semgrep for Go, Clippy
+`disallowed_methods`/`disallowed_types` or dylint for Rust). Ship it with a
+failing example as its test and add an entry to the repo's rules catalog:
+rule, why, bad example, date added. Domain detail lives in that catalog, not in
+skills.
+
 ## Example Lookup
 
 Use examples only when a rule decision is unclear.
