@@ -9,7 +9,7 @@ Treat every comment as guilty unless it describes something we cannot change or 
 
 ## Scope
 
-Use the caller's files or diff. Otherwise use the current diff against the base branch, default `main`, including the working tree.
+Use the caller's files or diff. Otherwise use the current diff, including the working tree, against the repository's default branch. Detect it with `git symbolic-ref --short refs/remotes/origin/HEAD` (strip `origin/`), or `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`. Never assume `main` or `master`.
 
 ## Steps
 
