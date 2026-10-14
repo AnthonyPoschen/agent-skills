@@ -24,3 +24,32 @@ the repos it was measured on. "Sampled" means hits were read by hand.
 | `no-latest-image-tag` (k8s semgrep) | `:latest` or no tag is not reproducible and defeats rollbacks. Handles `registry:5000/app`. | `image: registry:5000/app` | 2026-10-14 | general k8s practice; registry-port gap fixed | 3 (all kustomize placeholders: lint rendered output) |
 | `container-resource-limits` (k8s semgrep) | No memory limit lets one leaking pod OOM the node. | container with no `resources.limits.memory` | 2026-10-14 | general k8s practice | 0 in 2 repos' manifests |
 | kubeconform strict (k8s) | Typos in manifests apply silently or fail at deploy time. | `replicas: "3"` | 2026-10-14 | general k8s practice | not measured |
+
+## Verdicts, 2026-10-14
+
+Measured on shallow clones of genos, genos-cli and genos-controller (Go) and
+genos-engine (Rust). Go counts exclude vendor; "non-test" excludes
+`_test.go`. Rust counts are unique sites, split by target. Kubernetes counts
+are on `kustomize build` output of all six overlays.
+
+| Rule | Hits | Verdict |
+| --- | --- | --- |
+| `no-error-string-match` | 11 non-test (genos) | Keep. All sampled hits branch on error text. |
+| `errorf-wrap-with-w` | 12 non-test (controller) | Keep. Cuts the chain; the `%w: %v` sentinel idiom stays allowed. |
+| `no-default-http-client` | 5 non-test (genos 3, controller 2) | Keep. Every hit is an untimed outbound call. |
+| `no-ignored-unmarshal-error` | 5 non-test (genos) | Keep. |
+| `bufio-scanner-set-buffer` | 2 (genos dotenv, controller log scan) | Keep. Log scan is real; dotenv is low risk but cheap to fix. |
+| `no-sleep-poll-loop` | 3 → 0 | Tightened. All 3 were 3 s deadline-bounded waits for a socket; loops bounded by `time.Now().Before`/`time.Until` are now exempt. |
+| `no-local-replace` | 0 | Keep. No noise; guards a CI-breaking mistake. |
+| `no-bare-todo` | 0 | Keep. No noise. |
+| golangci `errorlint` | 60 Errorf + 4 others → 10 | Tightened. `errorf: false`: 46 hits were the allowed `%w: %v` idiom, the rest duplicated `errorf-wrap-with-w`. Comparison and type-assertion checks stay (10 hits, 5 in genos-cli tests). |
+| golangci `bodyclose` | 0 | Keep. No noise. |
+| golangci `noctx` | 908 in tests, 7 non-test | Tightened. Excluded in `_test.go`. Non-test hits are `exec.Command` and `Client.Get` without a context, which is real. |
+| golangci `contextcheck` | 5 non-test | Keep. Low volume; suppress a deliberate detached context with an explained `//nolint`. |
+| Rust `unwrap_used`/`expect_used`/`panic`/`todo`/`unimplemented` | lib 37; tests/ 139, build.rs 15, bin+example 2 | Scoped to library crates; build.rs and `tests/` allow at file level. Lib hits are the real target. |
+| Rust `print_stdout`/`print_stderr`/`dbg_macro` | lib 6; bin 28, example 10, tests 5 | Scoped to library crates. Bins print by design. |
+| Rust `disallowed_methods` `std::env::var(_os)` | lib 17 (13 tuning knobs, 4 platform discovery); bin 7, build.rs 3, tests 1 | Scoped to library crates. Platform discovery (HOME, XDG_*, WAYLAND_DISPLAY) allowed per item with a reason. |
+| Rust `disallowed_methods` `std::thread::sleep` | lib 7 (5 fixed 0.3–5 s waits in window, 2 short polls in mcp); tests 1 | Keep, library crates only. Fixed waits are the target. |
+| Rust `cast_possible_truncation`/`_wrap`/`sign_loss` | lib 445; tests 90, bin 22, example 9 | Keep as warn, library crates only, gate new code first. |
+| `no-latest-image-tag` | 3 raw → 0 rendered | Keep. Raw hits were kustomize placeholders (`app`, `controller`) that render to pinned GHCR tags; the registry-port fix is covered by its test. |
+| `container-resource-limits` | 0 rendered | Keep. All containers already set memory limits. |
