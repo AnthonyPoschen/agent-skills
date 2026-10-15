@@ -151,7 +151,7 @@ restates the same implementation. Do not turn an uncertain candidate into a
 deletion to raise the count.
 
 Commit, push, or open a PR only when the user asked. Use
-`git-commit-workflow` when they did.
+the `git` skill's commit reference when they did.
 
 ## Validation
 

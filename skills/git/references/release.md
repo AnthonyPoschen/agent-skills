@@ -1,21 +1,13 @@
----
-name: release
-description: >
-  Use when preparing, publishing, documenting, updating, or correcting a
-  release. Covers changelogs, release notes, version selection, Git tags, and
-  release records. Follow the repository's versioning convention; use CalVer
-  only when no clear convention exists.
----
 
 # Release
 
-Use this skill to maintain release records and, when asked, prepare or publish
+Use this reference to maintain release records and, when asked, prepare or publish
 a release. Write release notes for the person deciding whether to upgrade,
 install, review, or publish.
 
 ## Activation
 
-Use this skill for:
+Use this reference for:
 
 - changelogs
 - release notes
@@ -61,13 +53,13 @@ documentation. They establish the repository's versioning convention.
 ## Choose A Version
 
 Follow the repository's established versioning scheme. Existing tags, package
-metadata, release documents, and automation take priority over this skill.
+metadata, release documents, and automation take priority over this reference.
 
 - For a repository that uses Semantic Versioning, follow its normal
   major/minor/patch practice. Ask before choosing a version when the
   compatibility impact is unclear.
 - When no clear versioning convention exists, use CalVer. Read
-  [CalVer details](references/calver.md) before choosing or creating a CalVer
+  [CalVer details](calver.md) before choosing or creating a CalVer
   tag.
 - Do not change a repository from one versioning scheme to another as part of a
   normal release. Ask first.

@@ -92,12 +92,13 @@ translation, lifecycle, or other meaningful compression.
     sync with the code.
   - A constraint we can't change (an external API quirk, a spec reference),
     with a link to the source.
-- Express contracts with types, names and tests. See the
-  `type-system-discipline` and `test-behavior-not-implementation` skills.
+- Express contracts with types, names and tests. See
+  [type-system-discipline](type-system-discipline.md) and the
+  `test-behavior-not-implementation` skill.
 - A `HACK:` or `FIXME:` needs a linked issue, and lint rejects the bare ones.
 - When you'd write a comment, turn it into a type, test or lint rule instead.
-  Use the `encode-lessons` skill to pick the smallest guard, and the
-  `no-comments` skill to audit a diff.
+  Use the `encode-lessons` skill to pick the smallest guard, and
+  [no-comments](no-comments.md) to audit a diff.
 - Stock linters are only the baseline. Turn recurring patterns into custom
   lint rules with the `lint-rules` skill.
 - [Examples](../examples/comments.md)

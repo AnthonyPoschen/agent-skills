@@ -1,14 +1,7 @@
----
-name: technical-writing
-description: >
-  Use when writing or reviewing documentation, READMEs, tutorials, how to
-  guides, RFCs, architecture notes, PR descriptions, release notes, or commit
-  messages. Write clear, plain English for developers and maintainers.
----
 
 # Technical Writing
 
-Use this skill to write for a tired developer who should understand the first
+Use this reference to write for a tired developer who should understand the first
 read. It is adapted from pstack's technical writing skill under its MIT license,
 but stands alone and has no pstack only dependencies.
 
@@ -78,7 +71,7 @@ conflict.
 - Keep claims about paths, symbols, counts, and behavior true for the current
   change. Run the command that proves a generated count or tree when one exists.
 - Treat PR descriptions and commit messages as technical writing.
-- Do not apply this skill to product UI text. Use the product's copy rules for
+- Do not apply this reference to product UI text. Use the product's copy rules for
   that work.
 
 ## Review Checklist

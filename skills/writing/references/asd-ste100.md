@@ -1,16 +1,7 @@
----
-name: asd-ste100
-description: >
-  Write replies and documents in ASD-STE100 Simplified Technical English.
-  Use this skill whenever you write a reply, a document, a skill, AGENTS.md,
-  a comment, a commit message, or other prose for a person. Also use it when
-  the user asks for a simple explanation, or says simplified English, STE,
-  or ASD-STE100.
----
 
 # ASD-STE100
 
-Write each sentence so a reader can follow it on the first read. Follow the rules in this skill. The official word list is a licensed document. This skill keeps these rules and leaves that word list out.
+Write each sentence so a reader can follow it on the first read. Follow the rules in this reference. The official word list is a licensed document. This reference keeps these rules and leaves that word list out.
 
 ## When this applies
 
@@ -23,7 +14,7 @@ Keep the original words in these cases:
 
 Write a long project name in full one time. After that, use a shorter name only when the project already has that shorter name.
 
-When `technical-writing` also applies, that skill selects the document type. This skill controls each sentence.
+When [technical-writing](technical-writing.md) also applies, it selects the document type. This reference controls each sentence.
 
 ## Select the sentence type
 

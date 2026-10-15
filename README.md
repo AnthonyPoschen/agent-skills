@@ -7,24 +7,21 @@ format. This repository is arranged so skills can be installed with the
 ```bash
 npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
-npx skills add anthonyposchen/agent-skills --skill asd-ste100
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
-npx skills add anthonyposchen/agent-skills --skill git-worktree
+npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
-npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
-npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
+npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
-npx skills add anthonyposchen/agent-skills --skill release
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
-npx skills add anthonyposchen/agent-skills --skill technical-writing
+npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
 npx skills add anthonyposchen/agent-skills --skill scripted-verification
 ```
@@ -33,31 +30,26 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 
 | Skill | Description |
 | --- | --- |
-| `asd-ste100` | Write replies and documents in ASD-STE100 Simplified Technical English. |
 | `act-within-scope` | Make reversible progress within scope without waiting on ordinary execution decisions. |
-| `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. |
+| `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. Includes comment audits (no-comments) and type-system discipline. |
 | `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
 | `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
 | `domain-modeling` | Sharpen domain terminology and ADRs; optionally refresh short living alignment docs when the repo declares them. |
 | `frontend-design` | Product-fit frontend design and implementation workflow for polished, usable web interfaces. |
-| `git-worktree` | Create, synchronize, and safely retire isolated Git worktrees in a predictable mirrored layout. |
+| `git` | Commits, worktrees, and releases: commit boundaries and messages, a mirrored worktree layout, and release notes, versions, and tags (CalVer when no convention exists). |
 | `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. |
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
-| `flux-ghcr-image-automation` | GitHub Actions to GHCR to FluxCD image automation loops, including image tags, policies, setter comments, namespace gotchas, and rollout diagnostics. |
-| `flux-kustomize-layout` | FluxCD and Kustomize repo layout scaffolds with shared base plus dev/prod overlays. |
+| `flux` | FluxCD GitOps: GitHub Actions to GHCR image automation (tags, policies, rollout diagnostics) and Kustomize base/overlay repo layouts. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `lint-rules` | Shared custom lint rules for Go, Rust and Kubernetes, each with a failing example, plus how to write and contribute new ones. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
-| `no-comments` | Audit a diff for comments: delete by default, keep public API docs and linked external constraints, encode the rest as types, tests or lint. |
 | `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
-| `release` | Release records, notes, version selection, tags, and publishing. Uses the repository versioning convention or CalVer when none exists. |
 | `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
-| `technical-writing` | Plain English guidance for documentation, READMEs, RFCs, PR descriptions, release notes, and commit messages. |
+| `writing` | Prose for people: ASD-STE100 Simplified Technical English for every reply, plus plain English guidance for docs, READMEs, RFCs, PR descriptions, and release notes. |
 | `test-behavior-not-implementation` | Call code as its users do and assert the exact result they see; reject loose or call-only assertions. |
 | `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. Delete tautologies that only restate the code. |
-| `type-system-discipline` | Make illegal states unrepresentable, brand primitives, parse at boundaries and keep matches exhaustive. |
 
 ## Install
 
@@ -71,24 +63,21 @@ Install a specific skill:
 
 ```bash
 npx skills add anthonyposchen/agent-skills --skill coding
-npx skills add anthonyposchen/agent-skills --skill asd-ste100
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill dockerfile
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
-npx skills add anthonyposchen/agent-skills --skill git-worktree
+npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
-npx skills add anthonyposchen/agent-skills --skill flux-ghcr-image-automation
-npx skills add anthonyposchen/agent-skills --skill flux-kustomize-layout
+npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
 npx skills add anthonyposchen/agent-skills --skill omarchy-development
-npx skills add anthonyposchen/agent-skills --skill release
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
-npx skills add anthonyposchen/agent-skills --skill technical-writing
+npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
 ```
 
@@ -136,13 +125,12 @@ after moving or upgrading the binary.
 
 ```text
 skills/
-  asd-ste100/
-    SKILL.md
   act-within-scope/
     SKILL.md
   coding/
     SKILL.md
     examples/
+    references/
   context-management/
     SKILL.md
   create-verification-skill/
@@ -157,8 +145,9 @@ skills/
     ADR-FORMAT.md
   frontend-design/
     SKILL.md
-  git-worktree/
+  git/
     SKILL.md
+    references/
     scripts/
   encode-lessons/
     SKILL.md
@@ -167,11 +156,9 @@ skills/
   eyes-on/
     SKILL.md
     scripts/
-  flux-ghcr-image-automation/
+  flux/
     SKILL.md
     references/
-  flux-kustomize-layout/
-    SKILL.md
   grill-with-docs/
     SKILL.md
   in-your-own-words/
@@ -180,11 +167,9 @@ skills/
     SKILL.md
   maintain-verification-skill/
     SKILL.md
-  release/
+  writing/
     SKILL.md
     references/
-  technical-writing/
-    SKILL.md
   scripted-verification/
     SKILL.md
     scripts/

@@ -5,9 +5,10 @@ description: >
   implementation, refactoring, debugging, code review, tests, CI fixes,
   package/build files, scripts, migrations, generated-code inputs,
   infrastructure-as-code, PR/diff discussion, and software architecture or
-  design planning. Use this skill as the coding entrypoint router, then load
-  principles.md and only the task-specific reference files needed for the
-  current request.
+  design planning. Also covers no-comments (auditing a diff or files for
+  comments to delete) and type-system-discipline (designing types, reviewing
+  function signatures, illegal states, branded IDs, parsing at boundaries).
+  Load principles.md and only the references the request needs.
 ---
 
 # Coding
@@ -51,6 +52,10 @@ then load the smallest relevant reference set for the task.
   proves that.
 - For shared code-quality rules, read `./references/standards.md` whenever
   writing or changing code, and as needed during review/design.
+- For auditing a diff or files for comments, or deciding whether a comment
+  should stay, read `./references/no-comments.md`.
+- For designing types, reviewing a function signature, or writing code in a
+  statically-typed language, read `./references/type-system-discipline.md`.
 - For assertion strategy (invariant checks, debug-vs-production assert
   decisions, and fail-fast contracts), read `./references/assertions.md` when
   writing or reviewing code that validates internal assumptions.
@@ -61,7 +66,7 @@ stop after the first phase, including subtraction.
 
 Do not commit between phases unless the user asked to land the work as
 separate commits. When they did, commit each coherent unit with
-`git-commit-workflow`, then continue. Otherwise finish the remaining phases in
+the `git` skill ([commit reference](../git/references/commit.md)), then continue. Otherwise finish the remaining phases in
 the working tree.
 
 ## Preserve The User's Mental Model
@@ -82,7 +87,8 @@ user's next action.
 ## Comments Become Structure
 
 Write no comments by default. Turn a would-be comment into a type, test or
-lint rule. Use the `encode-lessons` skill to choose the guard, and see
+lint rule. To audit existing comments, follow
+[no-comments](./references/no-comments.md). Use the `encode-lessons` skill to choose the guard, and see
 [standards](./references/standards.md#comments-and-docs).
 
 ## Custom Lint Rules

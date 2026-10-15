@@ -1,13 +1,3 @@
----
-name: git-commit-workflow
-description: >
-  Prepare or create Git commits for the user. Use whenever the user asks to
-  commit changes, split work into commits, write commit messages, stage files,
-  or clean up a dirty worktree before committing, and after each completed
-  phase of a sequenced coding or refactoring workflow. Creates descriptive
-  commit messages, logical commit boundaries, and an Assisted-by trailer for
-  AI-authored or AI-assisted changes.
----
 
 # Git Commit Workflow
 

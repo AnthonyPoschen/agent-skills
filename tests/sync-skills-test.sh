@@ -85,4 +85,15 @@ grep -q '^name: alpha' box/alpha/SKILL.md && grep -q 'SKIP alpha' out && ok "inv
 setup; mkdir -p state; exec 8>state/state.lock; flock 8; run; rc=$?; exec 8>&-
 [[ $rc -ne 0 ]] && grep -q 'another sync' out && ok "lock blocks concurrent run" || bad "lock" "$(cat out)"
 
+# 13 skill merge: repo folds alpha+beta into a new parent in one commit
+setup; run; repo_commit 'git rm -rq skills/alpha skills/beta && skill skills/merged parent && mkdir -p skills/merged/references && echo ref > skills/merged/references/alpha.md'; run; run
+[[ ! -d box/alpha && ! -d box/beta && -f box/merged/references/alpha.md && $(prs) == 0 ]] && ! grep -qE '^FLAG' out \
+  && ok "skill merge replaces old skills on box without PRs" || bad "skill merge" "$(cat out)"
+# 14 link script prunes links to merged-away skills, keeps foreign links
+L="$T/link"; mkdir -p "$L/src"; skill "$L/src/alpha"; skill "$L/src/beta"; ln -s /elsewhere "$L/foreign" 2>/dev/null; mkdir -p "$L/dest"; ln -s /elsewhere "$L/dest/foreign"
+AGENT_SKILLS_SRC="$L/src" AGENT_SKILLS_DIR="$L/dest" sh "$ROOT/scripts/link-agent-skills.sh" >/dev/null
+rm -rf "$L/src/alpha"; skill "$L/src/merged"
+AGENT_SKILLS_SRC="$L/src" AGENT_SKILLS_DIR="$L/dest" sh "$ROOT/scripts/link-agent-skills.sh" >/dev/null
+[[ ! -L "$L/dest/alpha" && -L "$L/dest/beta" && -L "$L/dest/merged" && -L "$L/dest/foreign" ]] \
+  && ok "link script prunes stale links, keeps foreign ones" || bad "link prune" "$(ls -l "$L/dest")"
 echo "---- $pass passed, $fail failed"; [[ $fail -eq 0 ]]

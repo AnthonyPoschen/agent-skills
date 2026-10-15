@@ -1,10 +1,3 @@
----
-name: flux-kustomize-layout
-description: >
-  Set up or review FluxCD and Kustomize repository layouts. Use when the user
-  asks for a FluxCD repo layout, Kubernetes GitOps structure, kustomization
-  scaffold, base/overlay setup, or dev/prod environment overlays.
----
 
 # Flux Kustomize Layout
 

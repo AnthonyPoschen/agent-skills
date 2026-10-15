@@ -1,13 +1,3 @@
----
-name: flux-ghcr-image-automation
-description: >
-  Build, review, debug, or fix GitHub Actions to GHCR to FluxCD image
-  automation loops. Use whenever the user mentions Flux image automation,
-  ImageRepository, ImagePolicy, ImageUpdateAutomation, GHCR, Docker metadata
-  tags, Kubernetes pods not rolling after an image push, mutable latest tags,
-  digest updates, or GitHub Actions publishing container images for Flux-managed
-  Kubernetes workloads.
----
 
 # Flux GHCR Image Automation
 
@@ -77,11 +67,11 @@ kubectl get gitrepository -A -o wide
 
 Load only the reference needed for the task:
 
-- [tagging-policy.md](references/tagging-policy.md) for GitHub Actions Docker
+- [tagging-policy.md](tagging-policy.md) for GitHub Actions Docker
   metadata tags and orderable Flux policies.
-- [flux-manifests.md](references/flux-manifests.md) for ImageRepository,
+- [flux-manifests.md](flux-manifests.md) for ImageRepository,
   ImagePolicy, ImageUpdateAutomation, setter comments, and namespace rules.
-- [diagnostics.md](references/diagnostics.md) for live cluster debugging and
+- [diagnostics.md](diagnostics.md) for live cluster debugging and
   rollout verification.
 
 ## Implementation Workflow
