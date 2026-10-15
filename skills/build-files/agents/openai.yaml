@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Files"
+  short_description: "Secure Dockerfiles and Makefiles with validated variables"
+  default_prompt: "Use $build-files to create or review this project's Dockerfile or Makefile."
