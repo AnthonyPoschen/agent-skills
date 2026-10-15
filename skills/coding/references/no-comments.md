@@ -1,7 +1,3 @@
----
-name: no-comments
-description: "Use when auditing a diff or files for comments. Delete comments by default, keep only ones about constraints we cannot change, and encode claimed constraints as types, runtime checks, tests or lint rules."
----
 
 # No Comments
 

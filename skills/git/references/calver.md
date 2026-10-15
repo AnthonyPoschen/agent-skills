@@ -1,7 +1,7 @@
 # CalVer details
 
 Read this reference only when the repository has no established versioning
-convention and the release skill selects CalVer as the default.
+convention and the release reference selects CalVer as the default.
 
 ## Version Format
 
@@ -196,7 +196,7 @@ version:  2026.5.20+2
 
 ## Release Notes
 
-- Use the release skill's release-record workflow when release notes or
+- Use the release-record workflow in [release.md](release.md) when release notes or
   changelog updates are needed.
 - Use the tag as the release title unless the project has a stronger convention.
 - Group notable changes by user impact:

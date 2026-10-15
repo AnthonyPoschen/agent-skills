@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flux"
+  short_description: "FluxCD image automation and Kustomize repo layouts"
+  default_prompt: "Use $flux to set up or debug FluxCD image automation or a Kustomize repo layout."

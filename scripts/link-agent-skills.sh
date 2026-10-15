@@ -15,6 +15,22 @@ mkdir -p "$SKILLS_DEST"
 
 linked=0
 skipped=0
+pruned=0
+
+# A merged or renamed skill leaves a link to a folder that no longer exists.
+# Remove only dangling links into this source, never anything else.
+for target in "$SKILLS_DEST"/*; do
+  [ -L "$target" ] || continue
+  current_target=$(readlink "$target")
+  case "$current_target" in
+    "$SKILLS_SRC"/*)
+      if [ ! -e "$current_target" ]; then
+        rm "$target"
+        pruned=$((pruned + 1))
+      fi
+      ;;
+  esac
+done
 for skill_dir in "$SKILLS_SRC"/*; do
   [ -d "$skill_dir" ] || continue
 
@@ -40,7 +56,7 @@ for skill_dir in "$SKILLS_SRC"/*; do
   linked=$((linked + 1))
 done
 
-echo "Linked $linked skill(s) into $SKILLS_DEST."
+echo "Linked $linked skill(s) into $SKILLS_DEST. Pruned $pruned stale link(s)."
 if [ "$skipped" -gt 0 ]; then
   echo "Skipped $skipped existing non-symlink skill(s)." >&2
 fi

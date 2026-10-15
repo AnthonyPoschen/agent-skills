@@ -33,7 +33,7 @@ If the selected area is large, finish one coherent boundary through rewrite,
 then take the next boundary. Do not leave the request on a subtract-only tree.
 
 Commit between phases only when the user asked to land the refactor as
-separate commits. Those commits use `git-commit-workflow`. Otherwise leave the
+separate commits. Those commits use the `git` skill's commit reference. Otherwise leave the
 working tree uncommitted until the user asks.
 
 ## Subtract Before You Rebuild
