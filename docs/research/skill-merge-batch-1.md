@@ -41,7 +41,7 @@ only the listing, as a harness does. "Expected" is the skill that must load.
 | 6 | We keep swapping userId and orderId; make the compiler catch it | type-system-discipline + coding | coding (types ref) |
 | 7 | commit these changes | git-commit-workflow | git |
 | 8 | split my working tree into sensible commits | git-commit-workflow | git |
-| 9 | write a commit message for the staged diff | git-commit-workflow + writing-type skills | git + writing |
+| 9 | write a commit message for the staged diff | git-commit-workflow + technical-writing + asd-ste100 | git + writing |
 | 10 | do this in a new worktree | git-worktree | git |
 | 11 | clean up the worktrees for merged branches | git-worktree | git |
 | 12 | clone my repo and set up a feature checkout for the auth rewrite | git-worktree | git |
