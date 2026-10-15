@@ -9,7 +9,7 @@ npx skills add anthonyposchen/agent-skills --list
 npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
-npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill build-files
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
@@ -18,8 +18,6 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
-npx skills add anthonyposchen/agent-skills --skill makefile
-npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
@@ -33,7 +31,7 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `act-within-scope` | Make reversible progress within scope without waiting on ordinary execution decisions. |
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. Includes comment audits (no-comments) and type-system discipline. |
 | `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
-| `dockerfile` | Secure multi-stage Dockerfile patterns with scratch-first static binaries, Alpine runtimes, non-root UID/GID ownership, and Docker-based CI source of truth. |
+| `build-files` | Build files: secure multi-stage Dockerfiles (scratch-first, non-root, Docker as CI source of truth) and Makefile targets that validate required variables. |
 | `domain-modeling` | Sharpen domain terminology and ADRs; optionally refresh short living alignment docs when the repo declares them. |
 | `frontend-design` | Product-fit frontend design and implementation workflow for polished, usable web interfaces. |
 | `git` | Commits, worktrees, and releases: commit boundaries and messages, a mirrored worktree layout, and release notes, versions, and tags (CalVer when no convention exists). |
@@ -43,8 +41,6 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `lint-rules` | Shared custom lint rules for Go, Rust and Kubernetes, each with a failing example, plus how to write and contribute new ones. |
-| `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
-| `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `writing` | Prose for people: ASD-STE100 Simplified Technical English for every reply, plus plain English guidance for docs, READMEs, RFCs, PR descriptions, and release notes. |
@@ -65,7 +61,7 @@ Install a specific skill:
 npx skills add anthonyposchen/agent-skills --skill coding
 npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
-npx skills add anthonyposchen/agent-skills --skill dockerfile
+npx skills add anthonyposchen/agent-skills --skill build-files
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
@@ -74,8 +70,6 @@ npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
-npx skills add anthonyposchen/agent-skills --skill makefile
-npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
@@ -136,7 +130,7 @@ skills/
   create-verification-skill/
     SKILL.md
     references/
-  dockerfile/
+  build-files/
     SKILL.md
     references/
   domain-modeling/
@@ -162,8 +156,6 @@ skills/
   grill-with-docs/
     SKILL.md
   in-your-own-words/
-    SKILL.md
-  makefile/
     SKILL.md
   maintain-verification-skill/
     SKILL.md

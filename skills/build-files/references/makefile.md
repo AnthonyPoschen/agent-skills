@@ -1,13 +1,3 @@
----
-name: makefile
-description: >
-  Use when creating, reviewing, or editing Makefiles, make targets, make
-  recipes, task runners, or documentation that tells users to run make commands.
-  Always use this skill when a make target accepts user-provided variables such
-  as tokens, usernames, branch names, paths, namespaces, environments, or other
-  inputs. Ensures required Make variables are validated with clear error
-  descriptions before commands run.
----
 
 # Makefile
 
