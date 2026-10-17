@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Runs every rule's failing example. Needs semgrep (pip) and cargo clippy.
+# Runs every rule's failing example. Needs semgrep (pip), cargo clippy, and
+# node/npm for the CSS Stylelint fixtures.
 set -euo pipefail
 cd "$(dirname "$0")"
 semgrep --test --metrics=off .
@@ -9,3 +10,11 @@ for w in "${want[@]}"; do
   grep -qF -- "$w" <<<"$out" || { echo "rust fixture: missing $w"; exit 1; }
 done
 echo "rust fixture: all clippy rules fire"
+(
+  cd css
+  if [[ ! -d node_modules ]]; then
+    npm ci --ignore-scripts
+  fi
+  npm test
+)
+echo "css fixtures: colour-token rules fire"

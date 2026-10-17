@@ -24,6 +24,7 @@ the repos it was measured on. "Sampled" means hits were read by hand.
 | `no-latest-image-tag` (k8s semgrep) | `:latest` or no tag is not reproducible and defeats rollbacks. Handles `registry:5000/app`. | `image: registry:5000/app` | 2026-10-14 | general k8s practice; registry-port gap fixed | 3 (all kustomize placeholders: lint rendered output) |
 | `container-resource-limits` (k8s semgrep) | No memory limit lets one leaking pod OOM the node. | container with no `resources.limits.memory` | 2026-10-14 | general k8s practice | 0 in 2 repos' manifests |
 | kubeconform strict (k8s) | Typos in manifests apply silently or fail at deploy time. | `replicas: "3"` | 2026-10-14 | general k8s practice | not measured |
+| `color-no-hex` / `color-named` / `function-disallowed-list` (CSS Stylelint) | Hard-coded colours scatter the palette so a recolour or theme switch misses values. Keep raw colours in the theme file; everywhere else use `var(--token)`. | `color: #f4f6f8` | 2026-10-17 | agents missing shared colour tokens during theme recolours | not measured |
 
 ## Verdicts, 2026-10-14
 
