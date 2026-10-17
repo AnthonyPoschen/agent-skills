@@ -38,7 +38,8 @@ message: >-
 ## Apply The Rules To A Repo
 
 1. Detect languages: `go.mod` (Go), `Cargo.toml` (Rust), Kubernetes YAML
-   (`kind:` + `apiVersion:`, kustomize or Helm output).
+   (`kind:` + `apiVersion:`, kustomize or Helm output), CSS (`*.css` or a
+   Stylelint config).
 2. Go: enable golangci-lint with the settings in
    [rules/go/golangci.yml](rules/go/golangci.yml). Copy the `*.yml` files in
    [rules/go/semgrep/](rules/go/semgrep/) to `lint/semgrep/` and run
@@ -54,10 +55,14 @@ message: >-
    and copy the `*.yml` files in [rules/k8s/semgrep/](rules/k8s/semgrep/).
    Run them on rendered output (`kustomize build`), so placeholder image names
    are already replaced.
-5. Wire each linter into CI so a failure blocks merge. On an existing codebase,
+5. CSS: copy [rules/css/](rules/css/) (or merge
+   [rules/css/create-config.cjs](rules/css/create-config.cjs)), set `themeFiles`
+   to your palette path, install `stylelint`, and run Stylelint on your
+   stylesheets as in [rules/css/README.md](rules/css/README.md).
+6. Wire each linter into CI so a failure blocks merge. On an existing codebase,
    gate only new code first (golangci-lint `new-from-rev`, semgrep
    `--baseline-commit`), then burn down the backlog.
-6. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
+7. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
    rule directory) so every rule's failing example still fails.
 
 ## Write A New Rule
@@ -67,7 +72,7 @@ message: >-
    rule when a linter can catch it.
 2. Pick the cheapest tool that can express it: a linter setting, then semgrep
    or ruleguard for Go, Clippy `disallowed_methods`/`disallowed_types` or a
-   dylint lint for Rust, semgrep for YAML.
+   dylint lint for Rust, Stylelint for CSS, semgrep for YAML.
 3. Write the failing example first (`// ruleid: <id>` lines for semgrep, a
    fixture for others) and one passing example (`// ok: <id>`). One rule per
    file: `<id>.yml` plus `<id>.go`, `<id>.test.yaml`, or `<id>.gomod`. Clippy
