@@ -1,13 +1,13 @@
 ---
 name: lint-rules
 description: >
-  Use when an agent hits a mistake or gotcha in a repo, or is about to write a
-  "don't do X" or "always do Y" rule into AGENTS.md, docs, a skill or a
+  Use when fixing a bug, the user corrects the same mistake twice or says
+  "you missed some", a review comment or gotcha recurs, or you are about to
+  write a "don't do X"/"always do Y" into AGENTS.md, docs, a skill or a
   comment: the default answer is a repo-local lint rule. Also use when setting
-  up or tightening linting, when a review comment or bug pattern recurs, or
-  when contributing a lint rule back. Detects the
-  repo's languages, wires the shared rule files into the linter config and CI,
-  and turns recurring patterns into custom rules with failing examples.
+  up or tightening linting, or contributing a rule back. Detects languages,
+  wires shared rules into the linter and CI, and turns patterns into custom
+  rules with failing examples.
 ---
 
 # Lint Rules

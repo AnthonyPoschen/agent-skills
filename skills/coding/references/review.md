@@ -65,3 +65,13 @@ Brief context only.
 ```
 
 If there are no findings, say so clearly and mention residual risk or test gaps.
+
+## After The Review
+
+When the review surfaces a bug or a correction the author must make, ask
+whether a lint rule could have caught it. If yes, follow the `lint-rules`
+skill to add it (or set up lint if the repo has none).
+
+End-of-task summary must include one of:
+`lint rule: added <name>` or `lint rule: skipped: <why>`.
+
