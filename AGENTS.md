@@ -15,8 +15,10 @@ installers and agents to scan.
 
 ## Skill Rules
 
-- `SKILL.md` frontmatter must contain only `name` and `description` unless a
-  specific consuming tool requires more.
+- `SKILL.md` frontmatter must contain `name` and `description`. Extra fields are
+  allowed when a consuming tool needs them. For manual-only skills use
+  `disable-model-invocation: true` (Cursor, Claude Code) and, for OpenCode,
+  `metadata.opencode/autoinvoke: "false"` plus `metadata.opencode/slash: "true"`.
 - The `name` value should match the folder name.
 - Put all activation and routing language in `description`.
 - Prefer concise, imperative instructions in the body.
