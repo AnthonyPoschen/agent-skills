@@ -1,0 +1,3 @@
+.example {
+  color: var(--palette-missing, var(--palette-ink));
+}

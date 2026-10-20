@@ -1,0 +1,4 @@
+.local {
+  --palette-local: #abcdef;
+  color: var(--palette-ink);
+}

@@ -1,0 +1,5 @@
+.example {
+  color: var(--palette-ink);
+  background-color: var(--palette-surface);
+  border-color: var(--palette-ink);
+}

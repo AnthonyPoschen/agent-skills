@@ -1,0 +1,4 @@
+.example {
+  color: var(--palette-ink);
+  outline: 1px solid #abc;
+}

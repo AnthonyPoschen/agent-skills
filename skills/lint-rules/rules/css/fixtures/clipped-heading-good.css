@@ -1,0 +1,6 @@
+h1 {
+  min-height: 24px;
+  line-height: 1.2;
+  overflow: visible;
+  color: var(--palette-ink);
+}

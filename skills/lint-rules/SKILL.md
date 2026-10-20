@@ -56,9 +56,10 @@ message: >-
    Run them on rendered output (`kustomize build`), so placeholder image names
    are already replaced.
 5. CSS: copy [rules/css/](rules/css/) (or merge
-   [rules/css/create-config.cjs](rules/css/create-config.cjs)), set `themeFiles`
-   to your palette path, install `stylelint`, and run Stylelint on your
-   stylesheets as in [rules/css/README.md](rules/css/README.md).
+   [rules/css/create-config.cjs](rules/css/create-config.cjs)). Set `themeFile`,
+   `prefix`, and `deprecated` for your palette. Install `stylelint@16.23.1`
+   and `postcss-html`, and run Stylelint as in
+   [rules/css/README.md](rules/css/README.md).
 6. Wire each linter into CI so a failure blocks merge. On an existing codebase,
    gate only new code first (golangci-lint `new-from-rev`, semgrep
    `--baseline-commit`), then burn down the backlog.
