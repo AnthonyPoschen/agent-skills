@@ -1,0 +1,10 @@
+h1 {
+  height: 24px;
+  overflow: hidden;
+  color: var(--palette-ink);
+}
+
+h2 {
+  line-height: 1;
+  color: var(--palette-ink);
+}

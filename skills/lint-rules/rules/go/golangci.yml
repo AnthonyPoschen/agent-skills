@@ -11,6 +11,9 @@ linters:
     - bodyclose    # unclosed http response bodies leak connections
     - noctx        # http requests and exec without a context
     - contextcheck # functions that drop the caller's context
+    - sqlclosecheck # unclosed database/sql rows or statements leak connections
+    - rowserrcheck # ignored rows.Err hides a truncated result
+    - forbidigo # ban call patterns; see settings for the reason on each
   settings:
     errorlint:
       # errorf-wrap-with-w (semgrep) owns %w checks and allows "%w: %v" with a
@@ -24,8 +27,28 @@ linters:
       # `_ = f()` is visible in review; bare unchecked calls are not.
       check-blank: false
       check-type-assertions: true
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: ^os\.Getenv$
+          msg: "Read env only in config/ so settings have one source and are validated at start."
+        - pattern: ^http\.(DefaultClient|Get|Post|PostForm|Head)$
+          msg: "Default client has no timeout; leaks goroutines under load. Use an injected *http.Client."
+        - pattern: ^fmt\.Print(f|ln)?$
+          msg: "Use the structured logger so output is levelled and machine-readable."
+        - pattern: ^log\.Fatal(f|ln)?$
+          msg: "Fatal skips defers and cleanup; return errors to main."
   exclusions:
     rules:
       # Tests build requests without a context on purpose (908 hits in tests).
       - path: _test\.go
         linters: [noctx]
+      - path: (^|/)config/
+        text: os\.Getenv
+        linters: [forbidigo]
+      - path: (^|/)(main\.go|cmd/)
+        text: (fmt\.Print|log\.Fatal)
+        linters: [forbidigo]
+      - path: _test\.go$
+        text: fmt\.Print
+        linters: [forbidigo]

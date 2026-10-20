@@ -1,0 +1,6 @@
+.example {
+  color: var(--palette-ink);
+  margin: 0;
+  font-size: var(--palette-font-body);
+  z-index: var(--palette-z-overlay);
+}

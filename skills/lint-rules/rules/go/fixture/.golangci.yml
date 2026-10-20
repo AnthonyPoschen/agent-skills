@@ -1,0 +1,30 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - sqlclosecheck
+    - rowserrcheck
+    - forbidigo
+  settings:
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: ^os\.Getenv$
+          msg: "Read env only in config/ so settings have one source and are validated at start."
+        - pattern: ^http\.(DefaultClient|Get|Post|PostForm|Head)$
+          msg: "Default client has no timeout; leaks goroutines under load. Use an injected *http.Client."
+        - pattern: ^fmt\.Print(f|ln)?$
+          msg: "Use the structured logger so output is levelled and machine-readable."
+        - pattern: ^log\.Fatal(f|ln)?$
+          msg: "Fatal skips defers and cleanup; return errors to main."
+  exclusions:
+    rules:
+      - path: (^|/)config/
+        text: os\.Getenv
+        linters: [forbidigo]
+      - path: (^|/)(main\.go|cmd/)
+        text: (fmt\.Print|log\.Fatal)
+        linters: [forbidigo]
+      - path: _test\.go$
+        text: fmt\.Print
+        linters: [forbidigo]
