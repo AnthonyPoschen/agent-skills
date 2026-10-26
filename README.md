@@ -20,7 +20,6 @@ npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
-npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
@@ -46,7 +45,6 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `lint-rules` | Shared custom lint rules for Go, Rust, Kubernetes and CSS, each with a failing example, plus how to write and contribute new ones. |
 | `makefile` | Makefile target patterns with required variable checks and useful input descriptions before commands run. |
-| `omarchy-development` | Isolated Omarchy source development and VM testing with disposable, Virtual Machine Manager-managed KVM overlays. |
 | `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `writing` | Prose for people: ASD-STE100 Simplified Technical English for every reply, plus plain English guidance for docs, READMEs, RFCs, PR descriptions, and release notes. |
@@ -78,7 +76,6 @@ npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill makefile
-npx skills add anthonyposchen/agent-skills --skill omarchy-development
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
