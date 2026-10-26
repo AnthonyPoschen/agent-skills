@@ -93,18 +93,108 @@ Install globally for a specific agent:
 npx skills add anthonyposchen/agent-skills --skill coding --global --agent codex
 ```
 
-## Cursor plugin
+## Cursor plugin (`apstack`)
 
-This repository is also a Cursor plugin named `agent-skills`. The plugin's
-skills are the existing `skills/` folder, so `npx skills add` is unchanged.
+This repository is a Cursor plugin named `apstack`. Skills stay in `skills/`.
+`.cursor-plugin/plugin.json` sets `"skills": "./skills/"`. There is no second
+copy. `npx skills add` is unchanged.
 
-1. In Cursor, open **Customize** in the sidebar.
-2. Import this repository with **From GitHub Repository**:
+Import this repository as a marketplace (it has
+`.cursor-plugin/marketplace.json`). The plugin entry `source` is `.`, which
+resolves to `.cursor-plugin/plugin.json` at the repository root.
+
+### Enable on your account
+
+1. Open **Customize** in the Cursor sidebar.
+2. Choose **From GitHub Repository** and import
    `https://github.com/AnthonyPoschen/agent-skills`.
-3. Find the `agent-skills` plugin, select **Install**, and choose user scope.
+3. Find the `apstack` plugin, select **Install**, and choose **user** scope.
 
-Installed plugin skills are available to Cloud Agents. To check, start a
-Cloud Agent and ask it to list its skills.
+User scope is the account install. It syncs to the Cursor CLI. There is no
+non-interactive `plugin install` command. In the CLI, `/plugin` → Marketplace
+can install the same plugin and also offers user scope.
+
+### Cloud Agents
+
+A Cloud Agent installs marketplace plugins from your account when the run
+starts, and it keeps those versions for the whole run. GitHub-imported
+marketplaces are the ones Cloud Agents load. After you install or update
+`apstack`, start a **new** Cloud Agent and ask it to list its skills.
+
+Team distribution is separate. On Teams or Enterprise, an admin imports the
+same GitHub URL under **Dashboard → Plugins & MCPs → Add Marketplace**, then
+sets `apstack` to Default Off, Default On, or Required. Enterprise admins are
+the only people who can add team marketplaces.
+
+Listing `apstack` on the public Cursor Marketplace
+(`cursor.com/marketplace/publish`) is a manual review. This repository is
+installable from GitHub without that listing.
+
+`disable-model-invocation: true` stays in each skill's `SKILL.md`
+(`security-audit`, `grill-with-docs`). Cursor honours it: the model does not
+auto-load those skills, and `/security-audit` or `/grill-with-docs` still
+works. The plugin manifest includes every skill. There is no exclude list.
+
+## GitHub Copilot plugin (`apstack`)
+
+The same `skills/` tree is the Copilot plugin. Two manifests point at it:
+
+- Root `plugin.json` is an Agent Plugins 1.0 manifest
+  (`$schema`: `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`).
+  That format does not allow a `skills` path. Skills load only from `skills/`
+  next to `plugin.json`.
+- `.github/plugin/marketplace.json` lists the plugin with `"source": "."` and
+  `"skills": "./skills/"` for legacy Copilot clients that read the marketplace
+  path.
+
+### Copilot CLI
+
+```bash
+copilot plugin marketplace add AnthonyPoschen/agent-skills
+copilot plugin install apstack@apstack
+```
+
+`apstack@apstack` is the plugin name and the marketplace name from
+`marketplace.json`. Direct install of the repository root also works:
+
+```bash
+copilot plugin install AnthonyPoschen/agent-skills
+```
+
+### Copilot cloud agent
+
+In the repository that should run the plugin, set
+`.github/copilot/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": ["AnthonyPoschen/agent-skills"],
+  "enabledPlugins": {
+    "apstack@apstack": true
+  }
+}
+```
+
+Do not commit that file in this skills repository unless you want this repo's
+own cloud agent to load `apstack`.
+
+### Copilot app and VS Code
+
+In the Copilot app, open **Customize → Plugins**, add the marketplace
+`AnthonyPoschen/agent-skills`, and install `apstack`. In VS Code, use the
+agent-plugin marketplace commands and install the same repository.
+
+### Manual-only skills on Copilot
+
+| Surface | `disable-model-invocation: true` |
+| --- | --- |
+| VS Code Copilot | Supported. The skill stays a slash command and is not auto-loaded. |
+| Copilot SDK | Supported. Map the frontmatter field through; do not strip it. |
+| Copilot CLI | Not reliable. Current CLI builds omit flagged skills from the skill tool, so an explicit invoke can return "Skill not found" even though `copilot skill list` shows the skill ([github/copilot-cli#4438](https://github.com/github/copilot-cli/issues/4438)). The flag stays in `SKILL.md` so Cursor and VS Code keep the skills manual-only. |
+
+Publishing `apstack` into `github/awesome-copilot` or another org marketplace
+is manual. Registering this repository with
+`copilot plugin marketplace add` is enough for CLI and cloud-agent installs.
 
 ## Shared MCP config
 
@@ -259,7 +349,7 @@ Invoke them by name (for example `/security-audit`).
 
 | Harness | Honours manual-only? | How |
 | --- | --- | --- |
-| Cursor (Agent Skills / plugin) | Yes | Top-level `disable-model-invocation: true`. Still available via `/security-audit`. The Cursor plugin manifest points at all of `skills/`; there is no separate exclude list. |
+| Cursor (Agent Skills / plugin) | Yes | Top-level `disable-model-invocation: true`. Still available via `/security-audit` and `/grill-with-docs`. The `apstack` manifest points at all of `skills/`; there is no separate exclude list. |
 | Claude Code | Yes | Same frontmatter field. Description is kept out of the auto-listing; `/security-audit` still works. |
 | OpenCode | Yes (via metadata) | OpenCode ignores `disable-model-invocation`. This skill sets `metadata.opencode/autoinvoke: "false"` and `metadata.opencode/slash: "true"` so it stays out of `<available_skills>` but remains a `/security-audit` slash command. |
 | Grok Build / this repo's link and sync scripts | No equivalent flag | `scripts/link-agent-skills.sh`, `scripts/sync-skills.sh`, and `scripts/validate-skills.py` still link, sync, and validate every skill folder, including manual-only ones. Grok has no documented `disable-model-invocation` or `opencode/autoinvoke` equivalent, so the skill may still appear in a Grok skill listing after `npm run link-skills`. Prefer explicit `/security-audit` (or an equivalent ask) rather than relying on auto-routing. |

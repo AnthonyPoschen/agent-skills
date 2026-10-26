@@ -1,0 +1,31 @@
+{
+  "name": "apstack",
+  "owner": {
+    "name": "Anthony Poschen"
+  },
+  "metadata": {
+    "description": "Marketplace for the apstack plugin (Anthony Poschen's agent skills).",
+    "version": "2026.10.15"
+  },
+  "plugins": [
+    {
+      "name": "apstack",
+      "description": "Anthony Poschen's reusable agent skills.",
+      "version": "2026.10.15",
+      "source": ".",
+      "skills": "./skills/",
+      "author": {
+        "name": "Anthony Poschen"
+      },
+      "homepage": "https://github.com/AnthonyPoschen/agent-skills",
+      "repository": "https://github.com/AnthonyPoschen/agent-skills",
+      "license": "MIT",
+      "keywords": [
+        "apstack",
+        "skills",
+        "coding",
+        "agents"
+      ]
+    }
+  ]
+}
