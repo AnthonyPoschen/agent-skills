@@ -1,12 +1,14 @@
 {
-  "name": "anthonyposchen-agent-skills",
-  "owner": { "name": "Anthony Poschen" },
+  "name": "apstack",
+  "owner": {
+    "name": "Anthony Poschen"
+  },
   "metadata": {
-    "description": "Marketplace for Anthony Poschen's agent-skills plugin."
+    "description": "Marketplace for the apstack plugin (Anthony Poschen's agent skills)."
   },
   "plugins": [
     {
-      "name": "agent-skills",
+      "name": "apstack",
       "source": ".",
       "description": "Anthony Poschen's reusable agent skills."
     }

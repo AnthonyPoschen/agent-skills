@@ -1,16 +1,20 @@
 {
-  "name": "agent-skills",
-  "description": "Anthony Poschen's reusable agent skills: coding, frontend design, context management, git, release, writing and more.",
+  "name": "apstack",
+  "displayName": "apstack",
+  "description": "Anthony Poschen's reusable agent skills: coding, frontend design, context management, git, release, writing, and more.",
   "version": "2026.10.15",
   "author": {
     "name": "Anthony Poschen"
   },
+  "homepage": "https://github.com/AnthonyPoschen/agent-skills",
   "repository": "https://github.com/AnthonyPoschen/agent-skills",
   "license": "MIT",
   "keywords": [
+    "apstack",
     "skills",
     "coding",
     "agents"
   ],
+  "category": "developer-tools",
   "skills": "./skills/"
 }

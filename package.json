@@ -8,6 +8,6 @@
     "install-cua-mcp": "sh scripts/install-cua-mcp.sh",
     "install-git-hooks": "sh scripts/install-git-hooks.sh",
     "link-skills": "sh scripts/link-agent-skills.sh",
-    "validate": "python3 scripts/validate-skills.py"
+    "validate": "python3 scripts/validate-skills.py && python3 scripts/validate-plugin-manifests.py"
   }
 }
