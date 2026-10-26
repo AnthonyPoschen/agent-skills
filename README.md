@@ -17,6 +17,7 @@ npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
@@ -39,8 +40,9 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux` | FluxCD GitOps: GitHub Actions to GHCR image automation (tags, policies, rollout diagnostics) and Kustomize base/overlay repo layouts. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
+| `security-audit` | **Manual only** (`/security-audit`). Vendored Cloudflare six-phase security audit; agents must not auto-load it. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
-| `lint-rules` | Shared custom lint rules for Go, Rust and Kubernetes, each with a failing example, plus how to write and contribute new ones. |
+| `lint-rules` | Shared custom lint rules for Go, Rust, Kubernetes and CSS, each with a failing example, plus how to write and contribute new ones. |
 | `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `writing` | Prose for people: ASD-STE100 Simplified Technical English for every reply, plus plain English guidance for docs, READMEs, RFCs, PR descriptions, and release notes. |
@@ -69,6 +71,7 @@ npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
@@ -155,6 +158,10 @@ skills/
     references/
   grill-with-docs/
     SKILL.md
+  security-audit/
+    SKILL.md
+    LICENSE-UPSTREAM
+    *.md reference files, validators, report-schema.json
   in-your-own-words/
     SKILL.md
   maintain-verification-skill/
@@ -240,6 +247,20 @@ skill settles once both sides match.
 **Routine (add after merge).** Run the script every 15 minutes on the box as a
 Grok Bot routine. Surface `FLAG` lines to Anthony.
 
+## Manual-only skills
+
+Some skills set `disable-model-invocation: true` so agents do not auto-load them.
+Invoke them by name (for example `/security-audit`).
+
+| Harness | Honours manual-only? | How |
+| --- | --- | --- |
+| Cursor (Agent Skills / plugin) | Yes | Top-level `disable-model-invocation: true`. Still available via `/security-audit`. The Cursor plugin manifest points at all of `skills/`; there is no separate exclude list. |
+| Claude Code | Yes | Same frontmatter field. Description is kept out of the auto-listing; `/security-audit` still works. |
+| OpenCode | Yes (via metadata) | OpenCode ignores `disable-model-invocation`. This skill sets `metadata.opencode/autoinvoke: "false"` and `metadata.opencode/slash: "true"` so it stays out of `<available_skills>` but remains a `/security-audit` slash command. |
+| Grok Build / this repo's link and sync scripts | No equivalent flag | `scripts/link-agent-skills.sh`, `scripts/sync-skills.sh`, and `scripts/validate-skills.py` still link, sync, and validate every skill folder, including manual-only ones. Grok has no documented `disable-model-invocation` or `opencode/autoinvoke` equivalent, so the skill may still appear in a Grok skill listing after `npm run link-skills`. Prefer explicit `/security-audit` (or an equivalent ask) rather than relying on auto-routing. |
+
+`security-audit` is vendored from [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) at commit `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` (MIT). See `skills/security-audit/LICENSE-UPSTREAM`.
+
 ## License
 
-MIT, unless a skill directory includes its own `LICENSE.txt`.
+MIT, unless a skill directory includes its own `LICENSE.txt` or `LICENSE-UPSTREAM`.

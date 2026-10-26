@@ -1,0 +1,4 @@
+.panel {
+  color: var(--palette-ink);
+  transition: height 200ms ease;
+}

@@ -1,0 +1,12 @@
+{
+  "name": "lint-rules-css",
+  "private": true,
+  "scripts": {
+    "test": "node --disable-warning=stylelint:002 --test test.js"
+  },
+  "devDependencies": {
+    "postcss-html": "1.8.0",
+    "stylelint": "16.23.1",
+    "stylelint-declaration-strict-value": "1.10.11"
+  }
+}

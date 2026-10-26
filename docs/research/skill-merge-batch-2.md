@@ -3,15 +3,15 @@
 ## Why
 
 Same goal as [batch 1](skill-merge-batch-1.md): fewer skill listings per turn
-without losing triggering. Anthony asked to combine the single-file build
-skills and to drop Omarchy work from this repo.
+without losing triggering. This change combines the single-file build skills.
+Removing `omarchy-development` is handled separately in
+[#21](https://github.com/AnthonyPoschen/agent-skills/pull/21).
 
 ## What Changed
 
 | Change | Reason |
 | --- | --- |
 | `build-files` = `dockerfile` + `makefile` | Both are narrow rules for one kind of project file and are often edited together. |
-| `omarchy-development` deleted | No longer wanted in the shared skill set. |
 
 The parent description keeps "Dockerfile", "Makefile", "make target", and each
 old skill name, so prompts that matched the old skills still match.
@@ -32,11 +32,12 @@ Same method as batch 1: realistic prompts routed against the full listing on
 | N1 | my pods aren't rolling after I push a new image to ghcr | flux | flux (no build-files) |
 | N2 | commit these changes | git | git (no build-files) |
 | N3 | add a dark mode toggle to the settings page | frontend-design + coding | unchanged |
-| N4 | fix the Omarchy waybar QML in my checkout | omarchy-development | coding only (skill removed on purpose) |
 
-Result: every Dockerfile and Makefile prompt routes to `build-files` at least
-as reliably as before. N4 loses its skill by design.
+The table above is a single manual routing pass. `build-files` still needs a
+triggering eval before this merge is treated as verified.
+
+Result: every Dockerfile and Makefile prompt in that pass routed to
+`build-files`.
 
 Limit: one routing pass by an agent, not by each harness; no model API or
-agent CLI was available on the box to automate repeated runs. Re-run in a real
-harness if `build-files` seems to miss.
+agent CLI was available on the box to automate repeated runs.

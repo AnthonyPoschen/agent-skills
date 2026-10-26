@@ -1,0 +1,16 @@
+.example {
+  color: var(--palette-ink);
+  color: var(--palette-surface) !important;
+  margin-top: 1px;
+  margin: 0;
+}
+
+.example {
+  color: var(--palette-ink);
+}
+
+.example {
+  colour: var(--palette-ink);
+  font-size: 14px;
+  z-index: 3;
+}

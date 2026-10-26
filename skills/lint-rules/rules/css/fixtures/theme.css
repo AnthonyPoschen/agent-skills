@@ -1,0 +1,8 @@
+:root {
+  --palette-ink: #111111;
+  --palette-surface: #222222;
+  --palette-placeholder: #888888;
+  --palette-accent: #ff00aa;
+  --palette-font-body: 1rem;
+  --palette-z-overlay: 10;
+}

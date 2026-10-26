@@ -1,0 +1,4 @@
+.example {
+  color: var(--palette-ink);
+  outline-color: transparent;
+}

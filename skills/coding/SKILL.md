@@ -93,9 +93,13 @@ lint rule. To audit existing comments, follow
 
 ## Custom Lint Rules
 
-Stock linters are the baseline. When a bad pattern recurs, especially in
-review, turn it into a custom rule with a failing example and a catalog entry.
-Use the `lint-rules` skill for the shared rules and how to write new ones.
+After fixing a bug or receiving a correction, ask whether a lint rule could
+have caught it. If yes, follow the `lint-rules` skill to add it (or set up
+lint if the repo has none). Stock linters are the baseline; recurring bad
+patterns become custom rules with a failing example and a catalog entry.
+
+End-of-task summary must include one of:
+`lint rule: added <name>` or `lint rule: skipped: <why>`.
 
 ## Example Lookup
 
