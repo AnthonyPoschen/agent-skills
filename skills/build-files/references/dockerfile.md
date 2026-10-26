@@ -1,12 +1,3 @@
----
-name: dockerfile
-description: >
-  Create, review, or update Dockerfiles and container build workflows. Use for
-  containerizing projects, designing multi-stage builds, choosing scratch vs
-  Alpine final images, enforcing non-root UID/GID ownership, running build/test
-  steps in Docker, and keeping GitHub Actions workflows thin by making the
-  Dockerfile the local CI source of truth.
----
 
 # Dockerfile
 
@@ -76,6 +67,6 @@ single-stage file.
 
 ## Pattern Reference
 
-Read [references/patterns.md](references/patterns.md) when writing concrete
+Read [dockerfile-patterns.md](dockerfile-patterns.md) when writing concrete
 Dockerfile examples or adapting this policy to Go, Rust, Python, Node, or a
 plain Alpine runtime.
