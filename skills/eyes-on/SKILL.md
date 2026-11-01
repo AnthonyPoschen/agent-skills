@@ -52,7 +52,7 @@ not prove termination; user cancellation cannot substitute for normal exit.
 ```sh
 node ~/.agents/skills/eyes-on/scripts/see.mjs \
   --url 'http://127.0.0.1:PORT/path' \
-  --out /tmp/eyes-on
+  --out "$(mktemp -d)"
 ```
 
 The script needs Playwright (`EYES_ON_PLAYWRIGHT` is the package root when it

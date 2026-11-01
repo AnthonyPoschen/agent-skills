@@ -136,4 +136,4 @@ footers.
 7. Commit with a multi-line message so the trailer is preserved exactly.
 8. Repeat staging, validation, and commit for each remaining logical group.
 9. Show the resulting commit hashes and any remaining uncommitted changes.
-10. If the user asked to push, `git push` the current branch with an explicit refspec. If they asked for a PR, `gh pr create` and print the URL. Do not push until they said push.
+10. If the user asked to push, `git push` the current branch with an explicit refspec. If they asked for a PR, write the body to `body="$(pr_body_file)"` then `gh pr create --body-file "$body"` (source `scripts/agent-tmp.sh`, or use `mktemp`; never a fixed `/tmp/<name>` such as prbody.md, other agents share this box) and print the URL. Do not push until they said push.
