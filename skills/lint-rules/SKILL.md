@@ -62,7 +62,8 @@ message: >-
    [rules/css/README.md](rules/css/README.md).
 6. Wire each linter into CI so a failure blocks merge. On an existing codebase,
    gate only new code first (golangci-lint `new-from-rev`, semgrep
-   `--baseline-commit`), then burn down the backlog.
+   `--baseline-commit`), then burn down the backlog. A baseline or allowlist
+   file may only shrink: see [Baselines Only Shrink](#baselines-only-shrink).
 7. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
    rule directory) so every rule's failing example still fails.
 
@@ -91,6 +92,33 @@ message: >-
 8. When you later hit a rule, read its message and fix the code. Propose
    loosening the rule only if it is wrong, with the hits that show it.
 9. When the same rule recurs across repos, promote it here (see below).
+
+## Baselines Only Shrink
+
+A lint baseline or allowlist (suppression file, ignored-path list, generated
+finding snapshot) may only shrink. Adding an entry hides a new violation
+behind a file that CI already trusts. Fix the code. Do not grow the file to
+make the build green.
+
+CI compares entry counts with the merge base using
+[scripts/baseline-only-shrinks.sh](scripts/baseline-only-shrinks.sh). Growth
+passes only when both are true: the pull request has the exact label
+`baseline-growth-approved`, and the line directly before each added entry is
+`# owner: <who> — <why>`. The dash is an em dash. `<who>` and `<why>` are
+non-empty. A label whose name merely contains `owner` does not approve
+growth. One owner comment covers only the next entry. A blank line or a
+hyphen does not count. The failure text says why: growing the baseline hides
+new violations, so fix the code instead.
+
+```bash
+PR_LABELS=baseline-growth-approved \
+  skills/lint-rules/scripts/baseline-only-shrinks.sh \
+  --base "$(git merge-base HEAD origin/master)" \
+  path/to/lint-baseline.txt
+```
+
+Pass `--labels` (or `PR_LABELS`) as a comma-separated list from the pull
+request. Shrinking, reordering, or leaving the count unchanged always passes.
 
 ## Global Versus Repo-Local
 
