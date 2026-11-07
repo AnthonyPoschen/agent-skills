@@ -101,21 +101,24 @@ behind a file that CI already trusts. Fix the code. Do not grow the file to
 make the build green.
 
 CI compares entry counts with the merge base using
-[scripts/baseline-only-shrinks.sh](scripts/baseline-only-shrinks.sh). The run
-fails when a count goes up and no owner is recorded. An owner is a PR label
-whose name contains `owner` (for example `baseline-owner`), or an `owner:`
-annotation on every added entry. The failure text says why: growing the
-baseline hides new violations, so fix the code instead.
+[scripts/baseline-only-shrinks.sh](scripts/baseline-only-shrinks.sh). Growth
+passes only when both are true: the pull request has the exact label
+`baseline-growth-approved`, and the line directly before each added entry is
+`# owner: <who> — <why>`. The dash is an em dash. `<who>` and `<why>` are
+non-empty. A label whose name merely contains `owner` does not approve
+growth. One owner comment covers only the next entry. A blank line or a
+hyphen does not count. The failure text says why: growing the baseline hides
+new violations, so fix the code instead.
 
 ```bash
-PR_LABELS=baseline-owner \
+PR_LABELS=baseline-growth-approved \
   skills/lint-rules/scripts/baseline-only-shrinks.sh \
   --base "$(git merge-base HEAD origin/master)" \
   path/to/lint-baseline.txt
 ```
 
 Pass `--labels` (or `PR_LABELS`) as a comma-separated list from the pull
-request. Shrinking or leaving the count unchanged always passes.
+request. Shrinking, reordering, or leaving the count unchanged always passes.
 
 ## Global Versus Repo-Local
 

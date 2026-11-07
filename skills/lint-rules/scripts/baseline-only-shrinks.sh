@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Lint baselines and allowlists may only shrink.
 # Compare entry counts in each FILE to the same path at the merge base.
-# A higher count fails unless an owner is recorded: a PR label whose name
-# contains "owner", or an `owner:` annotation on every added entry.
+# A higher count fails unless both are true: the pull request has the exact
+# label baseline-growth-approved, and the line directly before each added
+# entry is `# owner: <who> — <why>` (em dash; who and why non-empty).
 #
 # Usage:
 #   baseline-only-shrinks.sh [--base REF] [--labels "a,b"] FILE [FILE...]
@@ -65,12 +66,12 @@ if [[ -z "$base_ref" ]]; then
   fi
 fi
 
-has_owner_label=0
+has_growth_label=0
 IFS=',' read -r -a label_list <<<"$labels"
 for label in "${label_list[@]}"; do
-  trimmed=$(printf '%s' "$label" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-  if [[ -n "$trimmed" && "$trimmed" == *owner* ]]; then
-    has_owner_label=1
+  trimmed=$(printf '%s' "$label" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+  if [[ "$trimmed" == "baseline-growth-approved" ]]; then
+    has_growth_label=1
   fi
 done
 
@@ -82,6 +83,38 @@ count_entries() {
     { n++ }
     END { print n + 0 }
   ' "$1"
+}
+
+# Print "added unowned" for entries in the head file whose text is not
+# matched by an entry at the base. An entry is owned only when the line
+# immediately above it is `# owner: <who> — <why>`.
+added_unowned() {
+  awk '
+    function is_entry(line) {
+      return line !~ /^[[:space:]]*$/ && line !~ /^[[:space:]]*#/ && line !~ /^[[:space:]]*\/\//
+    }
+    function is_owner(line) {
+      sub(/\r$/, "", line)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+      return line ~ /^#[[:space:]]*owner:[[:space:]]+[^[:space:]].*[[:space:]]—[[:space:]]+[^[:space:]].*$/
+    }
+    NR == FNR {
+      if (is_entry($0)) base[$0]++
+      next
+    }
+    {
+      if (is_entry($0)) {
+        if (base[$0] > 0) {
+          base[$0]--
+        } else {
+          added++
+          if (!is_owner(prev)) unowned++
+        }
+      }
+      prev = $0
+    }
+    END { printf "%d %d\n", added + 0, unowned + 0 }
+  ' "$1" "$2"
 }
 
 failed=0
@@ -98,43 +131,29 @@ for file in "${files[@]}"; do
     : >"$base_file"
   fi
   base_count=$(count_entries "$base_file")
-  rm -f "$base_file"
 
   if [[ "$head_count" -le "$base_count" ]]; then
     echo "$file: $base_count -> $head_count (ok)"
+    rm -f "$base_file"
     continue
   fi
 
-  if [[ "$has_owner_label" -eq 1 ]]; then
-    echo "$file: $base_count -> $head_count (grew; owner label present)"
-    continue
-  fi
+  read -r added unowned < <(added_unowned "$base_file" "$file")
+  rm -f "$base_file"
 
-  unowned=0
-  added=0
-  while IFS= read -r line; do
-    body=${line#+}
-    if printf '%s\n' "$body" | awk '
-      /^[[:space:]]*$/ { exit 1 }
-      /^[[:space:]]*#/ { exit 1 }
-      /^[[:space:]]*\/\// { exit 1 }
-      { exit 0 }
-    '; then
-      added=$((added + 1))
-      if ! printf '%s\n' "$body" | grep -q 'owner:'; then
-        unowned=$((unowned + 1))
-      fi
-    fi
-  done < <(git diff --no-color -U0 "$base_ref" -- "$file" | grep -E '^\+' | grep -vE '^\+\+\+' || true)
-
-  if [[ "$added" -gt 0 && "$unowned" -eq 0 ]]; then
-    echo "$file: $base_count -> $head_count (grew; owner: on each added entry)"
+  if [[ "$has_growth_label" -eq 1 && "$added" -gt 0 && "$unowned" -eq 0 ]]; then
+    echo "$file: $base_count -> $head_count (grew; baseline-growth-approved and owner lines)"
     continue
   fi
 
   echo "$file: $base_count -> $head_count" >&2
   echo "Growing the baseline hides new violations. Fix the code instead." >&2
-  echo "A lint baseline or allowlist may only shrink unless an owner label is present (a PR label whose name contains \"owner\", or an owner: annotation on every added entry)." >&2
+  if [[ "$has_growth_label" -ne 1 ]]; then
+    echo "Missing the exact PR label baseline-growth-approved." >&2
+  fi
+  if [[ "$unowned" -gt 0 || "$added" -eq 0 ]]; then
+    echo "Each added entry needs a \`# owner: <who> — <why>\` line directly before it (em dash; who and why non-empty)." >&2
+  fi
   failed=1
 done
 
