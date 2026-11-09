@@ -14,6 +14,7 @@ npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill handoff
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
@@ -37,7 +38,8 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `domain-modeling` | Sharpen domain terminology and ADRs; optionally refresh short living alignment docs when the repo declares them. |
 | `frontend-design` | Product-fit frontend design and implementation workflow for polished, usable web interfaces. |
 | `git` | Commits, worktrees, and releases: commit boundaries and messages, a mirrored worktree layout, and release notes, versions, and tags (CalVer when no convention exists). |
-| `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. |
+| `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. Capture one verified lesson, or refresh existing lessons for staleness. |
+| `handoff` | Brief a fresh agent or cloud agent with a short pointer-first handoff, or resume only the named handoff. |
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux` | FluxCD GitOps: GitHub Actions to GHCR image automation (tags, policies, rollout diagnostics) and Kustomize base/overlay repo layouts. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
@@ -70,6 +72,7 @@ npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill handoff
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
@@ -241,6 +244,8 @@ skills/
     scripts/
   encode-lessons/
     SKILL.md
+  handoff/
+    SKILL.md
   experience-first/
     SKILL.md
   eyes-on/
@@ -359,6 +364,8 @@ Invoke them by name (for example `/security-audit`).
 `security-audit` is vendored from [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) at commit `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` (MIT). See `skills/security-audit/LICENSE-UPSTREAM`.
 
 `renderdoc-gpu-debug` is adapted from [rudybear/renderdoc-skill](https://github.com/rudybear/renderdoc-skill) at commit `7b66b7bcbee20eab66c3971f49dba2edd3cc3300` (MIT, Copyright (c) 2025 Alexey Medvedev). `references/commands-quick-ref.md` is verbatim. `SKILL.md` and `references/debugging-recipes.md` are edited: manual-only invocation, capture and replay only on zanven-pc (RTX 4070), `rdc-cli==0.7.0`, no MCP server, and Windows-only paths and module names removed or marked. The edit list is in `skills/renderdoc-gpu-debug/LICENSE-UPSTREAM`.
+
+`handoff` is adapted from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin) `skills/ce-handoff` at commit `8e5d1c87613f484a5bdfeacedf86a7aaaccfa264` (MIT).
 
 ## License
 
