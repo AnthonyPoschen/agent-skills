@@ -1,0 +1,32 @@
+Vendored from https://github.com/rudybear/renderdoc-skill
+Pinned commit: 7b66b7bcbee20eab66c3971f49dba2edd3cc3300
+Path in upstream: .claude/skills/renderdoc-gpu-debug/
+Upstream licence: MIT (Copyright (c) 2025 Alexey Medvedev)
+
+The skill files at that commit are byte-identical to the later copy in
+https://github.com/Ugbot/ai-grind at plugin/skills/renderdoc-gpu-debug/
+(commit 4d6c3643ae5e1c591fcebbeda9fc931ca21bf818). This pin is the original
+skill commit. Upstream master de33576fa0a4ee739b4b0434d10d710880d604c6 only
+adds the MCP server, which is not included.
+
+MIT License
+
+Copyright (c) 2025 Alexey Medvedev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
