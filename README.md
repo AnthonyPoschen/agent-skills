@@ -11,6 +11,7 @@ npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill build-files
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
+npx skills add anthonyposchen/agent-skills --skill docx
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
@@ -26,6 +27,8 @@ npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
 npx skills add anthonyposchen/agent-skills --skill scripted-verification
+npx skills add anthonyposchen/agent-skills --skill pdf
+npx skills add anthonyposchen/agent-skills --skill xlsx
 ```
 
 ## Available Skills
@@ -36,6 +39,7 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `coding` | Coding, refactor, review, debugging, and design-task guardrails for clean, idiomatic, maintainable code. Includes comment audits (no-comments) and type-system discipline. |
 | `context-management` | Keep large investigations and multi-phase work focused with targeted reads, compact handoffs, and bounded delegation. |
 | `build-files` | Build files: secure multi-stage Dockerfiles (scratch-first, non-root, Docker as CI source of truth) and Makefile targets that validate required variables. |
+| `docx` | Create or edit Word files (`.docx`, `.dotx`). Vendored Anthropic skill, Apache-2.0. |
 | `domain-modeling` | Sharpen domain terminology and ADRs; optionally refresh short living alignment docs when the repo declares them. |
 | `frontend-design` | Product-fit frontend design and implementation workflow for polished, usable web interfaces. |
 | `git` | Commits, worktrees, and releases: commit boundaries and messages, a mirrored worktree layout, and release notes, versions, and tags (CalVer when no convention exists). |
@@ -53,7 +57,9 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `skill-evaluation` | Evidence based comparison of agent skill triggering and task outcomes using realistic prompts and blinded review. |
 | `writing` | Prose for people: ASD-STE100 Simplified Technical English for every reply, plus plain English guidance for docs, READMEs, RFCs, PR descriptions, and release notes. |
 | `test-behavior-not-implementation` | Call code as its users do and assert the exact result they see; reject loose or call-only assertions. |
+| `pdf` | Merge, split, fill forms, and extract from PDFs. Vendored Anthropic skill, Apache-2.0. |
 | `test-audit` | Decide whether a proposed or existing test should exist, and prune tests that do not protect a real contract. Delete tautologies that only restate the code. |
+| `xlsx` | Spreadsheets and `.xlsx` formulas. Vendored Anthropic skill, Apache-2.0. |
 
 ## Install
 
@@ -71,6 +77,7 @@ npx skills add anthonyposchen/agent-skills --skill act-within-scope
 npx skills add anthonyposchen/agent-skills --skill context-management
 npx skills add anthonyposchen/agent-skills --skill build-files
 npx skills add anthonyposchen/agent-skills --skill domain-modeling
+npx skills add anthonyposchen/agent-skills --skill docx
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
@@ -85,6 +92,8 @@ npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
 npx skills add anthonyposchen/agent-skills --skill test-audit
+npx skills add anthonyposchen/agent-skills --skill pdf
+npx skills add anthonyposchen/agent-skills --skill xlsx
 ```
 
 Install all skills:
@@ -235,6 +244,11 @@ skills/
   build-files/
     SKILL.md
     references/
+  docx/
+    SKILL.md
+    LICENSE.txt
+    NOTICE
+    scripts/
   domain-modeling/
     SKILL.md
     GLOSSARY-FORMAT.md
@@ -273,6 +287,13 @@ skills/
     SKILL.md
   maintain-verification-skill/
     SKILL.md
+  pdf/
+    SKILL.md
+    LICENSE.txt
+    NOTICE
+    forms.md
+    reference.md
+    scripts/
   writing/
     SKILL.md
     references/
@@ -281,6 +302,11 @@ skills/
     scripts/
   skill-evaluation/
     SKILL.md
+  xlsx/
+    SKILL.md
+    LICENSE.txt
+    NOTICE
+    scripts/
   test-audit/
     SKILL.md
     references/
@@ -371,6 +397,8 @@ Invoke them by name (for example `/security-audit` or `/trailofbits-review`).
 `renderdoc-gpu-debug` is adapted from [rudybear/renderdoc-skill](https://github.com/rudybear/renderdoc-skill) at commit `7b66b7bcbee20eab66c3971f49dba2edd3cc3300` (MIT, Copyright (c) 2025 Alexey Medvedev). `references/commands-quick-ref.md` is verbatim. `SKILL.md` and `references/debugging-recipes.md` are edited: manual-only invocation, capture and replay only on zanven-pc (RTX 4070), `rdc-cli==0.7.0`, no MCP server, and Windows-only paths and module names removed or marked. The edit list is in `skills/renderdoc-gpu-debug/LICENSE-UPSTREAM`.
 
 `handoff` is adapted from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin) `skills/ce-handoff` at commit `8e5d1c87613f484a5bdfeacedf86a7aaaccfa264` (MIT).
+
+`docx`, `xlsx`, and `pdf` are vendored from [anthropics/skills](https://github.com/anthropics/skills) at commit `2c5958ecac7cee2b583967a2c4981d0f4a75c579` (Apache-2.0). Each skill keeps upstream `LICENSE.txt` and records the pin in `NOTICE`. `pptx` is not vendored; deck work stays with the managed office skill.
 
 ## Pinned Trail of Bits plugins
 

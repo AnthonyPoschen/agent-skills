@@ -1,0 +1,13 @@
+Vendored from https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2c4981d0f4a75c579/skills/pdf
+Pinned commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+Upstream licence: Apache-2.0 (see LICENSE.txt)
+
+The skill body matches that commit except two local edits: the frontmatter
+description is shortened for trigger cost, and the qpdf decrypt example in
+reference.md reads the password from `$PDF_PASSWORD` so a placeholder string
+is not committed. A Dependencies section was appended to SKILL.md.
+
+Runtime dependencies (this repository's CI does not install them):
+- Python: pypdf, pdfplumber, reportlab, pandas, pypdfium2, Pillow, pytesseract, pdf2image
+- CLI: qpdf, Poppler (pdftotext, pdfimages), Tesseract OCR
+- Node: pdf-lib (advanced form filling; see reference.md)
