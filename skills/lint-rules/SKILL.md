@@ -67,6 +67,19 @@ message: >-
 7. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
    rule directory) so every rule's failing example still fails.
 
+### File size
+
+Tracked files over a byte ceiling fail the build. Check them with
+[scripts/max-file-size.sh](scripts/max-file-size.sh). Files this large are
+re-read in pieces by agents dozens of times per run; split by responsibility.
+A baseline entry is `<path> <bytes>`: it may list a file over the ceiling only
+up to that recorded size, and it may only shrink
+([Baselines Only Shrink](#baselines-only-shrink)).
+
+```bash
+skills/lint-rules/scripts/max-file-size.sh --max-bytes 150000 --baseline path/to/max-file-size.txt .
+```
+
 ## Write A New Rule
 
 1. A problem happens: a bug, a gotcha, a review comment, or a "don't do X"
