@@ -20,6 +20,7 @@ npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill renderdoc-gpu-debug
 npx skills add anthonyposchen/agent-skills --skill security-audit
+npx skills add anthonyposchen/agent-skills --skill trailofbits-review
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
@@ -45,6 +46,7 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
 | `renderdoc-gpu-debug` | **Manual only** (`/renderdoc-gpu-debug`). Vulkan frame capture and shader, pipeline, and pixel-history debugging with RenderDoc and `rdc-cli`. Capture and replay run only on zanven-pc (RTX 4070). |
 | `security-audit` | **Manual only** (`/security-audit`). Vendored Cloudflare six-phase security audit; agents must not auto-load it. |
+| `trailofbits-review` | **Manual only** (`/trailofbits-review`). Pointer to pinned Trail of Bits `rust-review` and `differential-review`. The CC-BY-SA-4.0 text stays upstream. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `lint-rules` | Shared custom lint rules for Go, Rust, Kubernetes and CSS, each with a failing example, plus how to write and contribute new ones. |
 | `scripted-verification` | Turn repeated agent judgement into deterministic PASS, FAIL, or UNSURE scripts with exit codes and evidence on disk. |
@@ -78,6 +80,7 @@ npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
 npx skills add anthonyposchen/agent-skills --skill renderdoc-gpu-debug
 npx skills add anthonyposchen/agent-skills --skill security-audit
+npx skills add anthonyposchen/agent-skills --skill trailofbits-review
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
 npx skills add anthonyposchen/agent-skills --skill writing
@@ -134,8 +137,8 @@ Listing `apstack` on the public Cursor Marketplace
 installable from GitHub without that listing.
 
 `disable-model-invocation: true` stays in each skill's `SKILL.md`
-(`security-audit`, `grill-with-docs`). Cursor honours it: the model does not
-auto-load those skills, and `/security-audit` or `/grill-with-docs` still
+(`security-audit`, `grill-with-docs`, `trailofbits-review`). Cursor honours it: the model does not
+auto-load those skills, and `/security-audit`, `/grill-with-docs`, or `/trailofbits-review` still
 works. The plugin manifest includes every skill. There is no exclude list.
 
 ## GitHub Copilot plugin (`apstack`)
@@ -264,6 +267,8 @@ skills/
     SKILL.md
     LICENSE-UPSTREAM
     *.md reference files, validators, report-schema.json
+  trailofbits-review/
+    SKILL.md
   in-your-own-words/
     SKILL.md
   maintain-verification-skill/
@@ -352,7 +357,7 @@ Grok Bot routine. Surface `FLAG` lines to Anthony.
 ## Manual-only skills
 
 Some skills set `disable-model-invocation: true` so agents do not auto-load them.
-Invoke them by name (for example `/security-audit`).
+Invoke them by name (for example `/security-audit` or `/trailofbits-review`).
 
 | Harness | Honours manual-only? | How |
 | --- | --- | --- |
@@ -367,6 +372,87 @@ Invoke them by name (for example `/security-audit`).
 
 `handoff` is adapted from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin) `skills/ce-handoff` at commit `8e5d1c87613f484a5bdfeacedf86a7aaaccfa264` (MIT).
 
+## Pinned Trail of Bits plugins
+
+`rust-review` and `differential-review` are approved for the fleet. Their
+upstream licence is CC-BY-SA-4.0, so this MIT repository does not vendor them.
+`security-audit` is copied only because that upstream is MIT. These two are
+pinned and linked.
+
+The pin record is `third-party/pins.json`:
+
+| Plugin | Path | Commit | Licence |
+| --- | --- | --- | --- |
+| `rust-review` | `plugins/rust-review` | `e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff` | CC-BY-SA-4.0 |
+| `differential-review` | `plugins/differential-review` | `e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff` | CC-BY-SA-4.0 |
+
+Upstream repository: [trailofbits/skills](https://github.com/trailofbits/skills).
+Attribution is in the pin file. `rust-review` is by Andrea Cappa (Aptos Labs)
+and Paweł Płatek (Trail of Bits). `differential-review` is by Omar Inuwa
+(Trail of Bits).
+
+`/trailofbits-review` is a first-party manual pointer for genos-engine (Rust,
+unsafe, GPU, and FFI) and for security-sensitive pull request diffs. It tells
+the agent to install the pinned plugin. It does not include the upstream audit
+text. These audits are heavy and token-costly, so the skill sets
+`disable-model-invocation: true`.
+
+Install the upstream plugins at that commit. Do not follow `main`.
+
+### skills CLI
+
+This copies the upstream skill onto the machine that runs the command. It does
+not add those files to this repository.
+
+```bash
+npx skills add trailofbits/skills@e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff \
+  --skill rust-review --skill differential-review --full-depth
+```
+
+### Cursor
+
+Add the Trail of Bits marketplace at the pinned commit, then install
+`rust-review` and `differential-review` from the `trailofbits` marketplace at
+user scope:
+
+```bash
+agent plugin marketplace add https://github.com/trailofbits/skills \
+  --git-ref e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff
+```
+
+Leave auto-refresh off for this import. A refresh that tracks `main` drops the pin.
+
+### Claude Code
+
+A marketplace `ref` is a branch or tag. Passing this SHA as that ref fails,
+because Claude Code clones it with `git clone --branch`. The pin file
+`third-party/claude/marketplace.json` points each plugin at the commit with a
+`git-subdir` source and a `sha` field. From a checkout of this repository:
+
+```bash
+claude plugin marketplace add ./third-party/claude
+```
+
+Then install `rust-review` and `differential-review` from the
+`trailofbits-pins` marketplace. The plugin `sha` is the commit in
+`third-party/pins.json`.
+
+### GitHub Copilot
+
+`third-party/copilot/marketplace.json` is a Copilot marketplace whose plugin
+sources set `sha` to the same commit. From a checkout of this repository:
+
+```bash
+copilot plugin marketplace add ./third-party/copilot
+copilot plugin install rust-review@trailofbits-pins
+copilot plugin install differential-review@trailofbits-pins
+```
+
+`copilot plugin marketplace add trailofbits/skills` tracks the default branch.
+Use the pin marketplace above when the install must stay on this commit.
+
 ## License
 
 MIT, unless a skill directory includes its own `LICENSE.txt` or `LICENSE-UPSTREAM`.
+Trail of Bits `rust-review` and `differential-review` are not in this tree.
+They remain upstream under CC-BY-SA-4.0.

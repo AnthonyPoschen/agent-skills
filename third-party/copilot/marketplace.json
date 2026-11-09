@@ -1,0 +1,43 @@
+{
+  "name": "trailofbits-pins",
+  "owner": {
+    "name": "Anthony Poschen"
+  },
+  "metadata": {
+    "description": "SHA pins for Trail of Bits rust-review and differential-review. Plugin text stays in trailofbits/skills under CC-BY-SA-4.0."
+  },
+  "plugins": [
+    {
+      "name": "rust-review",
+      "description": "Pinned install of Trail of Bits rust-review. Upstream text is CC-BY-SA-4.0 and is not stored in this repository.",
+      "license": "CC-BY-SA-4.0",
+      "author": {
+        "name": "Andrea Cappa (Aptos Labs) and Paweł Płatek (Trail of Bits)",
+        "url": "https://github.com/trailofbits/skills"
+      },
+      "source": {
+        "source": "github",
+        "repo": "trailofbits/skills",
+        "path": "plugins/rust-review",
+        "ref": "main",
+        "sha": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff"
+      }
+    },
+    {
+      "name": "differential-review",
+      "description": "Pinned install of Trail of Bits differential-review. Upstream text is CC-BY-SA-4.0 and is not stored in this repository.",
+      "license": "CC-BY-SA-4.0",
+      "author": {
+        "name": "Omar Inuwa (Trail of Bits)",
+        "url": "https://github.com/trailofbits/skills"
+      },
+      "source": {
+        "source": "github",
+        "repo": "trailofbits/skills",
+        "path": "plugins/differential-review",
+        "ref": "main",
+        "sha": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff"
+      }
+    }
+  ]
+}
