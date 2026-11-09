@@ -18,10 +18,15 @@ setup() {
   git clone -q remote.git seed 2>/dev/null; cd seed
   cp "$ROOT/package.json" "$ROOT/plugin.json" .
   mkdir -p scripts .cursor-plugin .github/plugin
-  cp "$ROOT/scripts/validate-skills.py" "$ROOT/scripts/validate-plugin-manifests.py" scripts/
+  cp "$ROOT/scripts/validate-skills.py" "$ROOT/scripts/validate-plugin-manifests.py" \
+    "$ROOT/scripts/validate-third-party-pins.py" scripts/
+  cp -a "$ROOT/third-party" third-party
+  # pins validation reads the pointer skill; the fixture must carry it too.
+  mkdir -p skills
+  cp -a "$ROOT/skills/trailofbits-review" skills/
   cp "$ROOT/.cursor-plugin/plugin.json" "$ROOT/.cursor-plugin/marketplace.json" .cursor-plugin/
   cp "$ROOT/.github/plugin/marketplace.json" .github/plugin/
-  printf '# excluded\nbotonly\n' > sync-exclude.txt
+  printf '# excluded\nbotonly\ntrailofbits-review\n' > sync-exclude.txt
   skill skills/alpha; skill skills/beta
   git add -A; git commit -qm init; git push -q origin master; cd ..
   mkdir box; cp -a seed/skills/alpha seed/skills/beta box/

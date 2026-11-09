@@ -9,6 +9,6 @@
     "install-git-hooks": "sh scripts/install-git-hooks.sh",
     "link-skills": "sh scripts/link-agent-skills.sh",
     "check-tmp": "bash scripts/check-fixed-tmp.sh && bash tests/agent-tmp-test.sh",
-    "validate": "python3 scripts/validate-skills.py && python3 scripts/validate-plugin-manifests.py"
+    "validate": "python3 scripts/validate-skills.py && python3 scripts/validate-plugin-manifests.py && python3 scripts/validate-third-party-pins.py"
   }
 }

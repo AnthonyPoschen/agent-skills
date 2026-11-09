@@ -1,0 +1,22 @@
+{
+  "purpose": "Pin Trail of Bits plugins approved for the fleet. This MIT repository stores pointers only. Do not copy upstream SKILL.md files, prompts, or other CC-BY-SA-4.0 text into the tree.",
+  "upstreamRepo": "https://github.com/trailofbits/skills",
+  "plugins": [
+    {
+      "name": "rust-review",
+      "upstreamRepo": "https://github.com/trailofbits/skills",
+      "path": "plugins/rust-review",
+      "pinnedSha": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
+      "license": "CC-BY-SA-4.0",
+      "attribution": "Andrea Cappa (Aptos Labs) and Paweł Płatek (Trail of Bits), https://github.com/trailofbits/skills"
+    },
+    {
+      "name": "differential-review",
+      "upstreamRepo": "https://github.com/trailofbits/skills",
+      "path": "plugins/differential-review",
+      "pinnedSha": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
+      "license": "CC-BY-SA-4.0",
+      "attribution": "Omar Inuwa (Trail of Bits), https://github.com/trailofbits/skills"
+    }
+  ]
+}

@@ -25,4 +25,4 @@ jobs:
         with:
           node-version: "22"
       - name: Link skills, validate, and run lint-rule shell suites
-        run: npm run link-skills && npm run validate && bash skills/lint-rules/scripts/test.sh
+        run: npm run link-skills && npm run validate && bash skills/lint-rules/scripts/test.sh && bash tests/sync-skills-test.sh
