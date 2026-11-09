@@ -2,9 +2,12 @@ Vendored from https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2
 Pinned commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
 Upstream licence: Apache-2.0 (see LICENSE.txt)
 
-The skill body matches that commit. The frontmatter description is shortened
-for trigger cost. scripts/accept_changes.py creates its LibreOffice user
-profile with tempfile.mkdtemp instead of a fixed shared directory.
+Edits from that commit:
+- Frontmatter description shortened for trigger cost.
+- Credit line added after the frontmatter in SKILL.md.
+- scripts/accept_changes.py creates its LibreOffice user profile with tempfile.mkdtemp instead of a fixed shared directory.
+
+The rest of the skill body and the office script tree, including validators, schemas, and pptx helpers, match that commit.
 
 Runtime dependencies (this repository's CI does not install them):
 - Node package `docx` (create new documents)

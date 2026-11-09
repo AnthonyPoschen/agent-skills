@@ -2,11 +2,12 @@ Vendored from https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2
 Pinned commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
 Upstream licence: Apache-2.0 (see LICENSE.txt)
 
-The skill body matches that commit. The frontmatter description is shortened
-for trigger cost.
+Edits from that commit:
+- Frontmatter description shortened for trigger cost.
+- Credit line added after the frontmatter in SKILL.md.
+- Pruned scripts/office to soffice.py and __init__.py. Upstream schemas, validators, helpers, and validate.py are unused here: recalc.py only imports office.soffice, and SKILL.md never calls validate.py. The docx skill keeps the full office tree.
 
 Runtime dependencies (this repository's CI does not install them):
 - Python `openpyxl` and `pandas`
 - `markitdown` (quick sheet preview)
 - LibreOffice `soffice` via scripts/office/soffice.py (formula recalculation)
-- Python `lxml` and `defusedxml` (scripts/office validators)
