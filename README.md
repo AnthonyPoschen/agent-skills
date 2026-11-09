@@ -14,6 +14,7 @@ npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill handoff
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
@@ -37,7 +38,8 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `domain-modeling` | Sharpen domain terminology and ADRs; optionally refresh short living alignment docs when the repo declares them. |
 | `frontend-design` | Product-fit frontend design and implementation workflow for polished, usable web interfaces. |
 | `git` | Commits, worktrees, and releases: commit boundaries and messages, a mirrored worktree layout, and release notes, versions, and tags (CalVer when no convention exists). |
-| `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. |
+| `encode-lessons` | Turn recurring corrections and preventable mistakes into the smallest durable guard. Capture one verified lesson, or refresh existing lessons for staleness. |
+| `handoff` | Brief a fresh agent or cloud agent with a short pointer-first handoff, or resume only the named handoff. |
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux` | FluxCD GitOps: GitHub Actions to GHCR image automation (tags, policies, rollout diagnostics) and Kustomize base/overlay repo layouts. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
@@ -70,6 +72,7 @@ npx skills add anthonyposchen/agent-skills --skill domain-modeling
 npx skills add anthonyposchen/agent-skills --skill frontend-design
 npx skills add anthonyposchen/agent-skills --skill git
 npx skills add anthonyposchen/agent-skills --skill encode-lessons
+npx skills add anthonyposchen/agent-skills --skill handoff
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
@@ -240,6 +243,8 @@ skills/
     references/
     scripts/
   encode-lessons/
+    SKILL.md
+  handoff/
     SKILL.md
   experience-first/
     SKILL.md

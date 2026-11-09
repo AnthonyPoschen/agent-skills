@@ -87,6 +87,13 @@ record before continuing.
 When agents judge the same kind of result more than once, script the check
 instead. See `scripted-verification`.
 
+## Another Agent
+
+A compact note inside this session is not a handoff. When a fresh cloud agent
+or another bot must continue the work, use `handoff`: a versioned, pointer-first
+brief with authority limits and a split between what is verified and what is
+assumed.
+
 ## Sources
 
 - [Pstack guard the context window](https://github.com/cursor/plugins/blob/main/pstack/skills/principle-guard-the-context-window/SKILL.md)
