@@ -1,9 +1,14 @@
 ---
 name: renderdoc-gpu-debug
 description: >
-  Use when capturing or inspecting a Vulkan frame with RenderDoc: .rdc
-  captures, GLSL or SPIR-V shader debugging, pipeline state, or pixel history
-  via rdc-cli. Do not use for CSS, HTML, canvas, or browser rendering.
+  Use when capturing or inspecting a Vulkan frame with RenderDoc on zanven-pc
+  (RTX 4070): .rdc captures, GLSL or SPIR-V shader debugging, pipeline state,
+  or pixel history via rdc-cli. Do not use for CSS, HTML, canvas, or browser
+  rendering.
+disable-model-invocation: true
+metadata:
+  opencode/slash: "true"
+  opencode/autoinvoke: "false"
 ---
 
 # RenderDoc GPU Debugging
@@ -27,7 +32,7 @@ Opening an existing `.rdc` is replay: it also belongs on that machine.
 
 On zanven-pc, `rdc doctor` must pass before capture or inspection.
 
-- `rdc-cli` is installed (`pip install rdc-cli` if the command is missing).
+- `rdc-cli` is installed (`pip install rdc-cli==0.7.0` if the command is missing).
 - `RENDERDOC_PYTHON_PATH` points at the RenderDoc Python module built for the
   host Python. On Linux that module is `renderdoc.so`. On Windows it is
   `renderdoc.pyd`, and `renderdoc.dll` sits in the same directory. The Windows
@@ -134,7 +139,7 @@ rdc diff before.rdc after.rdc --framebuffer --diff-output captures/diff.png
 
 | Symptom | What to do on zanven-pc |
 | --- | --- |
-| `rdc` not found | `pip install rdc-cli` |
+| `rdc` not found | `pip install rdc-cli==0.7.0` |
 | `rdc doctor` fails | Fix `RENDERDOC_PYTHON_PATH` and the host RenderDoc module |
 | Capture reports no swapchain | `rdc capture --trigger`, then `rdc capture-trigger` |
 | Daemon not responding | `rdc status`, `rdc close`, `rdc open` again |

@@ -17,6 +17,7 @@ npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill renderdoc-gpu-debug
 npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
@@ -40,7 +41,7 @@ npx skills add anthonyposchen/agent-skills --skill scripted-verification
 | `experience-first` | Keep product, interface, and API decisions focused on the consumer's core workflow. |
 | `flux` | FluxCD GitOps: GitHub Actions to GHCR image automation (tags, policies, rollout diagnostics) and Kustomize base/overlay repo layouts. |
 | `grill-with-docs` | Relentless design interview that drives domain-modeling so GLOSSARY.md/ADRs (and declared living shorts) stay current. |
-| `renderdoc-gpu-debug` | Vulkan frame capture and shader, pipeline, and pixel-history debugging with RenderDoc and `rdc-cli`. Capture and replay run only on zanven-pc. |
+| `renderdoc-gpu-debug` | **Manual only** (`/renderdoc-gpu-debug`). Vulkan frame capture and shader, pipeline, and pixel-history debugging with RenderDoc and `rdc-cli`. Capture and replay run only on zanven-pc (RTX 4070). |
 | `security-audit` | **Manual only** (`/security-audit`). Vendored Cloudflare six-phase security audit; agents must not auto-load it. |
 | `in-your-own-words` | Restate the user goal, problem, constraints, and done check in plain words before non-trivial work. |
 | `lint-rules` | Shared custom lint rules for Go, Rust, Kubernetes and CSS, each with a failing example, plus how to write and contribute new ones. |
@@ -72,6 +73,7 @@ npx skills add anthonyposchen/agent-skills --skill encode-lessons
 npx skills add anthonyposchen/agent-skills --skill experience-first
 npx skills add anthonyposchen/agent-skills --skill flux
 npx skills add anthonyposchen/agent-skills --skill grill-with-docs
+npx skills add anthonyposchen/agent-skills --skill renderdoc-gpu-debug
 npx skills add anthonyposchen/agent-skills --skill security-audit
 npx skills add anthonyposchen/agent-skills --skill in-your-own-words
 npx skills add anthonyposchen/agent-skills --skill skill-evaluation
@@ -356,7 +358,7 @@ Invoke them by name (for example `/security-audit`).
 
 `security-audit` is vendored from [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) at commit `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` (MIT). See `skills/security-audit/LICENSE-UPSTREAM`.
 
-`renderdoc-gpu-debug` is vendored from [rudybear/renderdoc-skill](https://github.com/rudybear/renderdoc-skill) at commit `7b66b7bcbee20eab66c3971f49dba2edd3cc3300` (MIT, Copyright (c) 2025 Alexey Medvedev). The MCP server in that repository is not included. See `skills/renderdoc-gpu-debug/LICENSE-UPSTREAM`.
+`renderdoc-gpu-debug` is adapted from [rudybear/renderdoc-skill](https://github.com/rudybear/renderdoc-skill) at commit `7b66b7bcbee20eab66c3971f49dba2edd3cc3300` (MIT, Copyright (c) 2025 Alexey Medvedev). `references/commands-quick-ref.md` is verbatim. `SKILL.md` and `references/debugging-recipes.md` are edited: manual-only invocation, capture and replay only on zanven-pc (RTX 4070), `rdc-cli==0.7.0`, no MCP server, and Windows-only paths and module names removed or marked. The edit list is in `skills/renderdoc-gpu-debug/LICENSE-UPSTREAM`.
 
 ## License
 
