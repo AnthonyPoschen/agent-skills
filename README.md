@@ -129,25 +129,49 @@ Cloud Agents already pick up. Pass `dest: .cursor/skills` when a repository
 keeps its skills there. Cursor's automation note names `.cursor/skills/`
 specifically for skills an automation must see.
 
-The reusable workflow checks out this repository at a full commit SHA, copies
-`skills/` with `scripts/vendor-apstack-skills.sh`, and opens or updates a
-draft pull request on `vendor/apstack-skills`. It does not push to the
-default branch. `<dest>/.apstack-vendor.json` lists the vendored skill names
-and the pinned SHA. A later run updates or deletes only those names. A skill
-already in the destination and missing from that manifest stops the run
-before any write. `disable-model-invocation: true` is copied unchanged.
+The reusable workflow checks out the caller repository on its default
+branch, checks out this repository at a full commit SHA, copies `skills/`
+with `scripts/vendor-apstack-skills.sh`, and opens or updates a draft pull
+request on `vendor/apstack-skills`. It does not push to the default branch.
+`<dest>/.apstack-vendor.json` lists the vendored skill names and the pinned
+SHA. A later run updates or deletes only those names. A skill already in the
+destination and missing from that manifest stops the run before any write.
+An empty source, a symlinked skill directory, or a symlink that resolves
+outside its skill also stops the run. `disable-model-invocation: true` is
+copied unchanged. A run that reports `changed=no` does not push and leaves
+any open `vendor/apstack-skills` pull request as-is.
 
-Add this workflow to the consuming repository. Replace `<SHA>` with the full
-`AnthonyPoschen/agent-skills` commit to vendor (the same value in both places):
+Add this workflow to the consuming repository. Pin `uses:` to a full commit
+SHA or a release tag. The `sha` input must be the full 40-character commit
+to vendor:
 
 ```yaml
-permissions: { contents: write, pull-requests: write }
+name: vendor apstack skills
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full 40-character commit SHA of AnthonyPoschen/agent-skills to vendor.
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
-  vendor-apstack: { uses: AnthonyPoschen/agent-skills/.github/workflows/vendor-apstack-skills.yml@<SHA>, with: { sha: <SHA> } }
+  vendor-apstack:
+    uses: AnthonyPoschen/agent-skills/.github/workflows/vendor-apstack-skills.yml@<SHA-or-tag>
+    with:
+      sha: ${{ inputs.sha }}
 ```
 
-The caller file also needs `name` and `on` (`workflow_dispatch`, `schedule`,
-or both). Optional input: `dest`.
+Optional input: `dest` (default `.agents/skills`). Do not schedule this
+workflow. A pinned `uses:` SHA or tag does not move, so a scheduled run
+repeats the same pin and no-ops.
+
+In the consuming repository, turn on **Settings → Actions → General →
+Allow GitHub Actions to create and approve pull requests**. Pull requests
+opened with the default `GITHUB_TOKEN` do not start other workflows, so
+the vendor pull request does not trigger CI.
 
 Team distribution is separate. On Teams or Enterprise, an admin imports the
 same GitHub URL under **Dashboard → Plugins & MCPs → Add Marketplace**, then

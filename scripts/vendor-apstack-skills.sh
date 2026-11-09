@@ -23,8 +23,10 @@ Usage: vendor-apstack-skills.sh --source DIR --sha SHA [--dest RELATIVE-DIR]
                 .agents/skills/ (genos) pick that path up.
 
 Refuses to overwrite or delete a skill that is not already listed in
-<dest>/.apstack-vendor.json. Copies SKILL.md bytes unchanged, including
-disable-model-invocation. Prints changed=yes or changed=no.
+<dest>/.apstack-vendor.json. Refuses an empty source, a skill directory that
+is a symlink, and any symlink whose target resolves outside its skill.
+Copies SKILL.md bytes unchanged, including disable-model-invocation.
+Prints changed=yes or changed=no.
 USAGE
 }
 
@@ -43,7 +45,8 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 [[ -n "$SOURCE" && -n "$SHA" ]] || die "--source and --sha are required"
 [[ -d "$SOURCE/skills" ]] || die "source skills dir missing: $SOURCE/skills"
 [[ "$SHA" =~ ^[0-9a-fA-F]{40}$ ]] || die "sha must be a full 40-character hex commit, got: $SHA"
-[[ -n "$DEST" && "$DEST" != "/" ]] || die "dest must be a skills directory"
+[[ -n "$DEST" && "$DEST" != "." && "$DEST" != "/" ]] || die "dest must be a relative skills directory, not the repo root"
+[[ "$DEST" != /* ]] || die "dest must be relative, got: $DEST"
 case "$DEST" in
   *..*) die "dest must not contain ..";;
 esac
@@ -51,9 +54,29 @@ SHA="$(printf '%s' "$SHA" | tr 'A-F' 'a-f')"
 
 skill_hash() {
   local d="$1"
-  [[ -d "$d" ]] || { echo "-"; return; }
-  (cd "$d" && find . -type f ! -path '*/.git/*' -print0 | LC_ALL=C sort -z \
-    | xargs -0 -r sha256sum) | sha256sum | cut -c1-16
+  [[ -d "$d" && ! -L "$d" ]] || { echo "-"; return; }
+  (
+    cd "$d"
+    find . -mindepth 1 ! -path '*/.git/*' -printf '%m %p %l\n' | LC_ALL=C sort
+    find . -type f ! -path '*/.git/*' -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum
+  ) | sha256sum | cut -c1-16
+}
+
+assert_skill_links() {
+  local skill="$1" name="$2" root link target resolved
+  root="$(cd "$skill" && pwd -P)"
+  while IFS= read -r -d '' link; do
+    target="$(readlink "$link")"
+    if [[ "$target" == /* ]]; then
+      resolved="$(realpath -m "$target")"
+    else
+      resolved="$(realpath -m "$(dirname "$link")/$target")"
+    fi
+    case "$resolved" in
+      "$root"|"$root"/*) ;;
+      *) die "symlink target resolves outside skill $name: ${link#"$skill"/} -> $target";;
+    esac
+  done < <(find "$skill" -type l -print0)
 }
 
 declare -A TRACKED=()
@@ -82,13 +105,19 @@ declare -A SOURCE_SKILLS=()
 shopt -s nullglob
 for dir in "$SOURCE/skills"/*/; do
   name="$(basename "$dir")"
+  if [[ -L "${dir%/}" ]]; then
+    die "skill directory must not be a symlink: $name"
+  fi
   [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || continue
   [[ -f "$dir/SKILL.md" ]] || continue
+  assert_skill_links "$dir" "$name"
   SOURCE_SKILLS["$name"]=1
 done
 
+[[ ${#SOURCE_SKILLS[@]} -gt 0 ]] || die "source has no valid skills; refusing to update the destination"
+
 for name in "${!SOURCE_SKILLS[@]}"; do
-  if [[ -e "$DEST/$name" && -z "${TRACKED[$name]:-}" ]]; then
+  if [[ -z "${TRACKED[$name]:-}" ]] && { [[ -e "$DEST/$name" ]] || [[ -L "$DEST/$name" ]]; }; then
     echo "COLLISION: $name exists in $DEST and is not in the apstack vendor manifest; refusing to overwrite" >&2
     exit 1
   fi
