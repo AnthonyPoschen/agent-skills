@@ -26,3 +26,10 @@ jobs:
           node-version: "22"
       - name: Link skills, validate, and run lint-rule shell suites
         run: npm run link-skills && npm run validate && bash skills/lint-rules/scripts/test.sh
+
+  vendor-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vendor apstack skills tests
+        run: bash tests/vendor-apstack-skills-test.sh

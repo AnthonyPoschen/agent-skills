@@ -118,6 +118,37 @@ starts, and it keeps those versions for the whole run. GitHub-imported
 marketplaces are the ones Cloud Agents load. After you install or update
 `apstack`, start a **new** Cloud Agent and ask it to list its skills.
 
+### Vendor skills into a repository
+
+Cloud Agents that do not load the user plugin still load project skills
+committed in the repository. Cursor documents both `.agents/skills/` and
+`.cursor/skills/` as project-level skill directories
+([Agent Skills](https://cursor.com/docs/skills)). This fallback vendors
+`skills/` into `.agents/skills/`, the directory genos already uses and that
+Cloud Agents already pick up. Pass `dest: .cursor/skills` when a repository
+keeps its skills there. Cursor's automation note names `.cursor/skills/`
+specifically for skills an automation must see.
+
+The reusable workflow checks out this repository at a full commit SHA, copies
+`skills/` with `scripts/vendor-apstack-skills.sh`, and opens or updates a
+draft pull request on `vendor/apstack-skills`. It does not push to the
+default branch. `<dest>/.apstack-vendor.json` lists the vendored skill names
+and the pinned SHA. A later run updates or deletes only those names. A skill
+already in the destination and missing from that manifest stops the run
+before any write. `disable-model-invocation: true` is copied unchanged.
+
+Add this workflow to the consuming repository. Replace `<SHA>` with the full
+`AnthonyPoschen/agent-skills` commit to vendor (the same value in both places):
+
+```yaml
+permissions: { contents: write, pull-requests: write }
+jobs:
+  vendor-apstack: { uses: AnthonyPoschen/agent-skills/.github/workflows/vendor-apstack-skills.yml@<SHA>, with: { sha: <SHA> } }
+```
+
+The caller file also needs `name` and `on` (`workflow_dispatch`, `schedule`,
+or both). Optional input: `dest`.
+
 Team distribution is separate. On Teams or Enterprise, an admin imports the
 same GitHub URL under **Dashboard → Plugins & MCPs → Add Marketplace**, then
 sets `apstack` to Default Off, Default On, or Required. Enterprise admins are
