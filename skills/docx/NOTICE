@@ -1,0 +1,14 @@
+Vendored from https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2c4981d0f4a75c579/skills/docx
+Pinned commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+Upstream licence: Apache-2.0 (see LICENSE.txt)
+
+The skill body matches that commit. The frontmatter description is shortened
+for trigger cost. scripts/accept_changes.py creates its LibreOffice user
+profile with tempfile.mkdtemp instead of a fixed shared directory.
+
+Runtime dependencies (this repository's CI does not install them):
+- Node package `docx` (create new documents)
+- `pandoc` (read and track-change markdown)
+- LibreOffice `soffice` (render, accept tracked changes)
+- Poppler `pdftoppm` (visual check of the rendered PDF)
+- Python `lxml` and `defusedxml` (scripts/office validators)

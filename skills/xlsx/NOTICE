@@ -1,0 +1,12 @@
+Vendored from https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2c4981d0f4a75c579/skills/xlsx
+Pinned commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+Upstream licence: Apache-2.0 (see LICENSE.txt)
+
+The skill body matches that commit. The frontmatter description is shortened
+for trigger cost.
+
+Runtime dependencies (this repository's CI does not install them):
+- Python `openpyxl` and `pandas`
+- `markitdown` (quick sheet preview)
+- LibreOffice `soffice` via scripts/office/soffice.py (formula recalculation)
+- Python `lxml` and `defusedxml` (scripts/office validators)

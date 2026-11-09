@@ -2,3 +2,5 @@
 node_modules/
 .skills/
 *.log
+__pycache__/
+*.pyc
