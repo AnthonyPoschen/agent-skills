@@ -67,6 +67,30 @@ message: >-
 7. Run [rules/test.sh](rules/test.sh) here (or `semgrep --test` on the repo's
    rule directory) so every rule's failing example still fails.
 
+### File size
+
+Tracked files over a byte ceiling fail the build. Check them with
+[scripts/max-file-size.sh](scripts/max-file-size.sh). Files this large are
+re-read in pieces by agents dozens of times per run; split by responsibility.
+A baseline entry is `<path> <bytes>`, with `<path>` relative to the repository
+root. It may list a file over the ceiling only up to that recorded size, and
+that recorded size may only shrink
+([Baselines Only Shrink](#baselines-only-shrink)). A path that is absent from
+the baseline at the merge base is a new path key. Replacing one path with
+another, or renaming a path, is a new key even when the entry count stays the
+same, and it needs `baseline-growth-approved` plus a `# owner: <who> — <why>`
+line directly before that entry. The generic count check does not approve a
+new path key on its own.
+
+The byte count is the working-tree file for each tracked path. It is not the
+staged index blob and not the blob at HEAD. `--baseline` is a work-tree path;
+the merge-base object is that file from the repository root, including when
+the script runs from a subdirectory.
+
+```bash
+skills/lint-rules/scripts/max-file-size.sh --max-bytes 150000 --baseline path/to/max-file-size.txt .
+```
+
 ## Write A New Rule
 
 1. A problem happens: a bug, a gotcha, a review comment, or a "don't do X"

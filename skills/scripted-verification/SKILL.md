@@ -71,6 +71,13 @@ Run cheap checks first and skip the agent when one fails:
 - the commit was already judged. Cache verdicts by commit and inputs, and
   reuse the cached verdict.
 
+## Resource Kills Are A Verdict
+
+A resource kill (OOM, SIGKILL, cgroup `memory.max`) is a verdict, not a puzzle.
+Record `NOT-RUN`/`UNSURE` with the kill evidence path. Allow at most one bounded
+retry with reduced parallelism, then stop and report. Do not dig through
+`dmesg` in a loop.
+
 ## Watch Events Instead Of Polling Agents
 
 Wait with CI, webhooks, file watchers, or a cheap script loop. Never keep an

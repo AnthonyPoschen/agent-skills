@@ -16,3 +16,13 @@ jobs:
           node-version: "22"
       - name: Guard against literal fixed /tmp paths
         run: npm run check-tmp
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Link skills, validate, and run lint-rule shell suites
+        run: npm run link-skills && npm run validate && bash skills/lint-rules/scripts/test.sh

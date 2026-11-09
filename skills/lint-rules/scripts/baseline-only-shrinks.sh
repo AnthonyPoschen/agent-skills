@@ -9,11 +9,14 @@
 #   baseline-only-shrinks.sh [--base REF] [--labels "a,b"] FILE [FILE...]
 #
 # --labels defaults to $PR_LABELS (comma-separated). --base defaults to the
-# merge-base of HEAD and origin/master (then master).
+# merge-base of HEAD and origin/master (then master). Each FILE is a work-tree
+# path. The merge-base copy is that file's path from the repository root,
+# including when this script is run from a subdirectory. An empty or missing
+# base file is zero entries, so an approved owner line can initialize it.
 set -euo pipefail
 
 usage() {
-  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 base_ref=""
@@ -75,6 +78,24 @@ for label in "${label_list[@]}"; do
   fi
 done
 
+# Work-tree path as given (including from a subdirectory) to the path Git
+# stores from the repository root. git show REF:path is always root-relative.
+repo_path() {
+  local file="$1"
+  local root abs
+  root=$(git rev-parse --show-toplevel)
+  abs=$(cd "$(dirname "$file")" && pwd)/$(basename "$file")
+  case "$abs" in
+    "$root"/*)
+      printf '%s\n' "${abs#"$root"/}"
+      ;;
+    *)
+      echo "path is outside the repository: $file" >&2
+      exit 2
+      ;;
+  esac
+}
+
 count_entries() {
   awk '
     /^[[:space:]]*$/ { next }
@@ -89,7 +110,10 @@ count_entries() {
 # matched by an entry at the base. An entry is owned only when the line
 # immediately above it is `# owner: <who> — <why>`.
 added_unowned() {
-  awk '
+  # FILENAME, not NR==FNR. An empty base file has no records, so NR stays
+  # equal to FNR on the first record of the head file and those entries
+  # would be stored as the base.
+  awk -v base_name="$1" '
     function is_entry(line) {
       return line !~ /^[[:space:]]*$/ && line !~ /^[[:space:]]*#/ && line !~ /^[[:space:]]*\/\//
     }
@@ -98,7 +122,7 @@ added_unowned() {
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
       return line ~ /^#[[:space:]]*owner:[[:space:]]+[^[:space:]].*[[:space:]]—[[:space:]]+[^[:space:]].*$/
     }
-    NR == FNR {
+    FILENAME == base_name {
       if (is_entry($0)) base[$0]++
       next
     }
@@ -124,9 +148,10 @@ for file in "${files[@]}"; do
     exit 2
   fi
   head_count=$(count_entries "$file")
+  repo_file=$(repo_path "$file")
   base_file=$(mktemp)
-  if git cat-file -e "${base_ref}:${file}" 2>/dev/null; then
-    git show "${base_ref}:${file}" >"$base_file"
+  if git cat-file -e "${base_ref}:${repo_file}" 2>/dev/null; then
+    git show "${base_ref}:${repo_file}" >"$base_file"
   else
     : >"$base_file"
   fi

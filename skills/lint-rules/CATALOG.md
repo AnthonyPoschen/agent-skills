@@ -46,6 +46,7 @@ the repos it was measured on. "Sampled" means hits were read by hand.
 | `rowserrcheck` (Go golangci) | Ignoring `rows.Err` hides a truncated result that looks complete. | loop `rows.Next` and return nil | 2026-10-20 | Go SQL call sites | not measured |
 | `forbidigo` (Go golangci) | `os.Getenv` outside `config/`, `fmt.Print` / `log.Fatal` outside `main.go` and `cmd/`, and the default HTTP client have no single source, logger, or timeout. `_test.go` may print. | `os.Getenv("APP_ENV")` in a library | 2026-10-20 | env, logging, and HTTP call sites | not measured |
 | baseline / allowlist only shrinks | 2026-11-07: Baseline files only shrink. Growth is approved only with the exact PR label `baseline-growth-approved` and a `# owner: <who> — <why>` line directly before each added entry. Growing the baseline hides new violations; fix the code instead. | a new path added to a baseline file | 2026-11-02 | genos-engine c266d403, 4496bc7d, c15a45f7; PR #154; PR #172 | not measured |
+| `max-file-size` ratchet | Oversized files get re-read in slices many times per agent run. | a 213 KB shader | 2026-11-09 | genos-engine `crates/render/src/gpu.rs` 336 KB, `shaders/lighting_cache.glsl` 213 KB, `src/lighting_gpu.rs` 195 KB; cloud agent bc-75c40c1c read `lighting_cache.glsl` 50 times (~226K chars) in one run, bc-4868b34e 37 times, bc-fae958ca 22 times (8-9 Nov 2026) | 3 files >150 KB in genos-engine |
 
 ## Verdicts, 2026-10-14
 
@@ -75,3 +76,9 @@ are on `kustomize build` output of all six overlays.
 | Rust `cast_possible_truncation`/`_wrap`/`sign_loss` | lib 445; tests 90, bin 22, example 9 | Keep as warn, library crates only, gate new code first. |
 | `no-latest-image-tag` | 3 raw → 0 rendered | Keep. Raw hits were kustomize placeholders (`app`, `controller`) that render to pinned GHCR tags; the registry-port fix is covered by its test. |
 | `container-resource-limits` | 0 rendered | Keep. All containers already set memory limits. |
+
+## Verdicts, 2026-11-09
+
+| Rule | Hits | Verdict |
+| --- | --- | --- |
+| crate-level `#![expect(clippy::too_many_lines, reason = "TODO(lint-2026-10-14): pedantic backlog")]` | 23 in genos-engine on 9 Nov 2026, unchanged since 14 Oct 2026 | Counts as a baseline and may only shrink. Count the attributes with the ratchet or grep in CI. `gpu.rs`, `lighting_cache.glsl`, and `lighting_gpu.rs` grew while these expects stayed. |
