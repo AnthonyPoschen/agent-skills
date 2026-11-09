@@ -365,6 +365,8 @@ Invoke them by name (for example `/security-audit`).
 
 `renderdoc-gpu-debug` is adapted from [rudybear/renderdoc-skill](https://github.com/rudybear/renderdoc-skill) at commit `7b66b7bcbee20eab66c3971f49dba2edd3cc3300` (MIT, Copyright (c) 2025 Alexey Medvedev). `references/commands-quick-ref.md` is verbatim. `SKILL.md` and `references/debugging-recipes.md` are edited: manual-only invocation, capture and replay only on zanven-pc (RTX 4070), `rdc-cli==0.7.0`, no MCP server, and Windows-only paths and module names removed or marked. The edit list is in `skills/renderdoc-gpu-debug/LICENSE-UPSTREAM`.
 
+`handoff` is adapted from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin) `skills/ce-handoff` at commit `8e5d1c87613f484a5bdfeacedf86a7aaaccfa264` (MIT).
+
 ## License
 
 MIT, unless a skill directory includes its own `LICENSE.txt` or `LICENSE-UPSTREAM`.

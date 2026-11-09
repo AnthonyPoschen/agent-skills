@@ -3,10 +3,8 @@ name: encode-lessons
 description: >
   Use when a correction, failure, workaround, or instruction recurs, or when a
   costly mistake could be prevented structurally. Encode the lesson in the
-  smallest durable guard instead of relying on someone to remember it. Also
-  use capture after verified work whose lesson is not recoverable from the
-  final code, tests, or docs, and refresh when auditing existing lessons for
-  staleness.
+  smallest durable guard instead of relying on someone to remember it. Capture
+  one lesson, or refresh lessons for staleness.
 ---
 
 # Encode Lessons in Structure
@@ -45,14 +43,12 @@ instruction as a learning signal. Classify it before changing the system:
 Do not confuse a vague preference with a proven pattern. A single high-risk or
 high-cost mistake can still justify a durable guard.
 
-Apply this counterfactual before writing anything, and again after a stronger
-form lands. A lesson earns a place only when it holds reasoning that is not
-readily recoverable from the final code, tests, types, comments, or existing
-docs, and losing it would plausibly cause the same mistake, a material risk,
-or a large rediscovery. If the learning document disappeared, would a future
-reader of the final implementation still be likely to repeat the mistake or
-redo the investigation? Completion, effort, and diff size do not qualify a
-lesson. If the counterfactual fails, write nothing and say why.
+Run this check before writing anything, and again after a stronger form
+lands. Keep the lesson only when the finished change still hides the reason:
+a reader of the code, tests, and docs would miss why the wrong path was taken,
+and would be likely to make the same mistake or repeat the investigation. A
+large diff, a long session, or a finished task is not enough. If the check
+fails, write nothing and say why.
 
 ## Pick The Cheapest Durable Form
 
